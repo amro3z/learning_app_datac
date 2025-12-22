@@ -8,8 +8,8 @@ class LearningWebservice {
     BaseOptions option = BaseOptions(
       baseUrl: baseUrl,
       receiveDataWhenStatusError: true,
-      connectTimeout: Duration(milliseconds: 30 * 1000), // 30 seconds
-      receiveTimeout: Duration(milliseconds: 30 * 1000), // 30 seconds
+      connectTimeout: Duration(milliseconds: 30 * 1000), 
+      receiveTimeout: Duration(milliseconds: 30 * 1000), 
     );
     dio = Dio(option);
   }

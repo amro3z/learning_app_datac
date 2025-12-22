@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Training App',
       theme: ThemeData.dark(),
       onGenerateRoute: _appRoute.generateRoute,
-      initialRoute: '/login',
+      initialRoute: '/home',
     );
   }
 }

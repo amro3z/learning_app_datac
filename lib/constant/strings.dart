@@ -1,0 +1,1 @@
+final String baseUrl = "https://e-learning-directus.csiwm3.easypanel.host";

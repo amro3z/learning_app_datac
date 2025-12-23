@@ -19,6 +19,7 @@ class CourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 280,
       width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFF1C1C1E),
@@ -37,7 +38,7 @@ class CourseCard extends StatelessWidget {
           // Image
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.asset(
+            child: Image.network(
               imagePath,
               height: 140,
               width: double.infinity,

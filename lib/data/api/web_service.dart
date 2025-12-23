@@ -16,6 +16,7 @@ class LearningWebservice {
   Future<Map<String, dynamic>> getCoursesList() async {
     try {
       Response response = await dio.get('items/courses');
+      log(response.data.toString());
       return response.data;
     } catch (e) {
       log(e.toString());

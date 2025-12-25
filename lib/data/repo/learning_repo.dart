@@ -1,7 +1,12 @@
 import 'dart:developer';
-
 import 'package:training/data/api/web_service.dart';
+import 'package:training/data/models/categories.dart';
 import 'package:training/data/models/courses.dart';
+import 'package:training/data/models/enrollments.dart';
+import 'package:training/data/models/favorites.dart';
+import 'package:training/data/models/instructor.dart';
+import 'package:training/data/models/lesson_progress.dart';
+import 'package:training/data/models/lessons.dart';
 
 class LearningRepo {
   late final LearningWebservice learningWebService;
@@ -10,8 +15,50 @@ Future<List<CoursesModel>> getCoursesList() async {
     final response = await learningWebService.getCoursesList();
     log(response.toString());
     final List data = response['data'] ?? [];
-
     return data.map((course) => CoursesModel.fromJson(course)).toList();
   }
 
+Future<List<CategoriesModel>> getCategoryList() async {
+    final response = await learningWebService.getCategoryList();
+    log(response.toString());
+    final List data = response['data'] ?? [];
+    return data.map((category) => CategoriesModel.fromJson(category)).toList();
+  }
+
+Future<List<LessonModel>> getLessonList() async {
+    final response = await learningWebService.getLessonList();
+    log(response.toString());
+    final List data = response['data'] ?? [];
+    return data.map((lesson) => LessonModel.fromJson(lesson)).toList();
+  }
+  
+Future<List<InstructorModel>> getInstructorList() async {
+    final response = await learningWebService.getInstructorList();
+    log(response.toString());
+    final List data = response['data'] ?? [];
+    return data.map((instructor) => InstructorModel.fromJson(instructor)).toList();
+  }
+   
+Future<List<LessonProgress>> getLessonProgressList() async {
+    final response = await learningWebService.getLessonProgressList();
+    log(response.toString());
+    final List data = response['data'] ?? [];
+    return data.map((progress) => LessonProgress.fromJson(progress)).toList();
+  }
+  
+Future<List<EnrollmentModel>> getEnrollmentList() async {
+    final response = await learningWebService.getEnrollmentList();
+    log(response.toString());
+    final List data = response['data'] ?? [];
+    return data.map((enrollment) => EnrollmentModel.fromJson(enrollment)).toList();
+  }
+
+Future<List<FavoritesModel>> getFavoriteList() async {
+    final response = await learningWebService.getFavoriteList();
+    log(response.toString());
+    final List data = response['data'] ?? [];
+    return data
+        .map((favorite) => FavoritesModel.fromJson(favorite))
+        .toList();
+  }
 }

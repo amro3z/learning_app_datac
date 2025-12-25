@@ -13,7 +13,7 @@ class LearningWebservice {
     );
     dio = Dio(option);
   }
-  Future<Map<String, dynamic>> getCoursesList() async {
+Future<Map<String, dynamic>> getCoursesList() async {
     try {
       Response response = await dio.get('$apiUrl/courses');
       log(response.data.toString());
@@ -23,7 +23,8 @@ class LearningWebservice {
       return {};
     }
   }
-  Future<Map<String, dynamic>> getCategoryList() async {
+  
+Future<Map<String, dynamic>> getCategoryList() async {
     try {
       Response response = await dio.get('$apiUrl/categories');
       log(response.data.toString());
@@ -33,7 +34,8 @@ class LearningWebservice {
       return {};
     }
   }
-  Future<Map<String, dynamic>> getLessonList() async {
+  
+Future<Map<String, dynamic>> getLessonList() async {
     try {
       Response response = await dio.get('$apiUrl/lessons');
       log(response.data.toString());
@@ -44,7 +46,7 @@ class LearningWebservice {
     }
   }
 
-  Future<Map<String, dynamic>> getInstructorList() async {
+Future<Map<String, dynamic>> getInstructorList() async {
     try {
       Response response = await dio.get('$apiUrl/instructors');
       log(response.data.toString());
@@ -55,7 +57,7 @@ class LearningWebservice {
     }
   }
 
-  Future<Map<String, dynamic>> getLessonProgressList() async {
+Future<Map<String, dynamic>> getLessonProgressList() async {
     try {
       Response response = await dio.get('$apiUrl/lesson_progress');
       log(response.data.toString());
@@ -66,9 +68,20 @@ class LearningWebservice {
     }
   }
 
-  Future<Map<String, dynamic>> getEnrollmentList() async {
+Future<Map<String, dynamic>> getEnrollmentList() async {
     try {
       Response response = await dio.get('$apiUrl/enrollments');
+      log(response.data.toString());
+      return response.data;
+    } catch (e) {
+      log(e.toString());
+      return {};
+    }
+  }
+
+Future<Map<String, dynamic>> getFavoriteList() async {
+    try {
+      Response response = await dio.get('$apiUrl/favorites');
       log(response.data.toString());
       return response.data;
     } catch (e) {

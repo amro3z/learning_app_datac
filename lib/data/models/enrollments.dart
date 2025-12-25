@@ -1,6 +1,6 @@
 class EnrollmentModel {
   late int id;
-  late int userId; 
+  late String userId; 
   late int courseId;
   late int progressPercent;
   late DateTime dateEnrolled;

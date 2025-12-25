@@ -28,7 +28,8 @@ class CoursesModel {
     rating = (json['rating'] ?? 0).toDouble();
     totalDuration = json['total_duration'];
     categoryID = json['category'];
-    instructorName = json['instructor']?['name'] ?? '';
+instructorName =
+        '${json['instructor']?['name'] ?? ''} ${json['instructor']?['last_name'] ?? ''}'.trim();
     progress = json['progress'] ?? 0;
   }
 }

@@ -11,7 +11,7 @@ class CoursesModel {
   late double rating;
   late int totalDuration;
   late int categoryID;
-  late int instructorID;
+  late String instructorName;
   late int progress;
 
   CoursesModel.fromJson(Map<String, dynamic> json) {
@@ -28,7 +28,7 @@ class CoursesModel {
     rating = (json['rating'] ?? 0).toDouble();
     totalDuration = json['total_duration'];
     categoryID = json['category'];
-    instructorID = json['instructor'];
+    instructorName = json['instructor']?['name'] ?? '';
     progress = json['progress'] ?? 0;
   }
 }

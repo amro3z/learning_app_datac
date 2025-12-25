@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: CourseCard(
                 imagePath: course.thumbnail,
                 title: course.title,
-                author: course.instructorID.toString(),
+                author: course.instructorName,
                 rating: course.rating,
                 progress: course.progress / 100,
               ),

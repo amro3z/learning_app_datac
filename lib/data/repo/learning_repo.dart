@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:training/data/api/web_service.dart';
-import 'package:training/data/models/courses_model.dart';
+import 'package:training/data/models/courses.dart';
 
 class LearningRepo {
   late final LearningWebservice learningWebService;

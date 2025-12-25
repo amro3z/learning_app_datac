@@ -1,3 +1,5 @@
+import 'package:training/data/api/api_constant.dart';
+
 class CoursesModel {
   late int id;
   late String status;
@@ -22,7 +24,7 @@ class CoursesModel {
     title = json['title'];
     description = json['description'];
     thumbnail =
-        'https://e-learning-directus.csiwm3.easypanel.host/assets/${json['thumbnail']}';
+        '$fileUrl${json['thumbnail']}';
     rating = (json['rating'] ?? 0).toDouble();
     totalDuration = json['total_duration'];
     categoryID = json['category'];

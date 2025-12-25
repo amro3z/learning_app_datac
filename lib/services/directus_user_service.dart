@@ -1,17 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:training/constant/strings.dart';
+import 'package:training/data/api/api_constant.dart';
 import 'package:training/screen/debug_console.dart';
 
 class ApiService {
-  
 
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
     try {
-      final url = Uri.parse("$baseUrl/auth/login");
+      final url = Uri.parse(loginUrl);
 
       final response = await http.post(
         url,
@@ -46,7 +45,7 @@ class ApiService {
     required String password,
   }) async {
     try {
-      final url = Uri.parse("$baseUrl/users/register");
+      final url = Uri.parse(registerUrl);
 
       final response = await http.post(
         url,

@@ -4,8 +4,19 @@ import 'package:training/cubit/learn_cubit.dart';
 import 'package:training/cubit/learn_state.dart';
 import 'package:training/widgets/course_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<LearnCubit>().getAllCourses();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +50,7 @@ class HomeScreen extends StatelessWidget {
                 title: course.title,
                 author: course.instructorID.toString(),
                 rating: course.rating,
-                progress: course.progress / 100, 
+                progress: course.progress / 100,
               ),
             );
           }

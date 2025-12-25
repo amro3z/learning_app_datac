@@ -7,16 +7,17 @@ class LearnCubit extends Cubit<LearnState> {
   LearningRepo learningRepo;
   late List<CoursesModel> courses;
   LearnCubit({required this.learningRepo}) : super(LearnInitial());
-  Future<List<CoursesModel>> getAllCourses() async {
+ Future<List<CoursesModel>> getAllCourses() async {
     try {
+      emit(Loading());
       final courses = await learningRepo.getCoursesList();
       emit(LearnLoaded(courses: courses));
-      this.courses = courses;
       return courses;
     } catch (e) {
       emit(Error(e.toString()));
       return [];
     }
   }
+
 
 }

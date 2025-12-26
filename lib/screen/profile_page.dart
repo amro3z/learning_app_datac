@@ -12,11 +12,17 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  File? _profileImage;
-  bool _isUploading = false;
-
   final ApiService _api = ApiService();
 
+  File? _profileImage;
+  bool _isUploading = false;
+  bool _loadingUser = true;
+
+  String? _name;
+  String? _email;
+  String? _avatarId;
+
+  // ================= AUTH =================
   Future<Map<String, String>> _getAuthData() async {
     final prefs = await SharedPreferences.getInstance();
     return {
@@ -25,6 +31,39 @@ class _ProfilePageState extends State<ProfilePage> {
     };
   }
 
+  // ================= LOAD USER =================
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final auth = await _getAuthData();
+
+    if (auth["token"]!.isEmpty) {
+      setState(() => _loadingUser = false);
+      return;
+    }
+
+    final res = await _api.getCurrentUser(accessToken: auth["token"]!);
+
+    if (!mounted) return;
+
+    if (res["success"]) {
+      final user = res["user"];
+      setState(() {
+        _name = '${user["first_name"] ?? ""} ${user["last_name"] ?? ""}'.trim();
+        _email = user["email"];
+        _avatarId = user["avatar"];
+        _loadingUser = false;
+      });
+    } else {
+      setState(() => _loadingUser = false);
+    }
+  }
+
+  // ================= PICK & UPLOAD IMAGE =================
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -50,13 +89,21 @@ class _ProfilePageState extends State<ProfilePage> {
         fileId: upload["fileId"],
         accessToken: auth["token"]!,
       );
+
+      // 🔁 reload user to get new avatar
+      await _loadUser();
     }
 
     setState(() => _isUploading = false);
   }
 
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
+    if (_loadingUser) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -87,15 +134,25 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 CircleAvatar(
                   radius: 42,
-                  backgroundColor: Colors.blueAccent,
+                  backgroundColor: const Color(0xFF7C6CFF),
                   child: CircleAvatar(
                     radius: 40,
+                    backgroundColor: Colors.transparent,
                     backgroundImage: _profileImage != null
                         ? FileImage(_profileImage!)
-                        : const AssetImage(
-                                'assets/images/pro2.jpeg',
-                              )
-                              as ImageProvider,
+                        : (_avatarId != null
+                                  ? NetworkImage(
+                                      'https://e-learning-directus.csiwm3.easypanel.host/assets/$_avatarId',
+                                    )
+                                  : null)
+                              as ImageProvider?,
+                    child: (_profileImage == null && _avatarId == null)
+                        ? const Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 32,
+                          )
+                        : null,
                   ),
                 ),
                 if (_isUploading)
@@ -104,19 +161,16 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Alex Anderson',
-            style: TextStyle(
+          Text(
+            _name ?? '',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'alex.anderson@email.com',
-            style: TextStyle(color: Colors.grey),
-          ),
+          Text(_email ?? '', style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
           const Divider(color: Colors.white12),
           const SizedBox(height: 12),
@@ -147,30 +201,14 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         const SizedBox(height: 12),
-        _courseCard(
-          title: 'Complete Web Development Bootcamp',
-          progress: 0.45,
-          image: 'assets/images/pro1.jpg',
-        ),
-        _courseCard(
-          title: 'UI/UX Design Masterclass',
-          progress: 0.20,
-          image: 'assets/images/pro1.jpg',
-        ),
-        _courseCard(
-          title: 'Business Analytics & Data Science',
-          progress: 0.60,
-          image: 'assets/images/pro1.jpg',
-        ),
+        _courseCard(title: 'Complete Web Development Bootcamp', progress: 0.45),
+        _courseCard(title: 'UI/UX Design Masterclass', progress: 0.20),
+        _courseCard(title: 'Business Analytics & Data Science', progress: 0.60),
       ],
     );
   }
 
-  Widget _courseCard({
-    required String title,
-    required double progress,
-    required String image,
-  }) {
+  Widget _courseCard({required String title, required double progress}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
@@ -181,9 +219,14 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.asset(image, width: 52, height: 52, fit: BoxFit.cover),
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.grey.shade800,
+            ),
+            child: const Icon(Icons.play_circle, color: Colors.white),
           ),
           const SizedBox(width: 12),
           Expanded(

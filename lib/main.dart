@@ -6,6 +6,7 @@ import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/route.dart';
 
 void main() {
+    WidgetsFlutterBinding.ensureInitialized();
   final learnCubit = LearnCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice())
   )..getAllCourses(); 

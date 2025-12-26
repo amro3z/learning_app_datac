@@ -1,6 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthStorage {
+  static Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('access_token') != null;
+  }
+
   static Future<void> saveAuthData({
     required String token,
     required String userId,

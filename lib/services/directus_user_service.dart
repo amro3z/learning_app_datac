@@ -124,20 +124,19 @@ Future<Map<String, dynamic>> getCurrentUser({
   }
 
   // ================= UPDATE USER AVATAR =================
-  Future<Map<String, dynamic>> updateUserAvatar({
+Future<Map<String, dynamic>> updateUserAvatar({
     required String userId,
     required String fileId,
     required String accessToken,
   }) async {
     try {
-final url = Uri.parse('$baseUrl/users/$userId');
-
+      final url = Uri.parse('$baseUrl/users/$userId');
 
       final response = await http.patch(
         url,
         headers: {
-          "Content-Type": "application/json",
           "Authorization": "Bearer $accessToken",
+          "Content-Type": "application/json",
         },
         body: jsonEncode({"avatar": fileId}),
       );
@@ -146,10 +145,10 @@ final url = Uri.parse('$baseUrl/users/$userId');
         return {"success": true};
       }
 
-      return {"success": false, "message": "Avatar update failed"};
+      return {"success": false, "message": response.body};
     } catch (e) {
-      AppLogger.log("UPDATE AVATAR ERROR → $e");
-      return {"success": false, "message": "Network error"};
+      return {"success": false, "message": e.toString()};
     }
   }
+
 }

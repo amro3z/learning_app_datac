@@ -5,6 +5,7 @@ import 'package:training/helper/custom_form_textfield.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/helper/massage_dialog.dart';
 import 'package:training/services/directus_user_service.dart';
+import 'package:training/data/local/auth_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,30 +21,63 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _loading = false;
 
-  void _login() async {
+  Future<void> _login() async {
     setState(() => _loading = true);
 
-    final result = await _api.login(
+    /// 1) LOGIN -> get access_token
+    final loginResult = await _api.login(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
 
+    if (!mounted) return;
     setState(() => _loading = false);
 
-    if (!result["success"]) {
+    if (!loginResult["success"]) {
       customDialog(
         context: context,
         title: 'Error',
-        message: result["message"],
+        message: loginResult["message"],
       );
       return;
     }
+
+    final String token = loginResult["access_token"];
+
+    /// 2) GET CURRENT USER -> get userId
+    final userResult = await _api.getCurrentUser(accessToken: token);
+
+    if (!userResult["success"]) {
+      customDialog(
+        context: context,
+        title: 'Error',
+        message: 'Failed to load user data',
+      );
+      return;
+    }
+
+    final String userId = userResult["user"]["id"];
+
+    /// 3) SAVE token + userId
+    await AuthStorage.saveAuthData(token: token, userId: userId);
+
+    if (!mounted) return;
+
     customDialog(
       context: context,
       title: 'Success',
       message: 'Login successful',
     );
-    
+
+    /// 4) NAVIGATE
+    Navigator.pushReplacementNamed(context, '/home');
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -66,18 +100,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   schoolSign(),
-
                   const SizedBox(height: 20),
-
                   defaultText(
                     text: 'Welcome Back',
                     size: 22,
                     color: Colors.white,
                     bold: true,
                   ),
-
                   const SizedBox(height: 30),
 
+                  /// Email
                   CustomFormTextField(
                     controller: _emailController,
                     labelText: 'Email address',
@@ -89,6 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 16),
 
+                  /// Password
                   CustomFormTextField(
                     controller: _passwordController,
                     labelText: 'Password',
@@ -101,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
+                  /// Login Button
                   CustomGlowButton(
                     title: _loading ? 'Loading...' : 'Login',
                     width: double.infinity,
@@ -109,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
+                  /// Register
                   RichText(
                     text: TextSpan(
                       text: "Don't have an account? ",

@@ -1,11 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import 'package:training/data/api/api_constant.dart';
 import 'package:training/screen/debug_console.dart';
 
 class ApiService {
-
-  Future<Map<String, dynamic>> login({
+  // ================= LOGIN =================
+ Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
@@ -20,24 +22,38 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return {
-          "success": true,
-          "access_token": data["data"]["access_token"],
-          "user": data["data"]["user"],
-        };
+        return {"success": true, "access_token": data["data"]["access_token"]};
       }
 
-      final error = jsonDecode(response.body);
-      return {
-        "success": false,
-        "message": error["errors"]?[0]?["message"] ?? "Login failed",
-      };
+      return {"success": false, "message": "Login failed"};
     } catch (e) {
-      AppLogger.log("LOGIN ERROR → $e");
       return {"success": false, "message": "Network error"};
     }
   }
+Future<Map<String, dynamic>> getCurrentUser({
+    required String accessToken,
+  }) async {
+    try {
+      final url = Uri.parse('$baseUrl/users/me');
 
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {"success": true, "user": data["data"]};
+      }
+
+      return {"success": false};
+    } catch (e) {
+      return {"success": false};
+    }
+  }
+
+
+  // ================= REGISTER =================
   Future<Map<String, dynamic>> register({
     required String firstName,
     required String lastName,
@@ -58,23 +74,82 @@ class ApiService {
         }),
       );
 
-      if (response.statusCode == 204 || response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         return {"success": true};
       }
 
-      if (response.body.isNotEmpty) {
-        final error = jsonDecode(response.body);
-        return {
-          "success": false,
-          "message": error["errors"]?[0]?["message"] ?? "Register failed",
-        };
-      }
-
-      return {"success": false, "message": "Register failed"};
+      final error = jsonDecode(response.body);
+      return {
+        "success": false,
+        "message": error["errors"]?[0]?["message"] ?? "Register failed",
+      };
     } catch (e) {
       AppLogger.log("REGISTER ERROR → $e");
       return {"success": false, "message": "Network error"};
     }
   }
 
+  // ================= UPLOAD IMAGE =================
+  Future<Map<String, dynamic>> uploadProfileImage({
+    required File image,
+    required String accessToken,
+  }) async {
+    try {
+      final url = Uri.parse('$baseUrl/files');
+
+      final request = http.MultipartRequest('POST', url);
+      request.headers['Authorization'] = 'Bearer $accessToken';
+
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'file',
+          image.path,
+          filename: path.basename(image.path),
+        ),
+      );
+
+      final response = await request.send();
+      final body = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(body);
+        return {"success": true, "fileId": data["data"]["id"]};
+      }
+
+      return {"success": false, "message": "Upload failed"};
+    } catch (e) {
+      AppLogger.log("UPLOAD IMAGE ERROR → $e");
+      return {"success": false, "message": "Network error"};
+    }
+  }
+
+  // ================= UPDATE USER AVATAR =================
+  Future<Map<String, dynamic>> updateUserAvatar({
+    required String userId,
+    required String fileId,
+    required String accessToken,
+  }) async {
+    try {
+final url = Uri.parse('$baseUrl/users/$userId');
+
+
+      final response = await http.patch(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $accessToken",
+        },
+        body: jsonEncode({"avatar": fileId}),
+      );
+
+      if (response.statusCode == 200) {
+        return {"success": true};
+      }
+
+      return {"success": false, "message": "Avatar update failed"};
+    } catch (e) {
+      AppLogger.log("UPDATE AVATAR ERROR → $e");
+      return {"success": false, "message": "Network error"};
+    }
+  }
 }

@@ -15,7 +15,7 @@ Widget defaultText({
   TextAlign? align,
 }) {
   return Align(
-    alignment: isCenter ? Alignment.center : Alignment.topRight,
+    alignment: isCenter ? Alignment.center : Alignment.topLeft,
     child: Text(
       textAlign: align ?? TextAlign.center,
       text,

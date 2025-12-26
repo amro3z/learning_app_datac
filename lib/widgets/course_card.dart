@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:training/helper/base.dart';
 
 class CourseCard extends StatelessWidget {
   final String title;
@@ -52,23 +53,22 @@ class CourseCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Title
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                 defaultText(
+                  text: title,
+                  size: 16,
+                  color: Colors.white,
+                  bold: true,
+                  isCenter: false,
                 ),
                 const SizedBox(height: 4),
 
                 // Author
-                Text(
-                  author,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 13,
-                  ),
+                defaultText(
+                  text: author,
+                  size: 13,
+                  color: Colors.white.withOpacity(0.6),
+                  bold: false,
+                  isCenter: false,
                 ),
                 const SizedBox(height: 8),
 

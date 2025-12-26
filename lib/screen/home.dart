@@ -27,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home Screen')),
       body: Stack(
         children: [
           /// ===== Pages =====
@@ -41,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(color: Colors.white),
                 ),
               ),
-             ProfilePage(),
+              ProfilePage(),
             ],
           ),
 

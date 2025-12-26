@@ -42,7 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final auth = await _getAuthData();
 
     if (auth["token"]!.isEmpty) {
-      setState(() => _loadingUser = false);
+      if (mounted) setState(() => _loadingUser = false);
       return;
     }
 
@@ -90,11 +90,11 @@ class _ProfilePageState extends State<ProfilePage> {
         accessToken: auth["token"]!,
       );
 
-      // 🔁 reload user to get new avatar
+      // 🔁 reload user (important)
       await _loadUser();
     }
 
-    setState(() => _isUploading = false);
+    if (mounted) setState(() => _isUploading = false);
   }
 
   // ================= UI =================
@@ -105,13 +105,17 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _profileCard(),
-          const SizedBox(height: 24),
-          _myCoursesSection(),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _loadUser, 
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            _profileCard(),
+            const SizedBox(height: 24),
+            _myCoursesSection(),
+          ],
+        ),
       ),
     );
   }

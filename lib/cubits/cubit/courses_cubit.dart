@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:training/cubit/learn_state.dart';
+import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/data/repo/learning_repo.dart';
 

@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:training/cubit/learn_cubit.dart';
-import 'package:training/cubit/learn_state.dart';
+import 'package:training/cubits/cubit/courses_cubit.dart';
+import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/profile_page.dart';
 import 'package:training/widgets/course_card.dart';

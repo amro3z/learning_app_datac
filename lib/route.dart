@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:training/cubit/learn_cubit.dart';
-import 'package:training/screen/auth_gate.dart';
+import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/screen/home.dart';
 import 'package:training/screen/login.dart';
 import 'package:training/screen/profile_page.dart';
@@ -13,8 +11,6 @@ class AppRoute {
   AppRoute({required this.learnCubit});
   Route generateRoute(RouteSettings settings) {
     switch (settings.name) {
-       case '/':
-        return MaterialPageRoute(builder: (_) =>  AuthGate());
       case '/login':
         return MaterialPageRoute(builder: (_) => LoginScreen());
       case '/register':

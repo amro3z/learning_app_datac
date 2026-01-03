@@ -1,11 +1,12 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/states/user_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_form_textfield.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/helper/massage_dialog.dart';
-import 'package:training/services/directus_user_service.dart';
-import 'package:training/data/local/auth_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,61 +18,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final ApiService _api = ApiService();
-
-  bool _loading = false;
-
-  Future<void> _login() async {
-    setState(() => _loading = true);
-
-    /// 1) LOGIN -> get access_token
-    final loginResult = await _api.login(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-
-    if (!mounted) return;
-    setState(() => _loading = false);
-
-    if (!loginResult["success"]) {
-      customDialog(
-        context: context,
-        title: 'Error',
-        message: loginResult["message"],
-      );
-      return;
-    }
-
-    final String token = loginResult["access_token"];
-
-    /// 2) GET CURRENT USER -> get userId
-    final userResult = await _api.getCurrentUser(accessToken: token);
-
-    if (!userResult["success"]) {
-      customDialog(
-        context: context,
-        title: 'Error',
-        message: 'Failed to load user data',
-      );
-      return;
-    }
-
-    final String userId = userResult["user"]["id"];
-
-    /// 3) SAVE token + userId
-    await AuthStorage.saveAuthData(token: token, userId: userId);
-
-    if (!mounted) return;
-
-    customDialog(
-      context: context,
-      title: 'Success',
-      message: 'Login successful',
-    );
-
-    /// 4) NAVIGATE
-    Navigator.pushReplacementNamed(context, '/home');
-  }
 
   @override
   void dispose() {
@@ -80,21 +26,42 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _onLoginPressed(BuildContext context) {
+    context.read<UserCubit>().login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF111111), Color(0xFF151516), Color(0xFF2E2E2E)],
+    return BlocListener<UserCubit, UserState>(
+      listenWhen: (prev, curr) => prev is UserLoading && curr is UserLoaded,
+      listener: (context, state) {
+        if (state is UserLoaded) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+
+        if (state is UserError) {
+          customDialog(
+            context: context,
+            title: 'Error',
+            message: state.message,
+          );
+        }
+      },
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF111111), Color(0xFF151516), Color(0xFF2E2E2E)],
+          ),
         ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: SingleChildScrollView(
-            child: Container(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -134,11 +101,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 24),
 
-                  /// Login Button
-                  CustomGlowButton(
-                    title: _loading ? 'Loading...' : 'Login',
-                    width: double.infinity,
-                    onPressed: _loading ? () {} : _login,
+                  /// Login Button (loading-aware)
+                  BlocBuilder<UserCubit, UserState>(
+                    builder: (context, state) {
+                      final isLoading = state is UserLoading;
+
+                      return CustomGlowButton(
+                        title: isLoading ? 'Loading...' : 'Login',
+                        width: double.infinity,
+                        onPressed: state is UserLoading
+                            ? () {}
+                            : () {
+                                context.read<UserCubit>().login(
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim(),
+                                );
+                              },
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 20),

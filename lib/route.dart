@@ -6,7 +6,7 @@ import 'package:training/screen/profile_page.dart';
 import 'package:training/screen/register_screen.dart';
 
 class AppRoute {
-  final LearnCubit learnCubit;
+  final CoursesCubit learnCubit;
 
   AppRoute({required this.learnCubit});
   Route generateRoute(RouteSettings settings) {

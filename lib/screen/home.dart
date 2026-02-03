@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<LearnCubit>().getAllCourses();
+    context.read<CoursesCubit>().getAllCourses();
   }
 
   @override
@@ -89,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// ===== Home Page =====
   Widget _homePage() {
-    return BlocBuilder<LearnCubit, LearnState>(
+    return BlocBuilder<CoursesCubit, LearnState>(
       builder: (context, state) {
         if (state is Loading || state is LearnInitial) {
           return const Center(child: CircularProgressIndicator());

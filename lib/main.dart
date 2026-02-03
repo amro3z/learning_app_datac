@@ -5,12 +5,12 @@ import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/data/api/web_service.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/route.dart';
-import 'package:training/services/directus_user_service.dart';
+import 'package:training/services/tokens/auths_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  final learnCubit = LearnCubit(
+await AuthService().init();
+  final learnCubit = CoursesCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
 

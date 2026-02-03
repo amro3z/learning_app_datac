@@ -3,11 +3,11 @@ import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/data/repo/learning_repo.dart';
 
-class LearnCubit extends Cubit<LearnState> {
+class CoursesCubit extends Cubit<LearnState> {
   LearningRepo learningRepo;
   late List<CoursesModel> courses;
-  LearnCubit({required this.learningRepo}) : super(LearnInitial());
- Future<List<CoursesModel>> getAllCourses() async {
+  CoursesCubit({required this.learningRepo}) : super(LearnInitial());
+  Future<List<CoursesModel>> getAllCourses() async {
     try {
       emit(Loading());
       final courses = await learningRepo.getCoursesList();
@@ -18,6 +18,4 @@ class LearnCubit extends Cubit<LearnState> {
       return [];
     }
   }
-
-
 }

@@ -52,22 +52,10 @@ class UserCubit extends Cubit<UserState> {
   }
 
   // ================= LOAD USER =================
-  Future<void> _loadCurrentUser() async {
-    try {
-      final res = await _api.get('$baseUrl/users/me');
-
-      final body = jsonDecode(res.body);
-      final user = body["data"];
-      _userId = user["id"];
-
-      emit(_mapUser(user));
-    } catch (_) {
-      logout();
-    }
-  }
-
-  // ================= REFRESH USER =================
-  Future<void> refreshUser({String? message}) async {
+  Future<void> _fetchCurrentUser({
+    String? message,
+    bool logoutOnError = false,
+  }) async {
     try {
       final res = await _api.get('$baseUrl/users/me');
 
@@ -77,9 +65,23 @@ class UserCubit extends Cubit<UserState> {
 
       emit(_mapUser(user, message: message));
     } catch (_) {
-      emit(UserError("Session expired"));
+      if (logoutOnError) {
+        await logout();
+      } else {
+        emit(UserError("Session expired"));
+      }
     }
   }
+
+Future<void> _loadCurrentUser() async {
+    await _fetchCurrentUser(logoutOnError: true);
+  }
+
+
+Future<void> refreshUser({String? message}) async {
+    await _fetchCurrentUser(message: message);
+  }
+
 
   // ================= UPLOAD AVATAR =================
   Future<void> uploadAvatar(File image) async {

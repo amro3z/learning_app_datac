@@ -4,7 +4,7 @@ import 'package:training/services/tokens/auths_service.dart';
 
 class ApiClient {
   final AuthService _auth = AuthService();
-  AuthService get auth => _auth; // ⭐ المهم
+  AuthService get auth => _auth; 
 
   Future<http.Response> get(String url) async {
     final res = await http.get(

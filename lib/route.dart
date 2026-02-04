@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/screen/home.dart';
 import 'package:training/screen/login.dart';
 import 'package:training/screen/profile_page.dart';
 import 'package:training/screen/register_screen.dart';
 
 class AppRoute {
-  final CoursesCubit learnCubit;
 
-  AppRoute({required this.learnCubit});
+  AppRoute();
   Route generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/login':

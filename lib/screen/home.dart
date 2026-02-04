@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
@@ -7,6 +5,9 @@ import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/profile_page.dart';
 import 'package:training/widgets/course_card.dart';
+import 'package:training/widgets/floating_glass_bar.dart';
+import 'package:training/widgets/searchbar.dart';
+import 'package:training/widgets/category_chip.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +17,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
+  int currentIndex = 0;
+  String? selectedCategory;
 
   @override
   void initState() {
@@ -24,14 +26,38 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<CoursesCubit>().getAllCourses();
   }
 
+  final List<Map<String, dynamic>> categories = [
+    {'title': 'Development', 'icon': Icons.code, 'color': Color(0xFF3BA9FF)},
+    {
+      'title': 'Design',
+      'icon': Icons.palette_outlined,
+      'color': Color(0xFFB37CFF),
+    },
+    {
+      'title': 'Business',
+      'icon': Icons.work_outline,
+      'color': Color(0xFFFF9F43),
+    },
+    {
+      'title': 'AI',
+      'icon': Icons.smart_toy_outlined,
+      'color': Color(0xFF2ED573),
+    },
+    {
+      'title': 'Marketing',
+      'icon': Icons.campaign_outlined,
+      'color': Color(0xFFFF6B81),
+    },
+    {'title': 'Languages', 'icon': Icons.language, 'color': Color(0xFF1DD1A1)},
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          /// ===== Pages =====
           IndexedStack(
-            index: _currentIndex,
+            index: currentIndex,
             children: [
               _homePage(),
               const Center(
@@ -43,44 +69,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ProfilePage(),
             ],
           ),
-
-          /// ===== Floating Glass Bottom Bar =====
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: Container(
-                  height: 70,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withOpacity(0.15),
-                        Colors.white.withOpacity(0.05),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.25),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _navItem(Icons.home, 'Home', 0),
-                      _navItem(Icons.favorite_border, 'Favorites', 1),
-                      _navItem(Icons.person_outline, 'Profile', 2),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+          FloatingGlassBar(
+            currentIndex: currentIndex,
+            onItemSelected: (index) {
+              setState(() => currentIndex = index);
+            },
           ),
         ],
       ),
@@ -104,85 +97,81 @@ class _HomeScreenState extends State<HomeScreen> {
               .where((c) => c.status == 'published')
               .toList();
 
-          if (publishedCourses.isEmpty) {
-            return const Center(child: Text('No published courses'));
-          }
-
-          return ListView.builder(
+          return SingleChildScrollView(
             padding: const EdgeInsets.only(
+              left: 12,
+              right: 12,
               top: 24,
-              left: 24,
-              right: 24,
-              bottom: 120,
+              bottom: 90,
             ),
-            itemCount: publishedCourses.length,
-            itemBuilder: (context, index) {
-              final course = publishedCourses[index];
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: CourseCard(
-                  imagePath: course.thumbnail,
-                  title: course.title,
-                  author: course.instructorName,
-                  rating: course.rating,
-                  progress: course.progress / 100,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                defaultText(
+                  text: 'Hello, Learner 👋',
+                  size: 24,
+                  isCenter: false,
                 ),
-              );
-            },
+                const SizedBox(height: 6),
+                defaultText(
+                  text: 'What would you like to learn today?',
+                  size: 14,
+                  bold: false,
+                  isCenter: false,
+                  color: Colors.white70,
+                ),
+
+                const SizedBox(height: 20),
+
+                CoursesSearchBar(),
+
+                const SizedBox(height: 20),
+
+                defaultText(text: 'Categories', size: 18, isCenter: false),
+                const SizedBox(height: 12),
+
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: categories.map((cat) {
+                    final isSelected = selectedCategory == cat['title'];
+
+                    return CategoryChip(
+                      title: cat['title'],
+                      icon: cat['icon'],
+                      color: cat['color'],
+                      isSelected: isSelected,
+                      onTap: () {
+                        setState(() {
+                          selectedCategory = isSelected ? null : cat['title'];
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+
+                const SizedBox(height: 28),
+
+                ...List.generate(publishedCourses.length, (index) {
+                  final course = publishedCourses[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: CourseCard(
+                      imagePath: course.thumbnail,
+                      title: course.title,
+                      author: course.instructorName,
+                      rating: course.rating,
+                      progress: course.progress / 100,
+                    ),
+                  );
+                }),
+              ],
+            ),
           );
         }
 
         return const SizedBox.shrink();
       },
-    );
-  }
-
-  /// ===== Bottom Bar Item =====
-  Widget _navItem(IconData icon, String label, int index) {
-    final isSelected = _currentIndex == index;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() => _currentIndex = index);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          gradient: isSelected
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF4FACFE), Color(0xFF9B5CFF)],
-                )
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF6A5CFF).withOpacity(0.6),
-                    blurRadius: 18,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: isSelected ? Colors.white : Colors.grey),
-            const SizedBox(height: 4),
-            defaultText(
-              text: label,
-              size: 12,
-              isCenter: false,
-              color: isSelected ? Colors.white : Colors.grey,
-              bold: false,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

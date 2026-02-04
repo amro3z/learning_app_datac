@@ -20,7 +20,7 @@ await AuthService().init();
         BlocProvider(create: (_) => learnCubit),
         BlocProvider(create: (_) => UserCubit()..restoreSession()),
       ],
-      child: MyApp(appRoute: AppRoute(learnCubit: learnCubit)),
+      child: MyApp(appRoute: AppRoute()),
     ),
   );
 }
@@ -35,8 +35,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-
-      /// 👇 دول الاتنين لازم يكونوا مع بعض
       initialRoute: '/login',
       onGenerateRoute: appRoute.generateRoute,
     );

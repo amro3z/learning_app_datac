@@ -10,8 +10,8 @@ class UserLoaded extends UserState {
   final String name;
   final String email;
   final String? avatarUrl;
-  final bool isUploading; // لعرض لودينج على الصورة فقط
-  final String? message; // لعرض سنackbar
+  final bool isUploading; 
+  final String? message; 
 
   UserLoaded({
     required this.name,

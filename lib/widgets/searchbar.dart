@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/categories_cubit.dart';
+import 'package:training/data/models/categories.dart';
 
 class CoursesSearchBar extends StatefulWidget {
   const CoursesSearchBar({super.key});
@@ -8,57 +11,71 @@ class CoursesSearchBar extends StatefulWidget {
 }
 
 class _CoursesSearchBarState extends State<CoursesSearchBar> {
-  /// ===== Filters State (nullable) =====
+  /// ===== Filters State =====
   String? sortBy;
-  String? category;
+  String? selectedCategory;
   String? difficulty;
 
   final sortOptions = ['Recent', 'Popular', 'Rating'];
-  final categoryOptions = [
-    'Development',
-    'Design',
-    'Business',
-    'AI',
-    'Marketing',
-    'Languages',
-  ];
   final difficultyOptions = ['Beginner', 'Intermediate', 'Advanced'];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Colors.white54),
-          const SizedBox(width: 10),
-          const Expanded(
-            child: TextField(
-              style: TextStyle(color: Colors.white, fontFamily: 'CustomFont'),
-              decoration: InputDecoration(
-                hintText: 'Search courses...',
-                hintStyle: TextStyle(color: Colors.white38),
-                border: InputBorder.none,
-              ),
+    return BlocBuilder<CategoriesCubit, CategoriesState>(
+      builder: (context, state) {
+        if (state is CategoriesLoading || state is CategoriesInitial) {
+          return const SizedBox(
+            height: 52,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (state is CategoriesError) {
+          return Text(state.message);
+        }
+
+        if (state is CategoriesLoaded) {
+          return Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.06),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list_sharp, color: Colors.white70),
-            onPressed: _openFiltersSheet,
-          ),
-        ],
-      ),
+            child: Row(
+              children: [
+                const Icon(Icons.search, color: Colors.white54),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: TextField(
+                    style: TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search courses...',
+                      hintStyle: TextStyle(color: Colors.white38),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.filter_list_sharp,
+                    color: Colors.white70,
+                  ),
+                  onPressed: () => _openFiltersSheet(state.categories),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 
   /// ===== Bottom Sheet =====
-  void _openFiltersSheet() {
+  void _openFiltersSheet(List<CategoriesModel> categories) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -97,6 +114,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
                   const SizedBox(height: 20),
 
+                  /// Sort
                   _sectionTitle('Sort by'),
                   _singleSelectChips(
                     options: sortOptions,
@@ -110,19 +128,21 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
                   const SizedBox(height: 20),
 
+                  /// Category (from Cubit)
                   _sectionTitle('Category'),
                   _singleSelectChips(
-                    options: categoryOptions,
-                    selected: category,
+                    options: categories.map((c) => c.title).toList(),
+                    selected: selectedCategory,
                     onSelected: (v) {
                       setSheetState(() {
-                        category = (category == v) ? null : v;
+                        selectedCategory = (selectedCategory == v) ? null : v;
                       });
                     },
                   ),
 
                   const SizedBox(height: 20),
 
+                  /// Difficulty
                   _sectionTitle('Difficulty'),
                   _singleSelectChips(
                     options: difficultyOptions,
@@ -136,12 +156,13 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
                   const SizedBox(height: 30),
 
+                  /// Reset
                   Center(
                     child: TextButton(
                       onPressed: () {
                         setSheetState(() {
                           sortBy = null;
-                          category = null;
+                          selectedCategory = null;
                           difficulty = null;
                         });
                       },
@@ -162,7 +183,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
     );
   }
 
-  /// ===== UI Helpers =====
+  /// ===== Helpers =====
 
   Widget _sectionTitle(String text) {
     return Padding(

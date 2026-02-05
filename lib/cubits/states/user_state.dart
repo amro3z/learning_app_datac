@@ -3,9 +3,6 @@ class UserState {}
 class UserInitial extends UserState {}
 
 class UserLoading extends UserState {}
-
-class UserAuthenticated extends UserState {} // ✅ جديد
-
 class UserLoaded extends UserState {
   final String name;
   final String email;

@@ -4,6 +4,7 @@ import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/profile_page.dart';
+import 'package:training/widgets/categories_chips_section.dart';
 import 'package:training/widgets/course_card.dart';
 import 'package:training/widgets/floating_glass_bar.dart';
 import 'package:training/widgets/searchbar.dart';
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'title': 'Business',
-      'icon': Icons.work_outline,
+      'icon': Icons.card_travel,
       'color': Color(0xFFFF9F43),
     },
     {
@@ -126,29 +127,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 CoursesSearchBar(),
 
                 const SizedBox(height: 20),
-
                 defaultText(text: 'Categories', size: 18, isCenter: false),
                 const SizedBox(height: 12),
-
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: categories.map((cat) {
-                    final isSelected = selectedCategory == cat['title'];
-
-                    return CategoryChip(
-                      title: cat['title'],
-                      icon: cat['icon'],
-                      color: cat['color'],
-                      isSelected: isSelected,
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = isSelected ? null : cat['title'];
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
+                CategoriesChipsSection(),
 
                 const SizedBox(height: 28),
 

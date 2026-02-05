@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/data/api/web_service.dart';
@@ -13,12 +14,15 @@ await AuthService().init();
   final learnCubit = CoursesCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
-
+final categoriesCubit = CategoriesCubit(
+    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
+  );
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => learnCubit),
+        BlocProvider(create: (_) => learnCubit..getAllCourses()),
         BlocProvider(create: (_) => UserCubit()..restoreSession()),
+        BlocProvider(create: (_) => categoriesCubit..getAllCategories()),
       ],
       child: MyApp(appRoute: AppRoute()),
     ),

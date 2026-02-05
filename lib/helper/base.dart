@@ -14,17 +14,14 @@ Widget defaultText({
   bool bold = true,
   TextAlign? align,
 }) {
-  return Align(
-    alignment: isCenter ? Alignment.center : Alignment.topLeft,
-    child: Text(
-      textAlign: align ?? TextAlign.center,
-      text,
-      style: TextStyle(
-        fontSize: size,
-        fontFamily: 'CustomFont',
-        color: color,
-        fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-      ),
+  return Text(
+    textAlign: align ?? TextAlign.center,
+    text,
+    style: TextStyle(
+      fontSize: size,
+      fontFamily: 'CustomFont',
+      color: color,
+      fontWeight: bold ? FontWeight.bold : FontWeight.normal,
     ),
   );
 }

@@ -1,14 +1,15 @@
-import 'package:training/data/api/api_constant.dart';
+import 'package:flutter/material.dart';
 
 class CategoriesModel {
   late int id;
   late String title;
   late String description;
-  late String thumbnail;
+  late Color color;
+
   CategoriesModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
     description = json['description'];
-    thumbnail =  '$fileUrl${json['thumbnail']}';
+    color = Color(int.parse(json['color'].replaceFirst('#', '0xFF')));
   }
 }

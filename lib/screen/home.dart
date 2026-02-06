@@ -132,7 +132,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 CategoriesChipsSection(),
 
                 const SizedBox(height: 28),
-
+                defaultText(
+                  text: 'Continue Learning',
+                  size: 18,
+                  isCenter: false,
+                ),
+                const SizedBox(height: 12),
                 ...List.generate(publishedCourses.length, (index) {
                   final course = publishedCourses[index];
                   return Padding(

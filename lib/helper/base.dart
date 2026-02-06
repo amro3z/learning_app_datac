@@ -74,6 +74,7 @@ Widget progressBar({
     ),
   );
 }
+
 enum CourseStatus { completed, inProgress, locked }
 
 const Map<CourseStatus, IconData> _icons = {
@@ -102,20 +103,12 @@ Widget lessonCard({
     ),
     child: Row(
       children: [
-        Icon(
-          _icons[state]!,
-          color: _colors[state],
-          size: 30,
-        ),
+        Icon(_icons[state]!, color: _colors[state], size: 30),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            defaultText(
-              text: title,
-              size: 14,
-              isCenter: false,
-            ),
+            defaultText(text: title, size: 14, isCenter: false),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -137,5 +130,22 @@ Widget lessonCard({
         ),
       ],
     ),
+  );
+}
+
+Widget ratingWidget({required double value}) {
+  return Row(
+    children: [
+      ...List.generate(
+        5,
+        (index) => Icon(
+          index < value.floor() ? Icons.star : Icons.star_border,
+          color: Colors.amber,
+          size: 16,
+        ),
+      ),
+      const SizedBox(width: 6),
+      defaultText(text: value.toString(), bold: false, size: 12),
+    ],
   );
 }

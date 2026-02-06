@@ -15,7 +15,7 @@ class _CourseDetailsState extends State<CourseDetails> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Course Details'),
+        title: defaultText(text: "Course Details", size: 18, isCenter: false),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),

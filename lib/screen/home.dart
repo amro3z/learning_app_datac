@@ -7,8 +7,9 @@ import 'package:training/screen/profile_page.dart';
 import 'package:training/widgets/categories_chips_section.dart';
 import 'package:training/widgets/course_card.dart';
 import 'package:training/widgets/floating_glass_bar.dart';
+import 'package:training/widgets/popular_card.dart';
+import 'package:training/widgets/recommended_card.dart';
 import 'package:training/widgets/searchbar.dart';
-import 'package:training/widgets/category_chip.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -151,11 +152,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 }),
+                defaultText(text: "Recommended Courses", size: 18),
+                const SizedBox(height: 12),
+                RecommendedCard(),
+                const SizedBox(height: 12),
+                defaultText(text: "Popular This Week", size: 18),
+
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: 2,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+
+                    childAspectRatio: 1.05,
+                  ),
+                  itemBuilder: (context, index) {
+                    return PopularCard();
+                  },
+                ),
               ],
             ),
           );
         }
-
         return const SizedBox.shrink();
       },
     );

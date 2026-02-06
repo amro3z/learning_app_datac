@@ -79,25 +79,7 @@ class CourseCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // Rating
-                  Row(
-                    children: [
-                      ...List.generate(
-                        5,
-                        (index) => Icon(
-                          index < rating.floor()
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: Colors.amber,
-                          size: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        rating.toString(),
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
+                  ratingWidget(value: rating),
                   const SizedBox(height: 10),
 
                   // Progress bar

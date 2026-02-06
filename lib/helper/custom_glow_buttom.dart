@@ -18,7 +18,7 @@ class CustomGlowButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: getScreenHeight(context) * 0.06,
+      height: getScreenHeight(context) * 0.053,
       width: width ?? getScreenWidth(context) * 0.25,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),

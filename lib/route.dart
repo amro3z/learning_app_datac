@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:training/screen/course_details.dart';
 import 'package:training/screen/home.dart';
+import 'package:training/screen/lesson_screen.dart';
 import 'package:training/screen/login.dart';
 import 'package:training/screen/profile_page.dart';
 import 'package:training/screen/register_screen.dart';
 
 class AppRoute {
-
   AppRoute();
   Route generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -20,6 +20,8 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) => ProfilePage());
       case '/course_details':
         return MaterialPageRoute(builder: (_) => CourseDetails());
+      case '/lesson_screen':
+        return MaterialPageRoute(builder: (_) => LessonScreen());
       default:
         return MaterialPageRoute(builder: (_) => LoginScreen());
     }

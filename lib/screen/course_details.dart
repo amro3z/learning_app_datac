@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
+import 'package:training/widgets/lesson_card.dart';
 
 class CourseDetails extends StatefulWidget {
   const CourseDetails({super.key});
@@ -158,19 +159,19 @@ class _CourseDetailsState extends State<CourseDetails> {
                   const SizedBox(height: 8),
                   defaultText(text: 'Lessons (10)', size: 18),
                   const SizedBox(height: 8),
-                  lessonCard(
+                  LessonCard(
                     duration: "45:30",
                     state: CourseStatus.completed,
                     title: "Introduction to Web Development",
                   ),
                   SizedBox(height: 8),
-                  lessonCard(
+                  LessonCard(
                     duration: "45:30",
                     state: CourseStatus.inProgress,
                     title: "Introduction to Web Development",
                   ),
                   SizedBox(height: 8),
-                  lessonCard(
+                  LessonCard(
                     duration: "45:30",
                     state: CourseStatus.locked,
                     title: "Introduction to Web Development",

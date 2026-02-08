@@ -55,13 +55,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 12),
                       defaultText(text: "My Courses (3)", size: 16),
-                      const SizedBox(height: 12),
+
                       ListView.builder(
                         itemBuilder: (context, index) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 12),
-                            child: ProfileCourseCard(),
-                          );
+                          return ProfileCourseCard();
                         },
                         itemCount: 3,
                         shrinkWrap: true,

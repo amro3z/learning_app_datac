@@ -18,6 +18,10 @@ class _CourseDetailsState extends State<CourseDetails> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: defaultText(text: "Course Details", size: 18, isCenter: false),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 24),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           GestureDetector(
             onTap: () {

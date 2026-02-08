@@ -15,7 +15,10 @@ class _LessonScreenState extends State<LessonScreen> {
     return Scaffold(
       appBar: AppBar(
         title: defaultText(text: "JavaScript Basics", size: 20),
-        leading: Icon(Icons.arrow_back_ios, size: 24),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 24),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.only(

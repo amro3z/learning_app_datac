@@ -34,6 +34,7 @@ class ProfilePage extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 children: [
                   const SizedBox(height: 24),
+                  SizedBox(height: kToolbarHeight),
                   _profileCard(context, state),
                 ],
               ),

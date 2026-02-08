@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:training/helper/base.dart';
 
-class CourseCard extends StatelessWidget {
+class CourseCard extends StatefulWidget {
   final String title;
   final String author;
   final double rating;
   final double progress;
   final String imagePath;
-
   const CourseCard({
     super.key,
     required this.title,
@@ -16,6 +15,13 @@ class CourseCard extends StatelessWidget {
     required this.progress,
     required this.imagePath,
   });
+
+  @override
+  State<CourseCard> createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<CourseCard> {
+  bool isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
@@ -40,17 +46,45 @@ class CourseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: Image.network(
-                imagePath,
-                height: 140,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: Image.network(
+                    widget.imagePath,
+                    height: 140,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+
+                // Favorite (Local only)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        isFavorite = !isFavorite;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             Padding(
@@ -58,32 +92,24 @@ class CourseCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
                   defaultText(
-                    text: title,
+                    text: widget.title,
                     size: 16,
                     color: Colors.white,
                     bold: true,
                     isCenter: false,
                   ),
                   const SizedBox(height: 4),
-
-                  // Author
                   defaultText(
-                    text: author,
+                    text: widget.author,
                     size: 13,
                     color: Colors.white.withOpacity(0.6),
-                    bold: false,
                     isCenter: false,
                   ),
                   const SizedBox(height: 8),
-
-                  // Rating
-                  ratingWidget(value: rating),
+                  ratingWidget(value: widget.rating),
                   const SizedBox(height: 10),
-
-                  // Progress bar
-                  progressBar(progress: progress),
+                  progressBar(progress: widget.progress),
                 ],
               ),
             ),
@@ -92,6 +118,4 @@ class CourseCard extends StatelessWidget {
       ),
     );
   }
-
-
 }

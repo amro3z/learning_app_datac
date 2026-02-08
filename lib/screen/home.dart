@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
 import 'package:training/widgets/categories_chips_section.dart';
 import 'package:training/widgets/course_card.dart';
@@ -60,16 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           IndexedStack(
             index: currentIndex,
-            children: [
-              _homePage(),
-              const Center(
-                child: Text(
-                  'Favorites Page',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-              ProfilePage(),
-            ],
+            children: [_homePage(), FavoriteScreen(), ProfilePage()],
           ),
           FloatingGlassBar(
             currentIndex: currentIndex,
@@ -109,6 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: kToolbarHeight),
                 defaultText(
                   text: 'Hello, Learner 👋',
                   size: 24,

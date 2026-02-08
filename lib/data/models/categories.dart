@@ -5,11 +5,13 @@ class CategoriesModel {
   late String title;
   late String description;
   late Color color;
-
+  late String icon;
   CategoriesModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
     description = json['description'];
     color = Color(int.parse(json['color'].replaceFirst('#', '0xFF')));
+    icon = json['icon'];
   }
 }
+

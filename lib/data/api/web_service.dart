@@ -144,4 +144,18 @@ class LearningWebservice {
       rethrow;
     }
   }
+  
+    Future<Map<String, dynamic>> getRecommendedList() async {
+    try {
+      final response = await dio.get('$apiUrl/recommended');
+      log(response.data.toString());
+      return response.data;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }
+
+
+

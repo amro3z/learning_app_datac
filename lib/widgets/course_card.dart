@@ -142,7 +142,6 @@ class EnrollmentCourse extends StatelessWidget {
           final enrollments = state.enrollments;
           final courses = state.courses;
 
-          // ربط صح بالـ ID
           final Map<int, CoursesModel> courseMap = {
             for (var course in courses) course.id: course,
           };

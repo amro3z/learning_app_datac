@@ -144,8 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 24),
                 defaultText(text: "Recommended Courses", size: 18),
                 const SizedBox(height: 12),
-                RecommendedCard(),
-
+                //RecommendedCard(),
+RecommendedCourses(),
                 const SizedBox(height: 12),
                 defaultText(text: "Popular This Week", size: 18),
                 const SizedBox(height: 12),

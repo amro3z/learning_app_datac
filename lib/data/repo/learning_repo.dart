@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:training/data/api/web_service.dart';
+import 'package:training/data/models/Recommend.dart';
 import 'package:training/data/models/categories.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/data/models/enrollments.dart';
@@ -81,5 +82,13 @@ class LearningRepo {
     return data
         .map((favorite) => FavoritesModel.fromJson(favorite))
         .toList();
+  }
+
+    Future<List<RecommendModel>> getRecommendedList() async {
+    final response = await learningWebService.getRecommendedList();
+    log(response.toString());
+
+    final List data = response['data'] ?? [];
+    return data.map((recommended) => RecommendModel.fromJson(recommended)).toList();
   }
 }

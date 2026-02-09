@@ -8,6 +8,7 @@ import 'package:training/data/models/favorites.dart';
 import 'package:training/data/models/instructor.dart';
 import 'package:training/data/models/lesson_progress.dart';
 import 'package:training/data/models/lessons.dart';
+import 'package:training/data/models/popular.dart';
 
 class LearningRepo {
   final LearningWebservice learningWebService;
@@ -90,5 +91,15 @@ class LearningRepo {
 
     final List data = response['data'] ?? [];
     return data.map((recommended) => RecommendModel.fromJson(recommended)).toList();
+  }
+
+     Future<List<PopularModel>> getPopularList() async {
+    final response = await learningWebService.getPopularList();
+    log(response.toString());
+
+    final List data = response['data'] ?? [];
+    return data
+        .map((popular) => PopularModel.fromJson(popular))
+        .toList();
   }
 }

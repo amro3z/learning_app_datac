@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
+import 'package:training/cubits/cubit/popular_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/data/api/web_service.dart';
@@ -25,6 +26,9 @@ final categoriesCubit = CategoriesCubit(
   final recommendedCubit = RecommendedCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
+  final popularCubit = PopularCubit(
+    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
+  );
   runApp(
     MultiBlocProvider(
       providers: [
@@ -33,6 +37,7 @@ final categoriesCubit = CategoriesCubit(
         BlocProvider(create: (_) => categoriesCubit..getAllCategories()),
         BlocProvider(create: (_) => enrollmentsCubit..getAllEnrollments()),
         BlocProvider(create: (_) => recommendedCubit..getRecommendedList()),
+        BlocProvider(create: (_) => popularCubit..getPopularList()),
       ],
       child: MyApp(appRoute: AppRoute()),
     ),

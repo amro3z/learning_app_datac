@@ -155,6 +155,17 @@ class LearningWebservice {
       rethrow;
     }
   }
+
+      Future<Map<String, dynamic>> getPopularList() async {
+    try {
+      final response = await dio.get('$apiUrl/popular');
+      log(response.data.toString());
+      return response.data;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
 }
 
 

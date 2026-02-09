@@ -140,29 +140,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   isCenter: false,
                 ),
                 const SizedBox(height: 12),
-               EnrollmentCourse(),
+                EnrollmentCourse(),
                 const SizedBox(height: 24),
                 defaultText(text: "Recommended Courses", size: 18),
                 const SizedBox(height: 12),
-                //RecommendedCard(),
-RecommendedCourses(),
+                RecommendedCourses(),
                 const SizedBox(height: 12),
                 defaultText(text: "Popular This Week", size: 18),
-                const SizedBox(height: 12),
-
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: 2,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.05,
-                  ),
-                  itemBuilder: (context, index) {
-                    return PopularCard();
-                  },
-                ),
+                PopularCourses(),
               ],
             ),
           );

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/data/models/courses.dart';
 import 'package:training/data/models/favorites.dart';
 import 'package:training/helper/base.dart';
 
@@ -119,6 +120,7 @@ class EnrollmentCourse extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userId = context.read<UserCubit>().userId!;
+
     return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
       builder: (context, state) {
         if (state is! EnrollmentsLoaded) {
@@ -127,17 +129,24 @@ class EnrollmentCourse extends StatelessWidget {
 
         final enrollments = state.enrollments;
         final courses = state.courses;
-        final favoritesState = context.watch<FavoritesCubit>().state;
 
+        final favoritesState = context.watch<FavoritesCubit>().state;
         final favorites = favoritesState is FavoritesLoaded
             ? favoritesState.favoritesList
             : [];
 
+        /// ===== MAP COURSES =====
         final courseMap = {for (var c in courses) c.id: c};
 
+        /// ===== DEDUP ENROLLMENTS BY COURSE ID =====
+        final Map<int, dynamic> uniqueEnrollments = {
+          for (var e in enrollments) e.courseId: e,
+        };
+
         return Column(
-          children: enrollments.map((e) {
+          children: uniqueEnrollments.values.map((e) {
             final course = courseMap[e.courseId]!;
+
             final fav = favorites
                 .where((f) => f.courseId == course.id)
                 .cast<FavoritesModel?>()
@@ -156,10 +165,11 @@ class EnrollmentCourse extends StatelessWidget {
                 isFavorite: isFavorite,
                 onFavoriteToggle: () {
                   final cubit = context.read<FavoritesCubit>();
+
                   if (isFavorite) {
                     cubit.deleteFavorite(favoriteID: fav.id);
                   } else {
-                    cubit.addToFavorites(courseId: course.id , userId: userId);
+                    cubit.addToFavorites(courseId: course.id, userId: userId);
                   }
                 },
               ),
@@ -170,6 +180,7 @@ class EnrollmentCourse extends StatelessWidget {
     );
   }
 }
+
 
 
 
@@ -190,15 +201,27 @@ class FavoriteCourses extends StatelessWidget {
         }
 
         final loaded = state as FavoritesLoaded;
+
         if (loaded.favoritesList.isEmpty) {
           return const Center(child: Text('No favorites yet'));
         }
 
-        final courseMap = {for (var c in loaded.courses) c.id: c};
+        /// ===== MAP COURSES =====
+        final Map<int, CoursesModel> courseMap = {
+          for (var c in loaded.courses) c.id: c,
+        };
+
+        /// ===== REMOVE DUPLICATES BY courseId =====
+        final Map<int, FavoritesModel> uniqueFavorites = {
+          for (var fav in loaded.favoritesList)
+            fav.courseId: fav, // لو اتكرر نفس courseId هيتكتب مرة واحدة
+        };
 
         return Column(
-          children: loaded.favoritesList.map((fav) {
-            final course = courseMap[fav.courseId]!;
+          children: uniqueFavorites.values.map((fav) {
+            final course = courseMap[fav.courseId];
+            if (course == null) return const SizedBox.shrink();
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: CourseCard(

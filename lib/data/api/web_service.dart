@@ -1,196 +1,86 @@
-import 'dart:developer';
-import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:training/data/api/api_constant.dart';
-import 'package:training/services/tokens/auths_service.dart';
+import 'package:training/services/tokens/api_client.dart';
 
 class LearningWebservice {
-  late final Dio dio;
-  final AuthService _auth = AuthService();
-
-  LearningWebservice() {
-    final options = BaseOptions(
-      baseUrl: baseUrl,
-      receiveDataWhenStatusError: true,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-    );
-
-    dio = Dio(options);
-
-    /// ===== Interceptor (TOKEN + REFRESH) =====
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = _auth.token;
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          return handler.next(options);
-        },
-
-        onError: (DioException e, handler) async {
-          final isUnauthorized =
-              e.response?.statusCode == 401 ||
-              e.response?.data?['errors']?[0]?['extensions']?['code'] ==
-                  'TOKEN_EXPIRED';
-
-          if (isUnauthorized) {
-            final refreshed = await _auth.refreshTokenIfNeeded();
-
-            if (refreshed) {
-              final newToken = _auth.token;
-              final req = e.requestOptions;
-
-              req.headers['Authorization'] = 'Bearer $newToken';
-
-              try {
-                final retryResponse = await dio.fetch(req);
-                return handler.resolve(retryResponse);
-              } catch (err) {
-                return handler.reject(err as DioException);
-              }
-            }
-          }
-
-          return handler.reject(e);
-        },
-      ),
-    );
-  }
+  final ApiClient _api = ApiClient();
 
   // ================= COURSES =================
   Future<Map<String, dynamic>> getCoursesList() async {
-    try {
-      final response = await dio.get(
-        '$apiUrl/courses',
-        queryParameters: {'fields': '*,instructor.name,instructor.last_name'},
-      );
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
+    final res = await _api.get(
+      '$apiUrl/courses?fields=*,instructor.name,instructor.last_name',
+    );
+    return jsonDecode(res.body);
   }
 
   // ================= CATEGORIES =================
   Future<Map<String, dynamic>> getCategoryList() async {
-    try {
-      final response = await dio.get('$apiUrl/categories');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
+    final res = await _api.get('$apiUrl/categories');
+    return jsonDecode(res.body);
   }
 
   // ================= LESSONS =================
   Future<Map<String, dynamic>> getLessonList() async {
-    try {
-      final response = await dio.get('$apiUrl/lessons');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
+    final res = await _api.get('$apiUrl/lessons');
+    return jsonDecode(res.body);
   }
 
   // ================= INSTRUCTORS =================
   Future<Map<String, dynamic>> getInstructorList() async {
-    try {
-      final response = await dio.get('$apiUrl/instructors');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-
-  // ================= LESSON PROGRESS =================
-  Future<Map<String, dynamic>> getLessonProgressList() async {
-    try {
-      final response = await dio.get('$apiUrl/lesson_progress');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
+    final res = await _api.get('$apiUrl/instructors');
+    return jsonDecode(res.body);
   }
 
   // ================= ENROLLMENTS =================
   Future<Map<String, dynamic>> getEnrollmentList() async {
-    try {
-      final response = await dio.get('$apiUrl/enrollments');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-  
-    Future<Map<String, dynamic>> getRecommendedList() async {
-    try {
-      final response = await dio.get('$apiUrl/recommended');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
+    final res = await _api.get('$apiUrl/enrollments');
+    return jsonDecode(res.body);
   }
 
-      Future<Map<String, dynamic>> getPopularList() async {
-    try {
-      final response = await dio.get('$apiUrl/popular');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-  // ================= FAVORITES =================
-  Future<Map<String, dynamic>> getFavoriteList() async {
-    try {
-      final response = await dio.get('$apiUrl/favorites');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
-  
-Future<void> postFavorite({
+  Future<void> enrollCourse({
     required int courseId,
     required String userId,
   }) async {
-    try {
-      await dio.post(
-        '$apiUrl/favorites',
-        data: {"course": courseId, "user": userId},
-      );
-    } catch (e) {
-      rethrow;
-    }
+    await _api.post(
+      '$apiUrl/enrollments',
+      body: jsonEncode({"course": courseId, "user": userId}),
+    );
   }
 
+  // ================= FAVORITES =================
+  Future<Map<String, dynamic>> getFavoriteList() async {
+    final res = await _api.get('$apiUrl/favorites');
+    return jsonDecode(res.body);
+  }
 
+  Future<void> postFavorite({
+    required int courseId,
+    required String userId,
+  }) async {
+    await _api.post(
+      '$apiUrl/favorites',
+      body: jsonEncode({"course": courseId, "user": userId}),
+    );
+  }
 
-Future<void> deleteFavorite({required int favoriteID}) async {
-    try {
-      await dio.delete('$apiUrl/favorites/$favoriteID');
-    } catch (e) {
-      log('deleteFavorite error: $e');
-      rethrow;
-    }
+  Future<void> deleteFavorite({required int favoriteID}) async {
+    await _api.delete('$apiUrl/favorites/$favoriteID');
+  }
+
+  // ================= RECOMMENDED =================
+  Future<Map<String, dynamic>> getRecommendedList() async {
+    final res = await _api.get('$apiUrl/recommended');
+    return jsonDecode(res.body);
+  }
+
+  // ================= POPULAR =================
+  Future<Map<String, dynamic>> getPopularList() async {
+    final res = await _api.get('$apiUrl/popular');
+    return jsonDecode(res.body);
+  }
+
+    Future<Map<String, dynamic>> getLessonProgressList() async {
+      final res = await _api.get('$apiUrl/lesson_progress');
+    return jsonDecode(res.body);
   }
 }
-
-
-

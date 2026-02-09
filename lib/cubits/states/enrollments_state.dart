@@ -13,6 +13,8 @@ final class EnrollmentsLoaded extends EnrollmentsState {
   EnrollmentsLoaded({required this.enrollments , required this.courses});
 }
 
+class EnrollmentsSubmitting extends EnrollmentsState {}
+
 final class EnrollmentsError extends EnrollmentsState {
   final String message;
 

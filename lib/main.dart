@@ -11,7 +11,6 @@ import 'package:training/data/api/web_service.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/route.dart';
 import 'package:training/services/tokens/auths_service.dart';
-import 'package:training/widgets/course_card.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +23,7 @@ void main() async {
   );
   final enrollmentsCubit = EnrollmentsCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
+    webservice: LearningWebservice(),
   );
   final recommendedCubit = RecommendedCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
@@ -32,8 +32,8 @@ void main() async {
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
   final favoriteCubit = FavoritesCubit(
-    repo: LearningRepo(learningWebService: LearningWebservice() , ),
-    webservice: LearningWebservice()
+    repo: LearningRepo(learningWebService: LearningWebservice()),
+    webservice: LearningWebservice(),
   );
   runApp(
     MultiBlocProvider(

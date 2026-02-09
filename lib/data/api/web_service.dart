@@ -132,18 +132,6 @@ class LearningWebservice {
       rethrow;
     }
   }
-
-  // ================= FAVORITES =================
-  Future<Map<String, dynamic>> getFavoriteList() async {
-    try {
-      final response = await dio.get('$apiUrl/favorites');
-      log(response.data.toString());
-      return response.data;
-    } catch (e) {
-      log(e.toString());
-      rethrow;
-    }
-  }
   
     Future<Map<String, dynamic>> getRecommendedList() async {
     try {
@@ -163,6 +151,42 @@ class LearningWebservice {
       return response.data;
     } catch (e) {
       log(e.toString());
+      rethrow;
+    }
+  }
+  // ================= FAVORITES =================
+  Future<Map<String, dynamic>> getFavoriteList() async {
+    try {
+      final response = await dio.get('$apiUrl/favorites');
+      log(response.data.toString());
+      return response.data;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    }
+  }
+  
+Future<void> postFavorite({
+    required int courseId,
+    required String userId,
+  }) async {
+    try {
+      await dio.post(
+        '$apiUrl/favorites',
+        data: {"course": courseId, "user": userId},
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+
+
+Future<void> deleteFavorite({required int favoriteID}) async {
+    try {
+      await dio.delete('$apiUrl/favorites/$favoriteID');
+    } catch (e) {
+      log('deleteFavorite error: $e');
       rethrow;
     }
   }

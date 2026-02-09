@@ -14,7 +14,7 @@ class UserCubit extends Cubit<UserState> {
 
   final ApiClient _api = ApiClient();
   String? _userId;
-
+  String? get userId => _userId;
   // ================= LOGIN =================
   Future<void> login({required String email, required String password}) async {
     emit(UserLoading());

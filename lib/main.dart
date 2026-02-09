@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
+import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
@@ -10,14 +11,15 @@ import 'package:training/data/api/web_service.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/route.dart';
 import 'package:training/services/tokens/auths_service.dart';
+import 'package:training/widgets/course_card.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-await AuthService().init();
+  await AuthService().init();
   final learnCubit = CoursesCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
-final categoriesCubit = CategoriesCubit(
+  final categoriesCubit = CategoriesCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
   final enrollmentsCubit = EnrollmentsCubit(
@@ -29,6 +31,10 @@ final categoriesCubit = CategoriesCubit(
   final popularCubit = PopularCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
+  final favoriteCubit = FavoritesCubit(
+    repo: LearningRepo(learningWebService: LearningWebservice() , ),
+    webservice: LearningWebservice()
+  );
   runApp(
     MultiBlocProvider(
       providers: [
@@ -38,6 +44,7 @@ final categoriesCubit = CategoriesCubit(
         BlocProvider(create: (_) => enrollmentsCubit..getAllEnrollments()),
         BlocProvider(create: (_) => recommendedCubit..getRecommendedList()),
         BlocProvider(create: (_) => popularCubit..getPopularList()),
+        BlocProvider(create: (_) => favoriteCubit..getFavoritesList()),
       ],
       child: MyApp(appRoute: AppRoute()),
     ),

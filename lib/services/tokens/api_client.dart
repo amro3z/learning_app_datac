@@ -25,6 +25,73 @@ class ApiClient {
     return res;
   }
 
+Future<http.Response> post(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    final res = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer ${_auth.token}",
+        "Content-Type": "application/json",
+        ...?headers,
+      },
+      body: body,
+    );
+
+    if (_isExpired(res)) {
+      final ok = await _auth.refreshTokenIfNeeded();
+      if (!ok) throw Exception("Session expired");
+
+      return http.post(
+        Uri.parse(url),
+        headers: {
+          "Authorization": "Bearer ${_auth.token}",
+          "Content-Type": "application/json",
+          ...?headers,
+        },
+        body: body,
+      );
+    }
+
+    return res;
+  }
+
+  Future<http.Response> delete(
+  String url, {
+  Map<String, String>? headers,
+  Object? body,
+}) async {
+  final res = await http.delete(
+    Uri.parse(url),
+    headers: {
+      "Authorization": "Bearer ${_auth.token}",
+      "Content-Type": "application/json",
+      ...?headers,
+    },
+    body: body,
+  );
+
+  if (_isExpired(res)) {
+    final ok = await _auth.refreshTokenIfNeeded();
+    if (!ok) throw Exception("Session expired");
+
+    return http.delete(
+      Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer ${_auth.token}",
+        "Content-Type": "application/json",
+        ...?headers,
+      },
+      body: body,
+    );
+  }
+
+  return res;
+}
+
+
   Future<http.Response> patch(
     String url, {
     required Map<String, dynamic> body,

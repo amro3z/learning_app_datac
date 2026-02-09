@@ -10,8 +10,9 @@ class CategoriesModel {
     id = json['id'];
     title = json['title'];
     description = json['description'];
-    color = Color(int.parse(json['color'].replaceFirst('#', '0xFF')));
+    color = Color(
+      int.parse((json['color'] ?? '#2196F3').replaceFirst('#', '0xFF')),
+    );
     icon = json['icon'];
   }
 }
-

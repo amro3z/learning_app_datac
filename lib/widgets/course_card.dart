@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/enrollments_cubit.dart';
+import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
 
 class CourseCard extends StatefulWidget {
@@ -116,6 +119,57 @@ class _CourseCardState extends State<CourseCard> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class EnrollmentCourse extends StatelessWidget {
+  const EnrollmentCourse({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
+      builder: (context, state) {
+        if (state is EnrollmentsLoading || state is EnrollmentsInitial) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is EnrollmentsError) {
+          return Center(child: Text(state.message));
+        }
+
+        if (state is EnrollmentsLoaded) {
+          final enrollments = state.enrollments;
+          final courses = state.courses;
+
+          // ربط صح بالـ ID
+          final Map<int, CoursesModel> courseMap = {
+            for (var course in courses) course.id: course,
+          };
+
+          final List<CoursesModel> enrolledCourses = enrollments
+              .map((e) => courseMap[e.courseId])
+              .whereType<CoursesModel>()
+              .toList();
+
+          return Column(
+            children: enrolledCourses.map((course) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: CourseCard(
+                  imagePath: course.thumbnail,
+                  title: course.title,
+                  author: course.instructorName,
+                  rating: course.rating,
+                  progress: course.progress / 100,
+                ),
+              );
+            }).toList(),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
     );
   }
 }

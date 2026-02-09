@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
-import 'package:training/cubits/states/courses_state.dart';
+import 'package:training/cubits/cubit/enrollments_cubit.dart';
+import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
@@ -76,19 +77,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// ===== Home Page =====
   Widget _homePage() {
-    return BlocBuilder<CoursesCubit, LearnState>(
+    return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
       builder: (context, state) {
-        if (state is Loading || state is LearnInitial) {
+        if (state is EnrollmentsLoading || state is EnrollmentsInitial) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is Error) {
+        if (state is EnrollmentsError) {
           return Center(child: Text(state.message));
         }
 
-        if (state is LearnLoaded) {
-          final publishedCourses = state.courses
-              .where((c) => c.status == 'published')
+        if (state is EnrollmentsLoaded) {
+          final enrollments = state.enrollments;
+          final courses = state.courses;
+
+          final Map<int, CoursesModel> coursesMap = {
+            for (var course in courses) course.id: course,
+          };
+
+          final List<CoursesModel> enrolledCourses = enrollments
+              .map((enroll) => coursesMap[enroll.courseId])
+              .whereType<CoursesModel>()
               .toList();
 
           return SingleChildScrollView(
@@ -102,6 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: kToolbarHeight),
+
                 defaultText(
                   text: 'Hello, Learner 👋',
                   size: 24,
@@ -111,13 +121,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 defaultText(
                   text: 'What would you like to learn today?',
                   size: 14,
-                  bold: false,
-                  isCenter: false,
                   color: Colors.white70,
+                  isCenter: false,
                 ),
 
                 const SizedBox(height: 20),
-
                 CoursesSearchBar(),
 
                 const SizedBox(height: 20),
@@ -132,24 +140,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   isCenter: false,
                 ),
                 const SizedBox(height: 12),
-                ...List.generate(publishedCourses.length, (index) {
-                  final course = publishedCourses[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: CourseCard(
-                      imagePath: course.thumbnail,
-                      title: course.title,
-                      author: course.instructorName,
-                      rating: course.rating,
-                      progress: course.progress / 100,
-                    ),
-                  );
-                }),
+               EnrollmentCourse(),
+                const SizedBox(height: 24),
                 defaultText(text: "Recommended Courses", size: 18),
                 const SizedBox(height: 12),
                 RecommendedCard(),
+
                 const SizedBox(height: 12),
                 defaultText(text: "Popular This Week", size: 18),
+                const SizedBox(height: 12),
 
                 GridView.builder(
                   shrinkWrap: true,
@@ -158,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
-
                     childAspectRatio: 1.05,
                   ),
                   itemBuilder: (context, index) {
@@ -169,6 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
         }
+
         return const SizedBox.shrink();
       },
     );

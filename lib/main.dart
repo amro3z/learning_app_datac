@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
+import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/data/api/web_service.dart';
 import 'package:training/data/repo/learning_repo.dart';
@@ -17,12 +18,16 @@ await AuthService().init();
 final categoriesCubit = CategoriesCubit(
     learningRepo: LearningRepo(learningWebService: LearningWebservice()),
   );
+  final enrollmentsCubit = EnrollmentsCubit(
+    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
+  );
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => learnCubit..getAllCourses()),
         BlocProvider(create: (_) => UserCubit()..restoreSession()),
         BlocProvider(create: (_) => categoriesCubit..getAllCategories()),
+         BlocProvider(create: (_) => enrollmentsCubit..getAllEnrollments()),
       ],
       child: MyApp(appRoute: AppRoute()),
     ),

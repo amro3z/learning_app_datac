@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
+import 'package:training/widgets/instrauctor_card.dart';
 import 'package:training/widgets/lesson_card.dart';
 
 class CourseDetails extends StatefulWidget {
-   CourseDetails({
+ const CourseDetails({
     super.key,
     required this.imageURL,
     required this.title,
@@ -12,14 +13,17 @@ class CourseDetails extends StatefulWidget {
     required this.description,
     required this.progress,
     required this.onFavoriteToggle,
-   required this.isFavorite,
+    required this.isFavorite,
+    required this.courseId,
   });
   final String imageURL;
   final String title;
   final String instructor;
   final String description;
   final double progress;
- final bool isFavorite;
+  final bool isFavorite;
+  final int courseId;
+  
   final Function() onFavoriteToggle;
 
   @override
@@ -27,13 +31,14 @@ class CourseDetails extends StatefulWidget {
 }
 
 class _CourseDetailsState extends State<CourseDetails> {
-   late bool _isFavorite;
+  late bool _isFavorite;
 
   @override
   void initState() {
     super.initState();
     _isFavorite = widget.isFavorite;
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,37 +111,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                 children: [
                   defaultText(text: widget.title, size: 18, isCenter: false),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'assets/images/draft.jpeg',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          defaultText(
-                            text: "Instructor",
-                            size: 12,
-                            isCenter: false,
-                            color: Colors.grey,
-                          ),
-                          defaultText(
-                            text: widget.instructor,
-                            size: 14,
-                            isCenter: false,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  instructorCard(instructor: widget.instructor),
                   const SizedBox(height: 8),
                   defaultText(
                     align: TextAlign.start,
@@ -180,25 +155,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  defaultText(text: 'Lessons (10)', size: 18),
-                  const SizedBox(height: 8),
-                  LessonCard(
-                    duration: "45:30",
-                    state: CourseStatus.completed,
-                    title: "Introduction to Web Development",
-                  ),
-                  SizedBox(height: 8),
-                  LessonCard(
-                    duration: "45:30",
-                    state: CourseStatus.inProgress,
-                    title: "Introduction to Web Development",
-                  ),
-                  SizedBox(height: 8),
-                  LessonCard(
-                    duration: "45:30",
-                    state: CourseStatus.locked,
-                    title: "Introduction to Web Development",
-                  ),
+                  Lessons(courseId: widget.courseId,),
                   SizedBox(height: 15),
                   CustomGlowButton(
                     title: "Continue Learning",

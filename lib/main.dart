@@ -4,6 +4,7 @@ import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
+import 'package:training/cubits/cubit/lessons_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
@@ -35,6 +36,9 @@ void main() async {
     repo: LearningRepo(learningWebService: LearningWebservice()),
     webservice: LearningWebservice(),
   );
+  final lessonCubit = LessonsCubit(
+    repo: LearningRepo(learningWebService: LearningWebservice()),
+  );
   runApp(
     MultiBlocProvider(
       providers: [
@@ -45,6 +49,7 @@ void main() async {
         BlocProvider(create: (_) => recommendedCubit..getRecommendedList()),
         BlocProvider(create: (_) => popularCubit..getPopularList()),
         BlocProvider(create: (_) => favoriteCubit..getFavoritesList()),
+        BlocProvider(create: (_) => lessonCubit..getLessons()),
       ],
       child: MyApp(appRoute: AppRoute()),
     ),

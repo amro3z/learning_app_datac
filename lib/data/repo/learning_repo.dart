@@ -17,7 +17,6 @@ class LearningRepo {
 
   Future<List<CoursesModel>> getCoursesList() async {
     final response = await learningWebService.getCoursesList();
-    log(response.toString());
 
     final List data = response['data'] ?? [];
     return data
@@ -27,7 +26,6 @@ class LearningRepo {
 
   Future<List<CategoriesModel>> getCategoryList() async {
     final response = await learningWebService.getCategoryList();
-    log(response.toString());
 
     final List data = response['data'] ?? [];
     return data
@@ -45,17 +43,7 @@ class LearningRepo {
         .toList();
   }
 
-  Future<List<InstructorModel>> getInstructorList() async {
-    final response = await learningWebService.getInstructorList();
-    log(response.toString());
-
-    final List data = response['data'] ?? [];
-    return data
-        .map((instructor) => InstructorModel.fromJson(instructor))
-        .toList();
-  }
-
-  Future<List<LessonProgressModel>> getLessonProgressList() async {
+   Future<List<LessonProgressModel>> getLessonProgressList() async {
     final response = await learningWebService.getLessonProgressList();
     log(response.toString());
 
@@ -65,9 +53,19 @@ class LearningRepo {
         .toList();
   }
 
+
+  Future<List<InstructorModel>> getInstructorList() async {
+    final response = await learningWebService.getInstructorList();
+
+    final List data = response['data'] ?? [];
+    return data
+        .map((instructor) => InstructorModel.fromJson(instructor))
+        .toList();
+  }
+
+ 
   Future<List<EnrollmentModel>> getEnrollmentList() async {
     final response = await learningWebService.getEnrollmentList();
-    log(response.toString());
 
     final List data = response['data'] ?? [];
     return data
@@ -77,7 +75,6 @@ class LearningRepo {
 
   Future<List<FavoritesModel>> getFavoriteList() async {
     final response = await learningWebService.getFavoriteList();
-    log(response.toString());
 
     final List data = response['data'] ?? [];
     return data
@@ -87,7 +84,6 @@ class LearningRepo {
 
     Future<List<RecommendModel>> getRecommendedList() async {
     final response = await learningWebService.getRecommendedList();
-    log(response.toString());
 
     final List data = response['data'] ?? [];
     return data.map((recommended) => RecommendModel.fromJson(recommended)).toList();
@@ -95,11 +91,11 @@ class LearningRepo {
 
      Future<List<PopularModel>> getPopularList() async {
     final response = await learningWebService.getPopularList();
-    log(response.toString());
 
     final List data = response['data'] ?? [];
     return data
         .map((popular) => PopularModel.fromJson(popular))
         .toList();
   }
+
 }

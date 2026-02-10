@@ -28,6 +28,7 @@ class AppRoute {
             description: args['description'],
             progress: args['progress'] as double,
             isFavorite: args['isFavorite'] as bool,
+            courseId: args['courseId'] as int,
             onFavoriteToggle:
                 args['onFavoriteToggle']
                     as VoidCallback, // Placeholder, will be set in CourseCard

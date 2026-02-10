@@ -15,6 +15,7 @@ class CourseCard extends StatelessWidget {
   final String imagePath;
   final bool isFavorite;
   final String description;
+  final int courseId;
   final VoidCallback onFavoriteToggle;
 
   const CourseCard({
@@ -27,6 +28,7 @@ class CourseCard extends StatelessWidget {
     required this.isFavorite,
     required this.onFavoriteToggle,
     required this.description,
+    required this.courseId,
   });
 
   @override
@@ -45,6 +47,7 @@ class CourseCard extends StatelessWidget {
             'isFavorite': isFavorite,
             'onFavoriteToggle':
                 onFavoriteToggle, // Pass the callback to details
+            'courseId': courseId,
           },
         );
       },
@@ -179,6 +182,7 @@ class EnrollmentCourse extends StatelessWidget {
                 progress: e.progressPercent / 100,
                 description: course.description,
                 isFavorite: isFavorite,
+                courseId: course.id,
                 onFavoriteToggle: () {
                   final cubit = context.read<FavoritesCubit>();
 
@@ -257,6 +261,7 @@ class FavoriteCourses extends StatelessWidget {
                 imagePath: course.thumbnail,
                 title: course.title,
                 author: course.instructorName,
+                courseId: course.id,
                 rating: course.rating,
                 description: course.description,
                 progress: progress,

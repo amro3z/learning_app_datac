@@ -6,8 +6,8 @@ class LessonProgressModel {
   late int lesson; 
    LessonProgressModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    userId = json['user_id'];
-    courseId = json['course_id'];
+    userId = json['user'];
+    courseId = json['course'];
     status = json['status'];
     lesson = json['lesson'] ;
   }

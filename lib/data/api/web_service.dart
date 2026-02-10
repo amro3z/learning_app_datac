@@ -25,6 +25,11 @@ class LearningWebservice {
     return jsonDecode(res.body);
   }
 
+      Future<Map<String, dynamic>> getLessonProgressList() async {
+    final res = await _api.get('$apiUrl/lesson_progress');
+    return jsonDecode(res.body);
+  }
+
   // ================= INSTRUCTORS =================
   Future<Map<String, dynamic>> getInstructorList() async {
     final res = await _api.get('$apiUrl/instructors');
@@ -79,8 +84,5 @@ class LearningWebservice {
     return jsonDecode(res.body);
   }
 
-    Future<Map<String, dynamic>> getLessonProgressList() async {
-      final res = await _api.get('$apiUrl/lesson_progress');
-    return jsonDecode(res.body);
-  }
+
 }

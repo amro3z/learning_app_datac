@@ -55,13 +55,13 @@ class LearningRepo {
         .toList();
   }
 
-  Future<List<LessonProgress>> getLessonProgressList() async {
+  Future<List<LessonProgressModel>> getLessonProgressList() async {
     final response = await learningWebService.getLessonProgressList();
     log(response.toString());
 
     final List data = response['data'] ?? [];
     return data
-        .map((progress) => LessonProgress.fromJson(progress))
+        .map((progress) => LessonProgressModel.fromJson(progress))
         .toList();
   }
 

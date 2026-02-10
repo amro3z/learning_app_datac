@@ -12,7 +12,6 @@ class CoursesModel {
   late int totalDuration;
   late int categoryID;
   late String instructorName;
-  late int progress;
 
   CoursesModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -30,6 +29,5 @@ class CoursesModel {
     categoryID = json['category'];
 instructorName =
         '${json['instructor']?['name'] ?? ''} ${json['instructor']?['last_name'] ?? ''}'.trim();
-    progress = json['progress'] ?? 0;
   }
 }

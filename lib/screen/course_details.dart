@@ -4,14 +4,36 @@ import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/widgets/lesson_card.dart';
 
 class CourseDetails extends StatefulWidget {
-  const CourseDetails({super.key});
+   CourseDetails({
+    super.key,
+    required this.imageURL,
+    required this.title,
+    required this.instructor,
+    required this.description,
+    required this.progress,
+    required this.onFavoriteToggle,
+   required this.isFavorite,
+  });
+  final String imageURL;
+  final String title;
+  final String instructor;
+  final String description;
+  final double progress;
+ final bool isFavorite;
+  final Function() onFavoriteToggle;
 
   @override
   State<CourseDetails> createState() => _CourseDetailsState();
 }
 
 class _CourseDetailsState extends State<CourseDetails> {
-  bool isFavorite = false;
+   late bool _isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFavorite = widget.isFavorite;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,7 +48,8 @@ class _CourseDetailsState extends State<CourseDetails> {
           GestureDetector(
             onTap: () {
               setState(() {
-                isFavorite = !isFavorite;
+                _isFavorite = !_isFavorite;
+                widget.onFavoriteToggle();
               });
             },
             child: Container(
@@ -35,10 +58,13 @@ class _CourseDetailsState extends State<CourseDetails> {
                 color: Colors.black.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: isFavorite ? Colors.red : Colors.white,
-                size: 22,
+              child: IconButton(
+                onPressed: () {},
+                icon: Icon(
+                  widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: widget.isFavorite ? Colors.red : Colors.white,
+                  size: 22,
+                ),
               ),
             ),
           ),
@@ -55,10 +81,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                 SizedBox(
                   width: double.infinity,
                   height: 260,
-                  child: Image.asset(
-                    'assets/images/draft.jpeg',
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.network(widget.imageURL, fit: BoxFit.cover),
                 ),
                 Container(
                   height: 260,
@@ -81,11 +104,7 @@ class _CourseDetailsState extends State<CourseDetails> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  defaultText(
-                    text: "Complete Web Development Bootcamp",
-                    size: 18,
-                    isCenter: false,
-                  ),
+                  defaultText(text: widget.title, size: 18, isCenter: false),
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -110,7 +129,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                             color: Colors.grey,
                           ),
                           defaultText(
-                            text: "John Doe",
+                            text: widget.instructor,
                             size: 14,
                             isCenter: false,
                           ),
@@ -121,8 +140,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                   const SizedBox(height: 8),
                   defaultText(
                     align: TextAlign.start,
-                    text:
-                        "Learn web development from scratch with HTML, CSS, JavaScript, React, Node.js and more. Build real-world projects and become a full-stack developer.",
+                    text: widget.description,
                     size: 14,
                     isCenter: false,
                     color: Colors.grey,
@@ -148,7 +166,8 @@ class _CourseDetailsState extends State<CourseDetails> {
                             ),
                             const SizedBox(width: 10),
                             defaultText(
-                              text: "45%",
+                              text:
+                                  "${(widget.progress * 100).toStringAsFixed(0)}%",
                               size: 14,
                               isCenter: false,
                               color: Colors.lightBlue,
@@ -156,7 +175,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                           ],
                         ),
                         const SizedBox(height: 5),
-                        progressBar(progress: 0.45, height: 13),
+                        progressBar(progress: widget.progress, height: 13),
                       ],
                     ),
                   ),

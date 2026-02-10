@@ -14,6 +14,7 @@ class CourseCard extends StatelessWidget {
   final double progress;
   final String imagePath;
   final bool isFavorite;
+  final String description;
   final VoidCallback onFavoriteToggle;
 
   const CourseCard({
@@ -25,13 +26,27 @@ class CourseCard extends StatelessWidget {
     required this.imagePath,
     required this.isFavorite,
     required this.onFavoriteToggle,
+    required this.description,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/course_details');
+        Navigator.pushNamed(
+          context,
+          '/course_details',
+          arguments: {
+            'imageURL': imagePath,
+            'title': title,
+            'instructor': author,
+            'description': description,
+            'progress': progress,
+            'isFavorite': isFavorite,
+            'onFavoriteToggle':
+                onFavoriteToggle, // Pass the callback to details
+          },
+        );
       },
       child: Container(
         height: 265,
@@ -65,17 +80,18 @@ class CourseCard extends StatelessWidget {
                 Positioned(
                   top: 10,
                   right: 10,
-                  child: GestureDetector(
-                    onTap: onFavoriteToggle,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
+                  child: Container(
+                    // padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      onPressed: onFavoriteToggle,
+                      icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
                         color: isFavorite ? Colors.red : Colors.white,
+                        size: 20,
                       ),
                     ),
                   ),
@@ -146,7 +162,6 @@ class EnrollmentCourse extends StatelessWidget {
         return Column(
           children: uniqueEnrollments.values.map((e) {
             final course = courseMap[e.courseId]!;
-
             final fav = favorites
                 .where((f) => f.courseId == course.id)
                 .cast<FavoritesModel?>()
@@ -161,7 +176,8 @@ class EnrollmentCourse extends StatelessWidget {
                 title: course.title,
                 author: course.instructorName,
                 rating: course.rating,
-                progress: course.progress / 100,
+                progress: e.progressPercent / 100,
+                description: course.description,
                 isFavorite: isFavorite,
                 onFavoriteToggle: () {
                   final cubit = context.read<FavoritesCubit>();
@@ -181,29 +197,30 @@ class EnrollmentCourse extends StatelessWidget {
   }
 }
 
-
-
-
-
 class FavoriteCourses extends StatelessWidget {
   const FavoriteCourses({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FavoritesCubit, FavoritesState>(
-      builder: (context, state) {
-        if (state is FavoritesLoading || state is FavoritesInitial) {
+      builder: (context, favState) {
+        if (favState is FavoritesLoading || favState is FavoritesInitial) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is FavoritesError) {
-          return Center(child: Text(state.message));
+        if (favState is FavoritesError) {
+          return Center(child: Text(favState.message));
         }
 
-        final loaded = state as FavoritesLoaded;
+        final loaded = favState as FavoritesLoaded;
 
         if (loaded.favoritesList.isEmpty) {
-          return const Center(child: Text('No favorites yet'));
+          return const Center(
+            child: Text(
+              'No favorites yet',
+              style: TextStyle(color: Colors.white70),
+            ),
+          );
         }
 
         /// ===== MAP COURSES =====
@@ -211,16 +228,28 @@ class FavoriteCourses extends StatelessWidget {
           for (var c in loaded.courses) c.id: c,
         };
 
-        /// ===== REMOVE DUPLICATES BY courseId =====
+        /// ===== REMOVE DUPLICATES (courseId unique) =====
         final Map<int, FavoritesModel> uniqueFavorites = {
-          for (var fav in loaded.favoritesList)
-            fav.courseId: fav, // لو اتكرر نفس courseId هيتكتب مرة واحدة
+          for (var fav in loaded.favoritesList) fav.courseId: fav,
         };
+
+        /// ===== GET ENROLLMENTS PROGRESS =====
+        final enrollmentsState = context.watch<EnrollmentsCubit>().state;
+
+        final Map<int, double> progressMap =
+            enrollmentsState is EnrollmentsLoaded
+            ? {
+                for (var e in enrollmentsState.enrollments)
+                  e.courseId: e.progressPercent / 100,
+              }
+            : {};
 
         return Column(
           children: uniqueFavorites.values.map((fav) {
             final course = courseMap[fav.courseId];
             if (course == null) return const SizedBox.shrink();
+
+            final progress = progressMap[fav.courseId] ?? 0.0;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
@@ -229,7 +258,8 @@ class FavoriteCourses extends StatelessWidget {
                 title: course.title,
                 author: course.instructorName,
                 rating: course.rating,
-                progress: course.progress / 100,
+                description: course.description,
+                progress: progress,
                 isFavorite: true,
                 onFavoriteToggle: () {
                   context.read<FavoritesCubit>().deleteFavorite(

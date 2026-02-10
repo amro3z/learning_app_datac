@@ -19,7 +19,20 @@ class AppRoute {
       case '/profile':
         return MaterialPageRoute(builder: (_) => ProfilePage());
       case '/course_details':
-        return MaterialPageRoute(builder: (_) => CourseDetails());
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => CourseDetails(
+            imageURL: args['imageURL'],
+            title: args['title'],
+            instructor: args['instructor'],
+            description: args['description'],
+            progress: args['progress'] as double,
+            isFavorite: args['isFavorite'] as bool,
+            onFavoriteToggle:
+                args['onFavoriteToggle']
+                    as VoidCallback, // Placeholder, will be set in CourseCard
+          ),
+        );
       case '/lesson_screen':
         return MaterialPageRoute(builder: (_) => LessonScreen());
       default:

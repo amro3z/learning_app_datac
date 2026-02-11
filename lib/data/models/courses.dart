@@ -9,7 +9,6 @@ class CoursesModel {
   late String description;
   late String thumbnail;
   late double rating;
-  late int totalDuration;
   late int categoryID;
   late String instructorName;
 
@@ -25,7 +24,6 @@ class CoursesModel {
     thumbnail =
         '$fileUrl${json['thumbnail']}';
     rating = (json['rating'] ?? 0).toDouble();
-    totalDuration = json['total_duration'];
     categoryID = json['category'];
 instructorName =
         '${json['instructor']?['name'] ?? ''} ${json['instructor']?['last_name'] ?? ''}'.trim();

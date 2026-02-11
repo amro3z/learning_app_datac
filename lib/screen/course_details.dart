@@ -155,7 +155,8 @@ class _CourseDetailsState extends State<CourseDetails> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Lessons(courseId: widget.courseId,),
+                  Lessons(courseId: widget.courseId, courseTitle: widget.title,
+                  ),
                   SizedBox(height: 15),
                   CustomGlowButton(
                     title: "Continue Learning",

@@ -25,19 +25,38 @@ class LessonCard extends StatelessWidget {
     required this.title,
     required this.duration,
     required this.state,
+    required this.courseID,
+    required this.lessonID,
+    required this.lessonDurationInSeconds,
+    required this.lessonDescription,
+    required this.videoURl,
+    required this.courseTitle,
   });
 
   final String title;
   final int duration;
   final CourseStatus state;
-
+final int courseID;
+final int lessonID;
+final int lessonDurationInSeconds;
+final String lessonDescription;
+final String videoURl;
+final String courseTitle; 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: state == CourseStatus.locked
           ? null
           : () {
-              Navigator.pushNamed(context, '/lesson_screen');
+              Navigator.pushNamed(context, '/lesson_screen' ,arguments: {
+                'courseID': courseID,
+                'lessonID': lessonID,
+                'lessonTitle': title,
+                'lessonDescription': lessonDescription,
+                'videoURl': videoURl,
+                'courseTitle': courseTitle,
+                'lessonDurationInSeconds': lessonDurationInSeconds,
+              });
             },
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -83,8 +102,8 @@ class LessonCard extends StatelessWidget {
 }
 
 class Lessons extends StatelessWidget {
-  const Lessons({super.key, required this.courseId});
-
+  const Lessons({super.key, required this.courseId , required this.courseTitle});
+final String courseTitle;
   final int courseId;
 
   @override
@@ -105,19 +124,16 @@ class Lessons extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        /// 1️⃣ دروس الكورس فقط
         final courseLessons = state.lessons
             .where((l) => l.courseId == courseId)
             .toList();
 
-        /// 2️⃣ progress خاص باليوزر الحالي فقط
         final Map<int, String> progressMap = {
           for (var p in state.progress)
             if (p.courseId == courseId && p.userId == userId)
               p.lesson: p.status,
         };
 
-        /// 3️⃣ تحديد الحالات
         final List<Map<String, dynamic>> ordered = [];
         bool openedLessonFound = false;
 
@@ -138,7 +154,6 @@ class Lessons extends StatelessWidget {
           ordered.add({'lesson': lesson, 'status': status});
         }
 
-        /// 4️⃣ ترتيب (completed → present → locked)
         int order(CourseStatus s) {
           switch (s) {
             case CourseStatus.completed:
@@ -153,8 +168,13 @@ class Lessons extends StatelessWidget {
         ordered.sort(
           (a, b) => order(a['status']).compareTo(order(b['status'])),
         );
+        final Map<int, int> watchedSecondsMap = {
+          for (var p in state.progress)
+            if (p.courseId == courseId && p.userId == userId)
+              p.lesson: p.watchedSeconds,
+        };
 
-        /// 5️⃣ UI
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -166,11 +186,18 @@ class Lessons extends StatelessWidget {
             const SizedBox(height: 8),
             ...ordered.map((item) {
               final lesson = item['lesson'] as LessonModel;
+              
               final status = item['status'] as CourseStatus;
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: LessonCard(
+                  courseID: lesson.courseId,
+                  lessonID: lesson.id,
+                  lessonDurationInSeconds: watchedSecondsMap[lesson.id] ?? 0,
+                  lessonDescription: lesson.description,
+                  videoURl: lesson.videoUrl,
+                  courseTitle: courseTitle,
                   title: lesson.title,
                   duration: lesson.duration,
                   state: status,

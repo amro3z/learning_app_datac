@@ -35,7 +35,6 @@ class LearningRepo {
 
   Future<List<LessonModel>> getLessonList() async {
     final response = await learningWebService.getLessonList();
-    log(response.toString());
 
     final List data = response['data'] ?? [];
     return data
@@ -97,5 +96,28 @@ class LearningRepo {
         .map((popular) => PopularModel.fromJson(popular))
         .toList();
   }
+
+Future<void> updateEnrollmentProgress({
+    required int enrollmentId,
+    required double progressPercent,
+  }) async {
+    await learningWebService.updateEnrollmentProgress(
+      enrollmentId: enrollmentId,
+      progressPercent: progressPercent,
+    );
+  }
+Future<void> updateLessonProgress({
+    required int lessonProgressId,
+    required int watchedSeconds,
+    required String status,
+  }) async {
+    await learningWebService.updateLessonProgress(
+      lessonProgressId: lessonProgressId,
+      watchedSeconds: watchedSeconds,
+      status: status,
+    );
+  }
+
+
 
 }

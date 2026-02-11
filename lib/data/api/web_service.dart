@@ -84,5 +84,28 @@ class LearningWebservice {
     return jsonDecode(res.body);
   }
 
+Future<void> updateEnrollmentProgress({
+    required int enrollmentId,
+    required double progressPercent,
+  }) async {
+    await _api.patch(
+      '$apiUrl/enrollments/$enrollmentId',
+      body: {"progress_percent": progressPercent},
+    );
+  }
+
+Future<void> updateLessonProgress({
+    required int lessonProgressId,
+    required int watchedSeconds,
+    required String status,
+  }) async {
+    await _api.patch(
+      '$apiUrl/lesson_progress/$lessonProgressId',
+      body: {"watched_seconds": watchedSeconds, "status": status},
+    );
+  }
+
+
+
 
 }

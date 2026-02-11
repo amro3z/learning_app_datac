@@ -35,7 +35,16 @@ class AppRoute {
           ),
         );
       case '/lesson_screen':
-        return MaterialPageRoute(builder: (_) => LessonScreen());
+       final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(builder: (_) => LessonScreen(
+          courseID: args['courseID'] as int,
+          lessonID: args['lessonID'] as int,
+          lessonTitle: args['lessonTitle'] ,
+          lessonDescription: args['lessonDescription'],
+          videoURl: args['videoURl'],
+          courseTitle: args['courseTitle'],
+          lessonDurationInSeconds: args['lessonDurationInSeconds'] as int,
+        ));
       default:
         return MaterialPageRoute(builder: (_) => LoginScreen());
     }

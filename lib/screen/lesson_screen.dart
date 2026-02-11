@@ -3,8 +3,23 @@ import 'package:training/helper/base.dart';
 import 'package:training/services/video_player.dart';
 
 class LessonScreen extends StatefulWidget {
-  const LessonScreen({super.key});
-
+  const LessonScreen({
+    super.key,
+    required this.videoURl,
+    required this.lessonTitle,
+    required this.lessonDescription,
+    required this.lessonID,
+    required this.courseID,
+    required this.courseTitle,
+    required this.lessonDurationInSeconds,
+  });
+  final String videoURl;
+  final String lessonTitle;
+  final String lessonDescription;
+  final int lessonID;
+  final int courseID;
+  final String courseTitle;
+  final int lessonDurationInSeconds ;
   @override
   State<LessonScreen> createState() => _LessonScreenState();
 }
@@ -14,7 +29,7 @@ class _LessonScreenState extends State<LessonScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: defaultText(text: "JavaScript Basics", size: 20),
+        title: defaultText(text: widget.courseTitle, size: 20),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 24),
           onPressed: () => Navigator.pop(context),
@@ -33,7 +48,10 @@ class _LessonScreenState extends State<LessonScreen> {
               width: double.infinity,
               height: 200,
               child: YoutubePlayerWidget(
-                youtubeUrl: 'https://youtu.be/hyQtg-yMlOs?si=pMOm-P_Zyc7GmgGJ',
+                courseId: widget.courseID,
+                lessonId: widget.lessonID,
+                lessonDurationInSeconds: widget.lessonDurationInSeconds,
+                youtubeUrl: widget.videoURl,
               ),
             ),
             SizedBox(height: 20),
@@ -49,14 +67,10 @@ class _LessonScreenState extends State<LessonScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  defaultText(
-                    text: "Lesson 4: JavaScript Essentials",
-                    size: 16,
-                  ),
+                  defaultText(text: widget.lessonTitle, size: 16),
                   SizedBox(height: 5),
                   defaultText(
-                    text:
-                        "Learn the basics of JavaScript, including variables, functions, and control structures. la kjdskfjklhsdfjlhjlsdhfljhjklsdfhjlhsdjkfhkjdshfljdshfljhsldjfhljdhfljhdsfljhdsjl",
+                    text: widget.lessonDescription,
                     size: 14,
                     color: Colors.grey,
                     align: TextAlign.start,

@@ -38,6 +38,7 @@ void main() async {
   );
   final lessonCubit = LessonsCubit(
     repo: LearningRepo(learningWebService: LearningWebservice()),
+    enrollmentsCubit: enrollmentsCubit
   );
   runApp(
     MultiBlocProvider(

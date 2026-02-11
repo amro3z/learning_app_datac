@@ -52,7 +52,6 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
     });
   }
 
-
   void _restorePosition() {
     log("🔵 restorePosition called");
 
@@ -145,6 +144,12 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
     return YoutubePlayer(
       controller: _controller,
       showVideoProgressIndicator: true,
+      progressColors: const ProgressBarColors(
+        playedColor: Colors.blue,
+        handleColor: Colors.blueAccent,
+      ),
+      progressIndicatorColor: Colors.blueAccent,
+      
       onReady: () {
         log("🟢 Player ready");
         Future.delayed(const Duration(milliseconds: 500), () {

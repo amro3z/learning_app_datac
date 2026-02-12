@@ -5,7 +5,7 @@ import 'package:training/widgets/instrauctor_card.dart';
 import 'package:training/widgets/lesson_card.dart';
 
 class CourseDetails extends StatefulWidget {
- const CourseDetails({
+  const CourseDetails({
     super.key,
     required this.imageURL,
     required this.title,
@@ -23,7 +23,7 @@ class CourseDetails extends StatefulWidget {
   final double progress;
   final bool isFavorite;
   final int courseId;
-  
+
   final Function() onFavoriteToggle;
 
   @override
@@ -155,14 +155,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Lessons(courseId: widget.courseId, courseTitle: widget.title,
-                  ),
-                  SizedBox(height: 15),
-                  CustomGlowButton(
-                    title: "Continue Learning",
-                    onPressed: () {},
-                    width: double.infinity,
-                  ),
+                  Lessons(courseId: widget.courseId, courseTitle: widget.title),
                 ],
               ),
             ),

@@ -38,14 +38,23 @@ Future<void> updateLessonProgress({
     required int courseId,
     required String userId,
     required int watchedSeconds,
-    required String status,
   }) async {
     try {
       final currentState = state;
-
       if (currentState is! LessonsLoaded) return;
 
-      final existing = currentState.progress.firstWhere(
+      /// نجيب الليسون علشان نعرف مدته
+      final lesson = currentState.lessons.firstWhere((l) => l.id == lessonId);
+
+      final lessonDurationInSeconds = lesson.duration * 60;
+
+      /// سماح دقيقة
+      final bool isCompleted = watchedSeconds >= (lessonDurationInSeconds - 60);
+
+      final status = isCompleted ? "completed" : "present";
+
+      /// نجيب lesson_progress id
+      final progress = currentState.progress.firstWhere(
         (p) =>
             p.lesson == lessonId &&
             p.courseId == courseId &&
@@ -53,11 +62,12 @@ Future<void> updateLessonProgress({
       );
 
       await repo.updateLessonProgress(
-        lessonProgressId: existing.id, // ✅ أهم نقطة
+        lessonProgressId: progress.id,
         watchedSeconds: watchedSeconds,
         status: status,
       );
 
+      /// نعمل ريفريش
       await getLessons();
     } catch (e) {
       emit(LessonsError(message: e.toString()));

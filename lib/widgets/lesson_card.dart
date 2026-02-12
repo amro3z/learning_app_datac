@@ -102,8 +102,9 @@ final String courseTitle;
 }
 
 class Lessons extends StatelessWidget {
-  const Lessons({super.key, required this.courseId , required this.courseTitle});
-final String courseTitle;
+  const Lessons({super.key, required this.courseId, required this.courseTitle});
+
+  final String courseTitle;
   final int courseId;
 
   @override
@@ -124,56 +125,57 @@ final String courseTitle;
           return const SizedBox.shrink();
         }
 
-        final courseLessons = state.lessons
-            .where((l) => l.courseId == courseId)
-            .toList();
+        /// فلترة دروس الكورس وترتيبهم بالـ ID
+        final courseLessons =
+            state.lessons.where((l) => l.courseId == courseId).toList()
+              ..sort((a, b) => a.id.compareTo(b.id));
 
-        final Map<int, String> progressMap = {
-          for (var p in state.progress)
-            if (p.courseId == courseId && p.userId == userId)
-              p.lesson: p.status,
-        };
-
-        final List<Map<String, dynamic>> ordered = [];
-        bool openedLessonFound = false;
-
-        for (final lesson in courseLessons) {
-          final progressStatus = progressMap[lesson.id];
-
-          CourseStatus status;
-
-          if (progressStatus == 'completed') {
-            status = CourseStatus.completed;
-          } else if (progressStatus == 'present' && !openedLessonFound) {
-            status = CourseStatus.present;
-            openedLessonFound = true;
-          } else {
-            status = CourseStatus.locked;
-          }
-
-          ordered.add({'lesson': lesson, 'status': status});
-        }
-
-        int order(CourseStatus s) {
-          switch (s) {
-            case CourseStatus.completed:
-              return 0;
-            case CourseStatus.present:
-              return 1;
-            case CourseStatus.locked:
-              return 2;
-          }
-        }
-
-        ordered.sort(
-          (a, b) => order(a['status']).compareTo(order(b['status'])),
-        );
+        /// Map فيها watchedSeconds من البروجراس
         final Map<int, int> watchedSecondsMap = {
           for (var p in state.progress)
             if (p.courseId == courseId && p.userId == userId)
               p.lesson: p.watchedSeconds,
         };
 
+        final List<Map<String, dynamic>> ordered = [];
+
+        for (int i = 0; i < courseLessons.length; i++) {
+          final lesson = courseLessons[i];
+
+          final watchedSeconds = watchedSecondsMap[lesson.id] ?? 0;
+
+          /// ⚠️ مدة الليسون الأصلية بالدقايق → نحولها لثواني
+          final lessonDurationInSeconds = lesson.duration * 60;
+
+          /// سماح دقيقة
+          final bool isCompleted =
+              watchedSeconds >= (lessonDurationInSeconds - 60);
+
+          CourseStatus status;
+
+          if (i == 0) {
+            /// أول ليسون
+            status = isCompleted
+                ? CourseStatus.completed
+                : CourseStatus.present;
+          } else {
+            final prevStatus = ordered[i - 1]['status'] as CourseStatus;
+
+            if (prevStatus == CourseStatus.completed) {
+              status = isCompleted
+                  ? CourseStatus.completed
+                  : CourseStatus.present;
+            } else {
+              status = CourseStatus.locked;
+            }
+          }
+
+          ordered.add({
+            'lesson': lesson,
+            'status': status,
+            'watchedSeconds': watchedSeconds,
+          });
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,9 +186,9 @@ final String courseTitle;
               isCenter: false,
             ),
             const SizedBox(height: 8),
+
             ...ordered.map((item) {
               final lesson = item['lesson'] as LessonModel;
-              
               final status = item['status'] as CourseStatus;
 
               return Padding(
@@ -194,7 +196,10 @@ final String courseTitle;
                 child: LessonCard(
                   courseID: lesson.courseId,
                   lessonID: lesson.id,
-                  lessonDurationInSeconds: watchedSecondsMap[lesson.id] ?? 0,
+
+                  /// نبعث مدة الليسون الحقيقية بالثواني
+                  lessonDurationInSeconds: lesson.duration * 60,
+
                   lessonDescription: lesson.description,
                   videoURl: lesson.videoUrl,
                   courseTitle: courseTitle,

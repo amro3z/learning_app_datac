@@ -14,9 +14,6 @@ class LessonsCubit extends Cubit<LessonsState> {
   final LearningRepo repo;
   final EnrollmentsCubit enrollmentsCubit;
 
-  /// ===============================
-  /// تحميل الدروس + البروجرس
-  /// ===============================
   Future<void> getLessons() async {
     emit(LessonsLoading());
 
@@ -30,10 +27,7 @@ class LessonsCubit extends Cubit<LessonsState> {
     }
   }
 
-  /// ===============================
-  /// تحديث بروجرس الليسن + الكورس
-  /// ===============================
-Future<void> updateLessonProgress({
+  Future<void> updateLessonProgress({
     required int lessonId,
     required int courseId,
     required String userId,
@@ -43,17 +37,14 @@ Future<void> updateLessonProgress({
       final currentState = state;
       if (currentState is! LessonsLoaded) return;
 
-      /// نجيب الليسون علشان نعرف مدته
       final lesson = currentState.lessons.firstWhere((l) => l.id == lessonId);
 
       final lessonDurationInSeconds = lesson.duration * 60;
 
-      /// سماح دقيقة
       final bool isCompleted = watchedSeconds >= (lessonDurationInSeconds - 60);
 
       final status = isCompleted ? "completed" : "present";
 
-      /// نجيب lesson_progress id
       final progress = currentState.progress.firstWhere(
         (p) =>
             p.lesson == lessonId &&
@@ -66,13 +57,64 @@ Future<void> updateLessonProgress({
         watchedSeconds: watchedSeconds,
         status: status,
       );
-
-      /// نعمل ريفريش
       await getLessons();
+
+      await calculateAndUpdateCourseProgress(
+        courseId: courseId,
+        userId: userId,
+      );
     } catch (e) {
       emit(LessonsError(message: e.toString()));
     }
   }
 
+  Future<void> calculateAndUpdateCourseProgress({
+    required int courseId,
+    required String userId,
+  }) async {
+    final currentState = state;
+    if (currentState is! LessonsLoaded) return;
 
+    final courseLessons = currentState.lessons
+        .where((l) => l.courseId == courseId)
+        .toList();
+
+    if (courseLessons.isEmpty) return;
+
+    int completedCount = 0;
+
+    for (final lesson in courseLessons) {
+      final progress = currentState.progress.firstWhere(
+        (p) =>
+            p.lesson == lesson.id &&
+            p.courseId == courseId &&
+            p.userId == userId,
+        orElse: () => LessonProgressModel.empty(),
+      );
+
+      final lessonDurationInSeconds = lesson.duration * 60;
+
+      final bool isCompleted =
+          progress.watchedSeconds >= (lessonDurationInSeconds - 60);
+
+      if (isCompleted) {
+        completedCount++;
+      }
+    }
+
+    final double percent = completedCount / courseLessons.length;
+
+    final enrollmentsState = enrollmentsCubit.state;
+
+    if (enrollmentsState is EnrollmentsLoaded) {
+      final enrollment = enrollmentsState.enrollments.firstWhere(
+        (e) => e.courseId == courseId,
+      );
+
+      await enrollmentsCubit.updateCourseProgress(
+        enrollmentId: enrollment.id,
+        progress: percent,
+      );
+    }
+  }
 }

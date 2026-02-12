@@ -10,21 +10,22 @@ import 'package:training/data/repo/learning_repo.dart';
 part '../states/enrollments_state.dart';
 
 class EnrollmentsCubit extends Cubit<EnrollmentsState> {
-  EnrollmentsCubit({required this.learningRepo, required this.webservice}) : super(EnrollmentsInitial());
+  EnrollmentsCubit({required this.learningRepo, required this.webservice})
+    : super(EnrollmentsInitial());
+
   final LearningRepo learningRepo;
   final LearningWebservice webservice;
-  late List<EnrollmentModel> enrollments;
-  late List<CoursesModel> courses;
-  Future<List<EnrollmentModel>> getAllEnrollments() async {
+
+  Future<void> getAllEnrollments() async {
     try {
       emit(EnrollmentsLoading());
+
       final enrollments = await learningRepo.getEnrollmentList();
       final courses = await learningRepo.getCoursesList();
+
       emit(EnrollmentsLoaded(enrollments: enrollments, courses: courses));
-      return enrollments;
     } catch (e) {
       emit(EnrollmentsError(message: e.toString()));
-      return [];
     }
   }
 
@@ -37,9 +38,9 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
     try {
       await webservice.enrollCourse(courseId: courseId, userId: userId);
 
-      await getAllEnrollments(); 
+      await getAllEnrollments();
     } catch (e) {
-      emit(EnrollmentsError( message: 'Failed to enroll: $e'));
+      emit(EnrollmentsError(message: 'Failed to enroll: $e'));
     }
   }
 
@@ -59,25 +60,24 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
     int totalWatched = 0;
 
     for (var lesson in courseLessons) {
-      totalDuration += lesson.duration;
+      totalDuration += lesson.duration * 60; 
       totalWatched += watchedMap[lesson.id] ?? 0;
     }
 
     if (totalDuration == 0) return 0;
 
-    return totalWatched / totalDuration;
+    return (totalWatched / totalDuration).clamp(0.0, 1.0);
   }
 
-Future<void> updateCourseProgress({
+  Future<void> updateCourseProgress({
     required int enrollmentId,
     required double progress,
   }) async {
     await learningRepo.updateEnrollmentProgress(
       enrollmentId: enrollmentId,
-      progressPercent: progress,
+      progressPercent: progress * 100,
     );
 
     await getAllEnrollments();
   }
-
 }

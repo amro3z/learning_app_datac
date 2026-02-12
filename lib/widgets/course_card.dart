@@ -43,7 +43,6 @@ class CourseCard extends StatelessWidget {
             'title': title,
             'instructor': author,
             'description': description,
-            'progress': progress,
             'isFavorite': isFavorite,
             'onFavoriteToggle':
                 onFavoriteToggle, // Pass the callback to details
@@ -142,60 +141,63 @@ class EnrollmentCourse extends StatelessWidget {
 
     return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
       builder: (context, state) {
-        if (state is! EnrollmentsLoaded) {
+        if (state is EnrollmentsLoading || state is EnrollmentsInitial) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (state is EnrollmentsError) {
+          return Center(child: Text(state.message));
+        }
 
-        final enrollments = state.enrollments;
-        final courses = state.courses;
+        if (state is EnrollmentsLoaded) {
+          final enrollments = state.enrollments;
+          final courses = state.courses;
 
-        final favoritesState = context.watch<FavoritesCubit>().state;
-        final favorites = favoritesState is FavoritesLoaded
-            ? favoritesState.favoritesList
-            : [];
+          final favoritesState = context.watch<FavoritesCubit>().state;
+          final favorites = favoritesState is FavoritesLoaded
+              ? favoritesState.favoritesList
+              : [];
+          final courseMap = {for (var c in courses) c.id: c};
 
-        /// ===== MAP COURSES =====
-        final courseMap = {for (var c in courses) c.id: c};
+          final Map<int, dynamic> uniqueEnrollments = {
+            for (var e in enrollments) e.courseId: e,
+          };
 
-        /// ===== DEDUP ENROLLMENTS BY COURSE ID =====
-        final Map<int, dynamic> uniqueEnrollments = {
-          for (var e in enrollments) e.courseId: e,
-        };
+          return Column(
+            children: uniqueEnrollments.values.map((e) {
+              final course = courseMap[e.courseId]!;
+              final fav = favorites
+                  .where((f) => f.courseId == course.id)
+                  .cast<FavoritesModel?>()
+                  .firstOrNull;
 
-        return Column(
-          children: uniqueEnrollments.values.map((e) {
-            final course = courseMap[e.courseId]!;
-            final fav = favorites
-                .where((f) => f.courseId == course.id)
-                .cast<FavoritesModel?>()
-                .firstOrNull;
+              final isFavorite = fav != null;
 
-            final isFavorite = fav != null;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: CourseCard(
+                  imagePath: course.thumbnail,
+                  title: course.title,
+                  author: course.instructorName,
+                  rating: course.rating,
+                  progress: e.progressPercent,
+                  description: course.description,
+                  isFavorite: isFavorite,
+                  courseId: course.id,
+                  onFavoriteToggle: () {
+                    final cubit = context.read<FavoritesCubit>();
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: CourseCard(
-                imagePath: course.thumbnail,
-                title: course.title,
-                author: course.instructorName,
-                rating: course.rating,
-                progress: e.progressPercent / 100,
-                description: course.description,
-                isFavorite: isFavorite,
-                courseId: course.id,
-                onFavoriteToggle: () {
-                  final cubit = context.read<FavoritesCubit>();
-
-                  if (isFavorite) {
-                    cubit.deleteFavorite(favoriteID: fav.id);
-                  } else {
-                    cubit.addToFavorites(courseId: course.id, userId: userId);
-                  }
-                },
-              ),
-            );
-          }).toList(),
-        );
+                    if (isFavorite) {
+                      cubit.deleteFavorite(favoriteID: fav.id);
+                    } else {
+                      cubit.addToFavorites(courseId: course.id, userId: userId);
+                    }
+                  },
+                ),
+              );
+            }).toList(),
+          );
+        }
+        return const SizedBox.shrink();
       },
     );
   }

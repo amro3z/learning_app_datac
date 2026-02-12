@@ -26,7 +26,6 @@ class AppRoute {
             title: args['title'],
             instructor: args['instructor'],
             description: args['description'],
-            progress: args['progress'] as double,
             isFavorite: args['isFavorite'] as bool,
             courseId: args['courseId'] as int,
             onFavoriteToggle:

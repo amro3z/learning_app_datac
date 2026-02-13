@@ -161,4 +161,53 @@ Future<void> refreshUser({String? message}) async {
       message: message,
     );
   }
+
+  Future<void> updateName({
+    required String firstName,
+    required String lastName,
+  }) async {
+    if (_userId == null || state is! UserLoaded) return;
+
+    final current = state as UserLoaded;
+
+    emit(current.copyWith(isUploading: true));
+
+    try {
+      await _api.patch(
+        '$baseUrl/users/$_userId',
+        body: {"first_name": firstName, "last_name": lastName},
+      );
+
+      await refreshUser();
+    } catch (_) {
+      emit(
+        current.copyWith(isUploading: false, message: "Failed to update name"),
+      );
+    }
+  }
+Future<bool> deleteAccount() async {
+    if (_userId == null) return false;
+
+    try {
+      final response = await _api.delete('$baseUrl/users/$_userId');
+
+      print("DELETE STATUS: ${response.statusCode}");
+      print("DELETE BODY: ${response.body}");
+
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        await _api.auth.logout();
+        _userId = null;
+        emit(UserInitial());
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      print("DELETE ERROR: $e");
+      return false;
+    }
+  }
+
+
+
 }

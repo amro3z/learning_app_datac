@@ -13,14 +13,19 @@ Widget defaultText({
   Color? color,
   bool bold = true,
   TextAlign? align,
+
+  int maxLines = 2,
+  TextOverflow overflow = TextOverflow.ellipsis,
 }) {
   return Text(
-    textAlign: align ?? TextAlign.center,
     text,
+    textAlign: align ?? TextAlign.center,
+    maxLines: maxLines,
+    overflow: overflow,
     style: TextStyle(
       fontSize: size,
       fontFamily: 'CustomFont',
-      color: color,
+      color: color ?? Colors.white,
       fontWeight: bold ? FontWeight.bold : FontWeight.normal,
     ),
   );
@@ -74,8 +79,6 @@ Widget progressBar({
     ),
   );
 }
-
-
 
 Widget ratingWidget({required double value}) {
   return Row(

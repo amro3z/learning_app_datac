@@ -6,8 +6,10 @@ import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/states/user_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
+import 'package:training/helper/massage_dialog.dart';
+import 'package:training/widgets/delete_account_card.dart';
 import 'package:training/widgets/profile_card.dart';
-import 'package:training/widgets/profile_course_card.dart';
+import 'package:training/widgets/edit_name_card.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -18,16 +20,18 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   bool notify = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocConsumer<UserCubit, UserState>(
-        listenWhen: (prev, curr) => curr is UserLoaded && curr.message != null,
         listener: (context, state) {
-          if (state is UserLoaded && state.message != null) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar()
-              ..showSnackBar(SnackBar(content: Text(state.message!)));
+          if (state is UserError) {
+            customDialog(
+              context: context,
+              title: "Error",
+              message: state.message,
+            );
           }
         },
         builder: (context, state) {
@@ -37,9 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           if (state is UserLoaded) {
             return RefreshIndicator(
-              onRefresh: () => context.read<UserCubit>().refreshUser(
-                message: "Profile refreshed",
-              ),
+              onRefresh: () => context.read<UserCubit>().refreshUser(),
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -49,24 +51,23 @@ class _ProfilePageState extends State<ProfilePage> {
                       SizedBox(height: kToolbarHeight),
                       defaultText(text: "Profile", size: 24),
                       const SizedBox(height: 14),
+
                       ProfileCard(
-                        pickImage: (BuildContext ctx) => _pickImage(ctx),
+                        pickImage: (ctx) => _pickImage(ctx),
                         state: state,
                       ),
-                      const SizedBox(height: 12),
-                      defaultText(text: "My Courses (3)", size: 16),
 
-                      ListView.builder(
-                        itemBuilder: (context, index) {
-                          return ProfileCourseCard();
-                        },
-                        itemCount: 3,
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                      ),
+                      const SizedBox(height: 16),
 
                       defaultText(text: "Settings", size: 16),
                       const SizedBox(height: 12),
+
+                      /// 🔥 Edit Name Widget
+                      const EditNameCard(),
+
+                      const SizedBox(height: 12),
+
+                      /// Notifications
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -80,6 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               text: "Notifications",
                               size: 16,
                               bold: false,
+                              isCenter: false,
                             ),
                             const Spacer(),
                             Switch(
@@ -95,27 +97,15 @@ class _ProfilePageState extends State<ProfilePage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.1),
-                          border: Border.all(
-                            color: Colors.red.withOpacity(0.5),
-                            width: 1.5,
-                          ),
-                          borderRadius: BorderRadius.circular(812),
-                        ),
-                        child: defaultText(
-                          text: "Delete Account",
-                          size: 16,
-                          bold: false,
-                          color: Colors.red,
-                        ),
-                      ),
 
                       const SizedBox(height: 12),
+
+                      /// Delete Account
+                     const DeleteAccountCard(),
+
+                      const SizedBox(height: 12),
+
+                      /// Logout
                       CustomGlowButton(
                         title: "Log out",
                         onPressed: () {
@@ -124,6 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                         width: double.infinity,
                       ),
+
                       SizedBox(height: kBottomNavigationBarHeight + 30),
                     ],
                   ),
@@ -133,25 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
 
           if (state is UserError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<UserCubit>().logout();
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    child: const Text('Login again'),
-                  ),
-                ],
-              ),
-            );
+            return const SizedBox();
           }
 
           return const SizedBox();

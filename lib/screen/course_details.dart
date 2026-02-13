@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/lessons_cubit.dart';
+import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/widgets/instrauctor_card.dart';
 import 'package:training/widgets/lesson_card.dart';
@@ -40,10 +41,15 @@ class _CourseDetailsState extends State<CourseDetails> {
     _isFavorite = widget.isFavorite;
   }
 
-  Future<void> _refreshData() async {
+Future<void> _refreshData() async {
+    final userId = context.read<UserCubit>().userId;
+    if (userId == null) return;
+
     await context.read<LessonsCubit>().getLessons();
-    await context.read<EnrollmentsCubit>().getAllEnrollments();
+
+    await context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
   }
+
 
   @override
   Widget build(BuildContext context) {

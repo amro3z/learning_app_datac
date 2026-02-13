@@ -187,7 +187,7 @@ class EnrollmentCourse extends StatelessWidget {
                     final cubit = context.read<FavoritesCubit>();
 
                     if (isFavorite) {
-                      cubit.deleteFavorite(favoriteID: fav.id);
+                      cubit.deleteFavorite(favoriteID: fav.id , userId: userId);
                     } else {
                       cubit.addToFavorites(courseId: course.id, userId: userId);
                     }
@@ -270,6 +270,7 @@ class FavoriteCourses extends StatelessWidget {
                 isFavorite: true,
                 onFavoriteToggle: () {
                   context.read<FavoritesCubit>().deleteFavorite(
+                    userId: context.read<UserCubit>().userId!,
                     favoriteID: fav.id,
                   );
                 },

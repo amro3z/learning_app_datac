@@ -16,17 +16,21 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
   final LearningRepo learningRepo;
   final LearningWebservice webservice;
 
-  Future<void> getAllEnrollments() async {
+Future<void> getAllEnrollments({required String userId}) async {
     try {
       emit(EnrollmentsLoading());
 
-      final enrollments = await learningRepo.getEnrollmentList();
+      final enrollments = await learningRepo.getEnrollmentList(userId: userId);
+
       final courses = await learningRepo.getCoursesList();
 
       emit(EnrollmentsLoaded(enrollments: enrollments, courses: courses));
     } catch (e) {
       emit(EnrollmentsError(message: e.toString()));
     }
+  }
+  void clear() {
+    emit(EnrollmentsInitial());
   }
 
   Future<void> enrollCourse({
@@ -38,7 +42,7 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
     try {
       await webservice.enrollCourse(courseId: courseId, userId: userId);
 
-      await getAllEnrollments();
+      await getAllEnrollments(userId: userId);
     } catch (e) {
       emit(EnrollmentsError(message: 'Failed to enroll: $e'));
     }
@@ -72,12 +76,13 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
   Future<void> updateCourseProgress({
     required int enrollmentId,
     required double progress,
+    required String userId,
   }) async {
     await learningRepo.updateEnrollmentProgress(
       enrollmentId: enrollmentId,
       progressPercent: progress * 100,
     );
 
-    await getAllEnrollments();
+    await getAllEnrollments(userId: userId);
   }
 }

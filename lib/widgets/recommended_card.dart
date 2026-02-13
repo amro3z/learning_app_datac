@@ -111,7 +111,6 @@ class _RecommendedCardState extends State<RecommendedCard> {
         onPressed: _loading
             ? null
             : () async {
-                // ✅ حماية: لو enrolled خلاص → مفيش request
                 if (widget.isEnrolled) return;
 
                 setState(() => _loading = true);
@@ -120,9 +119,7 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   courseId: widget.courseId,
                   userId: context.read<UserCubit>().userId!,
                 );
-
-                // 🔄 نعمل refresh للـ enrollments فقط
-                await context.read<EnrollmentsCubit>().getAllEnrollments();
+                await context.read<EnrollmentsCubit>().getAllEnrollments(userId: context.read<UserCubit>().userId!);
 
                 setState(() => _loading = false);
               },

@@ -112,6 +112,7 @@ class LessonsCubit extends Cubit<LessonsState> {
       );
 
       await enrollmentsCubit.updateCourseProgress(
+        userId: userId,
         enrollmentId: enrollment.id,
         progress: percent,
       );

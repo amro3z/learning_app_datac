@@ -8,6 +8,7 @@ import 'package:training/cubits/cubit/lessons_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/states/user_state.dart';
 import 'package:training/data/api/web_service.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/route.dart';
@@ -16,60 +17,86 @@ import 'package:training/services/tokens/auths_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthService().init();
-  final learnCubit = CoursesCubit(
-    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
-  );
-  final categoriesCubit = CategoriesCubit(
-    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
-  );
+
+  final webService = LearningWebservice();
+  final repo = LearningRepo(learningWebService: webService);
+
+  final userCubit = UserCubit();
+  await userCubit.restoreSession();
+
   final enrollmentsCubit = EnrollmentsCubit(
-    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
-    webservice: LearningWebservice(),
+    learningRepo: repo,
+    webservice: webService,
   );
-  final recommendedCubit = RecommendedCubit(
-    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
-  );
-  final popularCubit = PopularCubit(
-    learningRepo: LearningRepo(learningWebService: LearningWebservice()),
-  );
-  final favoriteCubit = FavoritesCubit(
-    repo: LearningRepo(learningWebService: LearningWebservice()),
-    webservice: LearningWebservice(),
-  );
-  final lessonCubit = LessonsCubit(
-    repo: LearningRepo(learningWebService: LearningWebservice()),
-    enrollmentsCubit: enrollmentsCubit
-  );
+
+  final favoritesCubit = FavoritesCubit(repo: repo, webservice: webService);
+
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => learnCubit..getAllCourses()),
-        BlocProvider(create: (_) => UserCubit()..restoreSession()),
-        BlocProvider(create: (_) => categoriesCubit..getAllCategories()),
-        BlocProvider(create: (_) => enrollmentsCubit..getAllEnrollments()),
-        BlocProvider(create: (_) => recommendedCubit..getRecommendedList()),
-        BlocProvider(create: (_) => popularCubit..getPopularList()),
-        BlocProvider(create: (_) => favoriteCubit..getFavoritesList()),
-        BlocProvider(create: (_) => lessonCubit..getLessons()),
+        BlocProvider(create: (_) => userCubit),
+
+        BlocProvider(create: (_) => enrollmentsCubit),
+        BlocProvider(create: (_) => favoritesCubit),
+
+        BlocProvider(
+          create: (_) => CoursesCubit(learningRepo: repo)..getAllCourses(),
+        ),
+
+        BlocProvider(
+          create: (_) =>
+              CategoriesCubit(learningRepo: repo)..getAllCategories(),
+        ),
+
+        BlocProvider(
+          create: (_) =>
+              RecommendedCubit(learningRepo: repo)..getRecommendedList(),
+        ),
+
+        BlocProvider(
+          create: (_) => PopularCubit(learningRepo: repo)..getPopularList(),
+        ),
+
+        BlocProvider(
+          create: (_) =>
+              LessonsCubit(repo: repo, enrollmentsCubit: enrollmentsCubit)
+                ..getLessons(),
+        ),
       ],
-      child: MyApp(appRoute: AppRoute()),
+      child: MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  final AppRoute appRoute;
 
-  const MyApp({super.key, required this.appRoute});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      themeMode: ThemeMode.dark,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
-      initialRoute: '/login',
-      onGenerateRoute: appRoute.generateRoute,
+    return BlocListener<UserCubit, UserState>(
+      listener: (context, state) {
+        if (state is UserInitial) {
+          context.read<EnrollmentsCubit>().clear();
+          context.read<FavoritesCubit>().clear();
+        }
+
+        if (state is UserLoaded) {
+          final userId = context.read<UserCubit>().userId;
+          if (userId != null) {
+            context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
+
+            context.read<FavoritesCubit>().getFavoritesList(userId: userId);
+          }
+        }
+      },
+      child: MaterialApp(
+        themeMode: ThemeMode.dark,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData.dark(),
+        initialRoute: '/login',
+        onGenerateRoute: AppRoute().generateRoute,
+      ),
     );
   }
 }

@@ -63,22 +63,22 @@ class LearningRepo {
   }
 
  
-  Future<List<EnrollmentModel>> getEnrollmentList() async {
-    final response = await learningWebService.getEnrollmentList();
+  Future<List<EnrollmentModel>> getEnrollmentList({
+    required String userId,
+  }) async {
+    final data = await learningWebService.getEnrollmentList(userId: userId);
 
-    final List data = response['data'] ?? [];
-    return data
-        .map((enrollment) => EnrollmentModel.fromJson(enrollment))
-        .toList();
+    final List list = data["data"];
+
+    return list.map((e) => EnrollmentModel.fromJson(e)).toList();
   }
 
-  Future<List<FavoritesModel>> getFavoriteList() async {
-    final response = await learningWebService.getFavoriteList();
+  Future<List<FavoritesModel>> getFavoriteList({required String userId}) async {
+    final data = await learningWebService.getFavoriteList(userId: userId);
 
-    final List data = response['data'] ?? [];
-    return data
-        .map((favorite) => FavoritesModel.fromJson(favorite))
-        .toList();
+    final List list = data["data"];
+
+    return list.map((e) => FavoritesModel.fromJson(e)).toList();
   }
 
     Future<List<RecommendModel>> getRecommendedList() async {

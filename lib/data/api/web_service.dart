@@ -37,8 +37,11 @@ class LearningWebservice {
   }
 
   // ================= ENROLLMENTS =================
-  Future<Map<String, dynamic>> getEnrollmentList() async {
-    final res = await _api.get('$apiUrl/enrollments');
+Future<Map<String, dynamic>> getEnrollmentList({
+    required String userId,
+  }) async {
+    final res = await _api.get('$apiUrl/enrollments?filter[user][_eq]=$userId');
+
     return jsonDecode(res.body);
   }
 
@@ -53,8 +56,9 @@ class LearningWebservice {
   }
 
   // ================= FAVORITES =================
-  Future<Map<String, dynamic>> getFavoriteList() async {
-    final res = await _api.get('$apiUrl/favorites');
+ Future<Map<String, dynamic>> getFavoriteList({required String userId}) async {
+    final res = await _api.get('$apiUrl/favorites?filter[user][_eq]=$userId');
+
     return jsonDecode(res.body);
   }
 

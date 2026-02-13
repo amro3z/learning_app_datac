@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
+import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/widgets/course_card.dart';
 
@@ -15,11 +16,17 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<FavoritesCubit>().getFavoritesList();
+    final userId = context.read<UserCubit>().userId;
+    if (userId != null) {
+      context.read<FavoritesCubit>().getFavoritesList(userId: userId);
+    }
   }
 
   Future<void> _onRefresh() async {
-    await context.read<FavoritesCubit>().getFavoritesList();
+    final userId = context.read<UserCubit>().userId;
+    if (userId != null) {
+      await context.read<FavoritesCubit>().getFavoritesList(userId: userId);
+    }
   }
 
   @override
@@ -30,7 +37,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-padding: const EdgeInsets.only(
+            padding: const EdgeInsets.only(
               left: 12,
               right: 12,
               top: 24,
@@ -57,7 +64,6 @@ padding: const EdgeInsets.only(
                 ),
 
                 const SizedBox(height: 20),
-
                 const FavoriteCourses(),
               ],
             ),

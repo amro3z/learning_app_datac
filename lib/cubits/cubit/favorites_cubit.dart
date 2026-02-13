@@ -13,30 +13,39 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   final LearningWebservice webservice;
   final LearningRepo repo;
 
-  Future<void> getFavoritesList() async {
+  Future<void> getFavoritesList({required String userId}) async {
     emit(FavoritesLoading());
     try {
-      final favoritesList = await repo.getFavoriteList();
+      final favoritesList = await repo.getFavoriteList(userId: userId);
+
       final courses = await repo.getCoursesList();
+
       emit(FavoritesLoaded(favoritesList: favoritesList, courses: courses));
     } catch (e) {
       emit(FavoritesError(e.toString()));
     }
   }
-
-Future<void> addToFavorites({
+  void clear() {
+    emit(FavoritesInitial());
+  }
+  Future<void> addToFavorites({
     required int courseId,
     required String userId,
   }) async {
     await webservice.postFavorite(courseId: courseId, userId: userId);
-    await getFavoritesList();
+
+    await getFavoritesList(userId: userId);
   }
 
 
-  Future<void> deleteFavorite({required int favoriteID}) async {
+Future<void> deleteFavorite({
+    required int favoriteID,
+    required String userId,
+  }) async {
     try {
       await webservice.deleteFavorite(favoriteID: favoriteID);
-      await getFavoritesList();
+
+      await getFavoritesList(userId: userId);
     } catch (e) {
       emit(FavoritesError('Failed to remove from favorites: $e'));
     }

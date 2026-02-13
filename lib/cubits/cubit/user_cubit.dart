@@ -191,9 +191,6 @@ Future<bool> deleteAccount() async {
     try {
       final response = await _api.delete('$baseUrl/users/$_userId');
 
-      print("DELETE STATUS: ${response.statusCode}");
-      print("DELETE BODY: ${response.body}");
-
       if (response.statusCode == 204 || response.statusCode == 200) {
         await _api.auth.logout();
         _userId = null;
@@ -203,7 +200,6 @@ Future<bool> deleteAccount() async {
 
       return false;
     } catch (e) {
-      print("DELETE ERROR: $e");
       return false;
     }
   }

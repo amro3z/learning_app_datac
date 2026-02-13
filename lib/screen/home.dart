@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
+import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
+import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
@@ -28,14 +30,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadHomeData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadHomeData();
+    });
   }
 
-  /// 🔄 LOAD / REFRESH ALL HOME DATA
   Future<void> _loadHomeData() async {
+    final userId = context.read<UserCubit>().userId;
+    if (userId == null) return;
+
     await Future.wait([
       context.read<CoursesCubit>().getAllCourses(),
-      context.read<EnrollmentsCubit>().getAllEnrollments(),
+      context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId),
+      context.read<FavoritesCubit>().getFavoritesList(userId: userId),
       context.read<RecommendedCubit>().getRecommendedList(),
       context.read<PopularCubit>().getPopularList(),
       context.read<CategoriesCubit>().getAllCategories(),
@@ -66,10 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// ===== Home Page =====
   Widget _homePage() {
     return RefreshIndicator(
-      onRefresh: _loadHomeData, // 👈 هنا السحر
+      onRefresh: _loadHomeData,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(

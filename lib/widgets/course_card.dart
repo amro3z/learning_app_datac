@@ -13,11 +13,11 @@ class CourseCard extends StatelessWidget {
   final double rating;
   final double? progress;
   final String imagePath;
-  final bool isFavorite;
+  final bool? isFavorite;
   final String description;
   final int courseId;
   final bool? isFiltering;
-  final VoidCallback onFavoriteToggle;
+  final VoidCallback? onFavoriteToggle;
 
   const CourseCard({
     super.key,
@@ -26,8 +26,8 @@ class CourseCard extends StatelessWidget {
     required this.rating,
     this.progress,
     required this.imagePath,
-    required this.isFavorite,
-    required this.onFavoriteToggle,
+     this.isFavorite,
+     this.onFavoriteToggle,
     required this.description,
     required this.courseId,
     this.isFiltering = false,
@@ -84,18 +84,17 @@ class CourseCard extends StatelessWidget {
                         top: 10,
                         right: 10,
                         child: Container(
-                          // padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.2),
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
                             onPressed: onFavoriteToggle,
-                            icon: Icon(
-                              isFavorite
+                            icon:isFiltering == true ? const SizedBox.shrink() : Icon(
+                              isFavorite!
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color: isFavorite ? Colors.red : Colors.white,
+                              color: isFavorite! ? Colors.red : Colors.white,
                               size: 20,
                             ),
                           ),

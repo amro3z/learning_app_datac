@@ -28,7 +28,7 @@ class CoursesCubit extends Cubit<LearnState> {
     }
   }
 
-  void filterCourses({
+void filterCourses({
     String? search,
     String? difficulty,
     String? sortBy,
@@ -36,31 +36,20 @@ class CoursesCubit extends Cubit<LearnState> {
   }) {
     List<CoursesModel> result = List.from(_allCourses);
 
-    /// تحديد هل فيه فلترة ولا لأ
-    isFiltering =
-        (search != null && search.isNotEmpty) ||
-        difficulty != null ||
-        sortBy != null ||
-        categoryId != null;
-
-    /// SEARCH
     if (search != null && search.isNotEmpty) {
       result = result
           .where((c) => c.title.toLowerCase().contains(search.toLowerCase()))
           .toList();
     }
 
-    /// CATEGORY
     if (categoryId != null) {
       result = result.where((c) => c.categoryID == categoryId).toList();
     }
 
-    /// DIFFICULTY
     if (difficulty != null) {
       result = result.where((c) => c.level == difficulty).toList();
     }
 
-    /// SORT
     if (sortBy != null) {
       if (sortBy == "Recent") {
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -69,12 +58,22 @@ class CoursesCubit extends Cubit<LearnState> {
       }
     }
 
+    isFiltering =
+        result.length != _allCourses.length ||
+        search != null && search.isNotEmpty ||
+        categoryId != null ||
+        difficulty != null ||
+        sortBy != null;
+
     emit(CoursesLoaded(courses: _allCourses, filteredCourses: result));
   }
 
-  void resetFilters() {
+
+
+void resetFilters() {
     isFiltering = false;
 
     emit(CoursesLoaded(courses: _allCourses, filteredCourses: _allCourses));
   }
+
 }

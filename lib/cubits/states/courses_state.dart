@@ -5,14 +5,15 @@ class LearnState {}
 
 final class LearnInitial extends LearnState {}
 
-final class Loading extends LearnState {}
+final class CoursesLoading extends LearnState {}
 
-final class LearnLoaded extends LearnState {
+final class CoursesLoaded extends LearnState {
   final List<CoursesModel> courses;
-  LearnLoaded({required this.courses});
+    final List<CoursesModel> filteredCourses;
+  CoursesLoaded({required this.courses , required this.filteredCourses});
 }
 
-final class Error extends LearnState {
+final class CoursesError extends LearnState {
   final String message;
-  Error(this.message);
+  CoursesError(this.message);
 }

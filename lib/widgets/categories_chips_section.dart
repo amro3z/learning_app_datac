@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
+import 'package:training/cubits/states/categories_state.dart';
 import 'package:training/widgets/category_chip.dart';
 
 class CategoriesChipsSection extends StatefulWidget {

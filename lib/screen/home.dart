@@ -7,6 +7,7 @@ import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
@@ -99,26 +100,86 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             const SizedBox(height: 20),
+
+            /// 🔥 Search Bar
             CoursesSearchBar(),
 
             const SizedBox(height: 20),
-            defaultText(text: 'Categories', size: 18, isCenter: false),
-            const SizedBox(height: 12),
-            CategoriesChipsSection(),
 
-            const SizedBox(height: 28),
-            defaultText(text: 'Continue Learning', size: 18, isCenter: false),
-            const SizedBox(height: 12),
-            EnrollmentCourse(),
+            /// 🔥 هنا بقى السحر
+            BlocBuilder<CoursesCubit, LearnState>(
+              builder: (context, state) {
+                final cubit = context.read<CoursesCubit>();
 
-            const SizedBox(height: 24),
-            defaultText(text: "Recommended Courses", size: 18),
-            const SizedBox(height: 12),
-            RecommendedCourses(),
+                if (state is! CoursesLoaded) {
+                  return const SizedBox.shrink();
+                }
 
-            const SizedBox(height: 24),
-            defaultText(text: "Popular This Week", size: 18),
-            PopularCourses(),
+                /// =============================
+                /// 🔥 لو فيه فلترة
+                /// =============================
+                if (cubit.isFiltering) {
+                  final courses = state.filteredCourses;
+
+                  if (courses.isEmpty) {
+                    return Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: Center(
+                        child: defaultText(
+                          text: "No courses found",
+                          size: 20,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: courses.map((course) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: CourseCard(
+                          imagePath: course.thumbnail,
+                          title: course.title,
+                          author: course.instructorName,
+                          rating: course.rating,
+                          progress: 0,
+                          description: course.description,
+                          isFavorite: false,
+                          isFiltering: true,
+                          courseId: course.id,
+                          onFavoriteToggle: () {},
+                        ),
+                      );
+                    }).toList(),
+                  );
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20),
+                    defaultText(text: 'Categories', size: 18, isCenter: false),
+                    SizedBox(height: 12),
+                    CategoriesChipsSection(),
+                    SizedBox(height: 28),
+                    defaultText(
+                      text: 'Continue Learning',
+                      size: 18,
+                      isCenter: false,
+                    ),
+                    SizedBox(height: 12),
+                    EnrollmentCourse(),
+                    SizedBox(height: 24),
+                    defaultText(text: "Recommended Courses", size: 18),
+                    SizedBox(height: 12),
+                    RecommendedCourses(),
+                    SizedBox(height: 24),
+                    defaultText(text: "Popular This Week", size: 18),
+                    PopularCourses(),
+                  ],
+                );
+              },
+            ),
           ],
         ),
       ),

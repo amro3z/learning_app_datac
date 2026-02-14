@@ -15,8 +15,6 @@ class CourseDetails extends StatefulWidget {
     required this.title,
     required this.instructor,
     required this.description,
-    required this.onFavoriteToggle,
-    required this.isFavorite,
     required this.courseId,
   });
 
@@ -24,21 +22,18 @@ class CourseDetails extends StatefulWidget {
   final String title;
   final String instructor;
   final String description;
-  final bool isFavorite;
   final int courseId;
-  final Function() onFavoriteToggle;
 
   @override
   State<CourseDetails> createState() => _CourseDetailsState();
 }
 
 class _CourseDetailsState extends State<CourseDetails> {
-  late bool _isFavorite;
+
 
   @override
   void initState() {
     super.initState();
-    _isFavorite = widget.isFavorite;
   }
 
 Future<void> _refreshData() async {

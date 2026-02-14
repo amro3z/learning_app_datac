@@ -11,11 +11,12 @@ class CourseCard extends StatelessWidget {
   final String title;
   final String author;
   final double rating;
-  final double progress;
+  final double? progress;
   final String imagePath;
   final bool isFavorite;
   final String description;
   final int courseId;
+  final bool? isFiltering;
   final VoidCallback onFavoriteToggle;
 
   const CourseCard({
@@ -23,12 +24,13 @@ class CourseCard extends StatelessWidget {
     required this.title,
     required this.author,
     required this.rating,
-    required this.progress,
+    this.progress,
     required this.imagePath,
     required this.isFavorite,
     required this.onFavoriteToggle,
     required this.description,
     required this.courseId,
+    this.isFiltering = false,
   });
 
   @override
@@ -43,15 +45,12 @@ class CourseCard extends StatelessWidget {
             'title': title,
             'instructor': author,
             'description': description,
-            'isFavorite': isFavorite,
-            'onFavoriteToggle':
-                onFavoriteToggle, // Pass the callback to details
             'courseId': courseId,
           },
         );
       },
       child: Container(
-        height: 265,
+        height: isFiltering == true ? 245 : 265,
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(16),
@@ -79,25 +78,29 @@ class CourseCard extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    // padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: onFavoriteToggle,
-                      icon: Icon(
-                        isFavorite ? Icons.favorite : Icons.favorite_border,
-                        color: isFavorite ? Colors.red : Colors.white,
-                        size: 20,
+                isFiltering == true
+                    ? const SizedBox.shrink()
+                    : Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          // padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            onPressed: onFavoriteToggle,
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
               ],
             ),
             Padding(
@@ -121,7 +124,9 @@ class CourseCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   ratingWidget(value: rating),
                   const SizedBox(height: 10),
-                  progressBar(progress: progress),
+                  isFiltering == true
+                      ? const SizedBox.shrink()
+                      : progressBar(progress: progress!),
                 ],
               ),
             ),
@@ -187,7 +192,7 @@ class EnrollmentCourse extends StatelessWidget {
                     final cubit = context.read<FavoritesCubit>();
 
                     if (isFavorite) {
-                      cubit.deleteFavorite(favoriteID: fav.id , userId: userId);
+                      cubit.deleteFavorite(favoriteID: fav.id, userId: userId);
                     } else {
                       cubit.addToFavorites(courseId: course.id, userId: userId);
                     }

@@ -26,11 +26,7 @@ class AppRoute {
             title: args['title'],
             instructor: args['instructor'],
             description: args['description'],
-            isFavorite: args['isFavorite'] as bool,
             courseId: args['courseId'] as int,
-            onFavoriteToggle:
-                args['onFavoriteToggle']
-                    as VoidCallback, // Placeholder, will be set in CourseCard
           ),
         );
       case '/lesson_screen':

@@ -5,24 +5,24 @@ enum CustomTextFieldType { email, name, password, number, phone, text }
 
 class CustomFormTextField extends StatefulWidget {
   final String labelText;
-  final String hintText;
+  final String? hintText;
   final AutovalidateMode autovalidateMode;
   final bool obscureText;
   final CustomTextFieldType keyboardType;
   final TextEditingController? controller;
   final TextDirection textDirection;
-  final Icon? suffixIcon;
+  final Widget? suffixWidget;
   final Function(String)? onChanged;
   const CustomFormTextField({
     super.key,
     required this.labelText,
-    required this.hintText,
+     this.hintText,
     required this.autovalidateMode,
     required this.keyboardType,
     this.obscureText = false,
     this.controller,
     this.textDirection = TextDirection.ltr,
-    this.suffixIcon,
+    this.suffixWidget,
     this.onChanged,
   });
 
@@ -143,7 +143,7 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
                   color: Colors.grey,
                 ),
               )
-            : widget.suffixIcon,
+            : widget.suffixWidget,
         hintText: widget.hintText,
         labelText: widget.labelText,
         hintTextDirection: widget.textDirection,

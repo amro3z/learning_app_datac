@@ -1,18 +1,30 @@
-part of '../cubit/categories_cubit.dart';
 
-@immutable
-sealed class CategoriesState {}
+import 'package:training/data/models/categories.dart';
 
-final class CategoriesInitial extends CategoriesState {}
+class CategoriesState {}
 
-final class CategoriesLoading extends CategoriesState {}
+class CategoriesInitial extends CategoriesState {}
 
-final class CategoriesLoaded extends CategoriesState {
+class CategoriesLoading extends CategoriesState {}
+
+class CategoriesLoaded extends CategoriesState {
   final List<CategoriesModel> categories;
-  CategoriesLoaded({required this.categories});
+  final int? selectedCategoryId;
+
+  CategoriesLoaded({required this.categories, this.selectedCategoryId});
+
+  CategoriesLoaded copyWith({
+    List<CategoriesModel>? categories,
+    int? selectedCategoryId,
+  }) {
+    return CategoriesLoaded(
+      categories: categories ?? this.categories,
+      selectedCategoryId: selectedCategoryId,
+    );
+  }
 }
 
-final class CategoriesError extends CategoriesState {
+class CategoriesError extends CategoriesState {
   final String message;
   CategoriesError({required this.message});
 }

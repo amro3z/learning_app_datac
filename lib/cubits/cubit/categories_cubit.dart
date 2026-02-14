@@ -1,21 +1,28 @@
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
-import 'package:training/data/models/categories.dart';
+import 'package:training/cubits/states/categories_state.dart';
 import 'package:training/data/repo/learning_repo.dart';
-
-part '../states/categories_state.dart';
 
 class CategoriesCubit extends Cubit<CategoriesState> {
   CategoriesCubit({required this.learningRepo}) : super(CategoriesInitial());
-  LearningRepo learningRepo;
-  late List<CategoriesModel> categoriesList;
+
+  final LearningRepo learningRepo;
+
   Future<void> getAllCategories() async {
     emit(CategoriesLoading());
     try {
-      categoriesList = await learningRepo.getCategoryList();
-      emit(CategoriesLoaded(categories: categoriesList));
+      final categories = await learningRepo.getCategoryList();
+
+      emit(CategoriesLoaded(categories: categories, selectedCategoryId: null));
     } catch (e) {
       emit(CategoriesError(message: e.toString()));
+    }
+  }
+
+  void selectCategory(int? categoryId) {
+    if (state is CategoriesLoaded) {
+      final current = state as CategoriesLoaded;
+
+      emit(current.copyWith(selectedCategoryId: categoryId));
     }
   }
 }

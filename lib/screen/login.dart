@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     hintText: 'Email address',
                     keyboardType: CustomTextFieldType.email,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    suffixIcon: const Icon(Icons.email, color: Colors.grey),
+                    suffixWidget: const Icon(Icons.email, color: Colors.grey),
                   ),
 
                   const SizedBox(height: 16),
@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     keyboardType: CustomTextFieldType.password,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     obscureText: true,
-                    suffixIcon: const Icon(Icons.lock, color: Colors.grey),
+                    suffixWidget: const Icon(Icons.lock, color: Colors.grey),
                   ),
 
                   const SizedBox(height: 24),

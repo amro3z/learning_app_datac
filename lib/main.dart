@@ -34,7 +34,7 @@ void main() async {
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => userCubit),
+        BlocProvider(create: (_) => userCubit..restoreSession()),
 
         BlocProvider(create: (_) => enrollmentsCubit),
         BlocProvider(create: (_) => favoritesCubit),

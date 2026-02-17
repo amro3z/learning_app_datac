@@ -1,0 +1,23 @@
+default_platform(:android)
+
+platform :android do
+  desc "Distribute app to Firebase App Distribution"
+  lane :distribute do
+    
+    UI.message("🔹 Starting Fastlane distribution...")
+
+    sh "flutter clean"
+    sh "flutter build apk --release --analyze-size --target-platform=android-arm64"
+
+    firebase_app_distribution(
+      app: "1:300047113775:android:cd68d6c9d7ee804a29b0da",
+      android_artifact_type: "APK",
+      android_artifact_path: "../build/app/outputs/flutter-apk/app-release.apk",
+      testers: "m.hani@datac.com",   
+      release_notes: "New release to test 🚀"
+    )
+
+    UI.success("🎉 Distribution Finished Successfully!")
+
+  end
+end

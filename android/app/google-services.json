@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "300047113775",
+    "project_id": "learning-datac-app",
+    "storage_bucket": "learning-datac-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:300047113775:android:cd68d6c9d7ee804a29b0da",
+        "android_client_info": {
+          "package_name": "com.example.training"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBf8w--LDPXqcWq1gTNfNRusmrfgdpqST4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

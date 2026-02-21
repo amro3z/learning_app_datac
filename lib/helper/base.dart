@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 
 get getScreenWidth =>
     (BuildContext context) => MediaQuery.of(context).size.width;
@@ -7,24 +10,30 @@ get getScreenHeight =>
     (BuildContext context) => MediaQuery.of(context).size.height;
 
 Widget defaultText({
+  required BuildContext context,
   required String text,
   required double size,
   bool isCenter = true,
   Color? color,
   bool bold = true,
   TextAlign? align,
-
   int maxLines = 2,
   TextOverflow overflow = TextOverflow.ellipsis,
 }) {
+  final langState = context.watch<LanguageCubit>().state;
+
+  final isArabic =
+      langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
   return Text(
     text,
-    textAlign: align ?? TextAlign.center,
+    textAlign: align ?? (isArabic ? TextAlign.right : TextAlign.center),
     maxLines: maxLines,
     overflow: overflow,
+    textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
     style: TextStyle(
       fontSize: size,
-      fontFamily: 'CustomFont',
+      fontFamily: isArabic ? 'CustomArabicFont' : 'CustomEnglishFont',
       color: color ?? Colors.white,
       fontWeight: bold ? FontWeight.bold : FontWeight.normal,
     ),
@@ -80,7 +89,7 @@ Widget progressBar({
   );
 }
 
-Widget ratingWidget({required double value}) {
+Widget ratingWidget({required double value , required BuildContext context}) {
   return Row(
     children: [
       ...List.generate(
@@ -92,7 +101,8 @@ Widget ratingWidget({required double value}) {
         ),
       ),
       const SizedBox(width: 6),
-      defaultText(text: value.toString(), bold: false, size: 12),
+      defaultText(text: value.toString(), bold: false, size: 12 ,                         context: context,
+      ),
     ],
   );
 }

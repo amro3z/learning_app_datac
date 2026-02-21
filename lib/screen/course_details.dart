@@ -4,6 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/lessons_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/widgets/instrauctor_card.dart';
 import 'package:training/widgets/lesson_card.dart';
@@ -29,29 +31,29 @@ class CourseDetails extends StatefulWidget {
 }
 
 class _CourseDetailsState extends State<CourseDetails> {
-
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-Future<void> _refreshData() async {
+  Future<void> _refreshData() async {
     final userId = context.read<UserCubit>().userId;
     if (userId == null) return;
 
     await context.read<LessonsCubit>().getLessons();
-
     await context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: defaultText(text: "Course Details", size: 18, isCenter: false),
+        title: defaultText(
+          context: context,
+          text: isArabic ? "تفاصيل الدورة" : "Course Details",
+          size: 18,
+          isCenter: false,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, size: 24),
           onPressed: () => Navigator.pop(context),
@@ -68,7 +70,7 @@ Future<void> _refreshData() async {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// صورة الكورس
+              /// COURSE IMAGE
               Stack(
                 children: [
                   SizedBox(
@@ -98,24 +100,35 @@ Future<void> _refreshData() async {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    defaultText(text: widget.title, size: 18, isCenter: false),
+                    defaultText(
+                      context: context,
+                      text: widget.title,
+                      size: 18,
+                      isCenter: false,
+                    ),
+
                     const SizedBox(height: 8),
 
-                    instructorCard(instructor: widget.instructor),
+                    instructorCard(
+                      instructor: widget.instructor,
+                      context: context,
+                    ),
+
                     const SizedBox(height: 8),
 
                     defaultText(
-                      align: TextAlign.start,
+                      context: context,
                       text: widget.description,
                       size: 14,
                       isCenter: false,
+                      align: TextAlign.start,
                       color: Colors.grey,
                     ),
 
                     const SizedBox(height: 12),
 
                     /// =========================
-                    /// Course Progress
+                    /// COURSE PROGRESS
                     /// =========================
                     BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
                       builder: (context, state) {
@@ -129,12 +142,10 @@ Future<void> _refreshData() async {
                           if (enrollment != null) {
                             progress = enrollment.progressPercent;
 
-                            // لو السيرفر بيرجع 100 بدل 1
                             if (progress > 1) {
                               progress = progress / 100;
                             }
 
-                            // حماية من أي قيمة غلط
                             progress = progress.clamp(0.0, 1.0);
                           }
                         }
@@ -154,11 +165,15 @@ Future<void> _refreshData() async {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   defaultText(
-                                    text: "Course Progress",
+                                    context: context,
+                                    text: isArabic
+                                        ? "تقدم الدورة"
+                                        : "Course Progress",
                                     size: 14,
                                     isCenter: false,
                                   ),
                                   defaultText(
+                                    context: context,
                                     text:
                                         "${(progress * 100).toStringAsFixed(0)}%",
                                     size: 14,
@@ -177,7 +192,7 @@ Future<void> _refreshData() async {
 
                     const SizedBox(height: 12),
 
-                    /// Lessons
+                    /// LESSONS
                     Lessons(
                       courseId: widget.courseId,
                       courseTitle: widget.title,

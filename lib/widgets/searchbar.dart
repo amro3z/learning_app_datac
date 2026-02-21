@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/categories_state.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/custom_form_textfield.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/helper/base.dart';
@@ -19,35 +21,57 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
   String? sortBy;
   String? difficulty;
 
-  final sortOptions = ['Recent', 'Rating'];
-  final difficultyOptions = ['Easy', 'intermediate', 'Hard'];
-
   final TextEditingController searchController = TextEditingController();
+
+  /// 🔥 ثابتة داخليًا (القيمة الحقيقية إنجليزي)
+  final sortOptions = {
+    'Recent': {'en': 'Recent', 'ar': 'الأحدث'},
+    'Rating': {'en': 'Rating', 'ar': 'التقييم'},
+  };
+
+  final difficultyOptions = {
+    'Easy': {'en': 'Easy', 'ar': 'سهل'},
+    'Intermediate': {'en': 'Intermediate', 'ar': 'متوسط'},
+    'Hard': {'en': 'Hard', 'ar': 'صعب'},
+  };
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CategoriesCubit, CategoriesState>(
-      builder: (context, state) {
-        if (state is! CategoriesLoaded) {
-          return const SizedBox.shrink();
-        }
+    return BlocBuilder<LanguageCubit, LanguageCubitState>(
+      builder: (context, langState) {
+        final languageCode = langState is LanguageCubitLoaded
+            ? langState.languageCode
+            : 'en';
 
-        return CustomFormTextField(
-          labelText: 'Search courses...',
-          // hintText: 'Search courses...',
-          autovalidateMode: AutovalidateMode.disabled,
-          keyboardType: CustomTextFieldType.text,
-          controller: searchController,
-          suffixWidget: IconButton(
-            icon: const Icon(Icons.filter_list_sharp, color: Colors.white70),
-            onPressed: () => _openFiltersSheet(),
-          ),
-          onChanged: (value) {
-            context.read<CoursesCubit>().filterCourses(
-              search: value,
-              categoryId: state.selectedCategoryId,
-              difficulty: difficulty,
-              sortBy: sortBy,
+        return BlocBuilder<CategoriesCubit, CategoriesState>(
+          builder: (context, state) {
+            if (state is! CategoriesLoaded) {
+              return const SizedBox.shrink();
+            }
+
+            return CustomFormTextField(
+              labelText: languageCode == 'ar'
+                  ? 'ابحث عن كورسات...'
+                  : 'Search courses...',
+              autovalidateMode: AutovalidateMode.disabled,
+              keyboardType: CustomTextFieldType.text,
+              controller: searchController,
+              suffixWidget: IconButton(
+                icon: const Icon(
+                  Icons.filter_list_sharp,
+                  color: Colors.white70,
+                ),
+                onPressed: () => _openFiltersSheet(languageCode),
+              ),
+              onChanged: (value) {
+                context.read<CoursesCubit>().filterCourses(
+                  search: value,
+                  categoryId: state.selectedCategoryId,
+                  difficulty: difficulty,
+                  sortBy: sortBy,
+                  languageCode: languageCode,
+                );
+              },
             );
           },
         );
@@ -55,7 +79,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
     );
   }
 
-  void _openFiltersSheet() {
+  void _openFiltersSheet(String languageCode) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -69,6 +93,10 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
             return StatefulBuilder(
               builder: (context, setSheetState) {
+                final selectedCategory = state.categories.firstWhereOrNull(
+                  (c) => c.id == state.selectedCategoryId,
+                );
+
                 return Container(
                   padding: const EdgeInsets.all(20),
                   decoration: const BoxDecoration(
@@ -82,7 +110,8 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         defaultText(
-                          text: "Filters",
+                          context: context,
+                          text: languageCode == 'ar' ? "الفلاتر" : "Filters",
                           size: 20,
                           bold: true,
                           isCenter: false,
@@ -90,37 +119,45 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                         const SizedBox(height: 20),
 
                         /// SORT
-                        _sectionTitle('Sort by'),
+                        _sectionTitle(
+                          languageCode == 'ar' ? 'الترتيب' : 'Sort by',
+                        ),
+
                         _singleSelectChips(
-                          options: sortOptions,
+                          options: sortOptions.keys.toList(),
                           selected: sortBy,
-                          onSelected: (v) {
+                          languageCode: languageCode,
+                          displayMap: sortOptions,
+                          onSelected: (value) {
                             setSheetState(() {
-                              sortBy = (sortBy == v) ? null : v;
+                              sortBy = (sortBy == value) ? null : value;
                             });
                           },
                         ),
 
                         const SizedBox(height: 20),
 
-                        /// CATEGORY (FIXED)
-                        _sectionTitle('Category'),
+                        /// CATEGORY
+                        _sectionTitle(
+                          languageCode == 'ar' ? 'التصنيف' : 'Category',
+                        ),
+
                         _singleSelectChips(
                           options: state.categories
-                              .map((c) => c.title)
+                              .map((c) => c.id.toString())
                               .toList(),
-                          selected: state.categories
-                              .firstWhereOrNull(
-                                (c) => c.id == state.selectedCategoryId,
-                              )
-                              ?.title,
-                          onSelected: (v) {
-                            final selected = state.categories.firstWhere(
-                              (c) => c.title == v,
-                            );
-
+                          selected: selectedCategory?.id.toString(),
+                          languageCode: languageCode,
+                          displayMap: {
+                            for (var c in state.categories)
+                              c.id.toString(): {
+                                'en': c.titleEn,
+                                'ar': c.titleAr,
+                              },
+                          },
+                          onSelected: (value) {
                             context.read<CategoriesCubit>().selectCategory(
-                              selected.id,
+                              int.parse(value),
                             );
                           },
                         ),
@@ -128,13 +165,18 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                         const SizedBox(height: 20),
 
                         /// DIFFICULTY
-                        _sectionTitle('Difficulty'),
+                        _sectionTitle(
+                          languageCode == 'ar' ? 'المستوى' : 'Difficulty',
+                        ),
+
                         _singleSelectChips(
-                          options: difficultyOptions,
+                          options: difficultyOptions.keys.toList(),
                           selected: difficulty,
-                          onSelected: (v) {
+                          languageCode: languageCode,
+                          displayMap: difficultyOptions,
+                          onSelected: (value) {
                             setSheetState(() {
-                              difficulty = (difficulty == v) ? null : v;
+                              difficulty = (difficulty == value) ? null : value;
                             });
                           },
                         ),
@@ -146,7 +188,9 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                           children: [
                             /// RESET
                             CustomGlowButton(
-                              title: "Reset",
+                              title: languageCode == 'ar'
+                                  ? "إعادة ضبط"
+                                  : "Reset",
                               width: 120,
                               onPressed: () {
                                 setSheetState(() {
@@ -166,7 +210,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
                             /// APPLY
                             CustomGlowButton(
-                              title: "Apply",
+                              title: languageCode == 'ar' ? "تطبيق" : "Apply",
                               width: 120,
                               onPressed: () {
                                 context.read<CoursesCubit>().filterCourses(
@@ -174,6 +218,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                                   categoryId: state.selectedCategoryId,
                                   difficulty: difficulty,
                                   sortBy: sortBy,
+                                  languageCode: languageCode,
                                 );
 
                                 Navigator.pop(context);
@@ -196,13 +241,21 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: defaultText(text: text, size: 16, bold: true, isCenter: false),
+      child: defaultText(
+        context: context,
+        text: text,
+        size: 16,
+        bold: true,
+        isCenter: false,
+      ),
     );
   }
 
   Widget _singleSelectChips({
     required List<String> options,
     required String? selected,
+    required String languageCode,
+    required Map<String, Map<String, String>> displayMap,
     required Function(String) onSelected,
   }) {
     return Wrap(
@@ -213,9 +266,9 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
         return ChoiceChip(
           label: defaultText(
-            text: item,
+            context: context,
+            text: displayMap[item]![languageCode]!,
             size: 14,
-            isCenter: true,
             color: isSelected ? Colors.white : Colors.white70,
           ),
           selected: isSelected,

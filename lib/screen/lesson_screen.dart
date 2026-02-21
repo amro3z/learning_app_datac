@@ -19,7 +19,7 @@ class LessonScreen extends StatefulWidget {
   final int lessonID;
   final int courseID;
   final String courseTitle;
-  final int lessonDurationInSeconds ;
+  final int lessonDurationInSeconds;
   @override
   State<LessonScreen> createState() => _LessonScreenState();
 }
@@ -29,7 +29,11 @@ class _LessonScreenState extends State<LessonScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: defaultText(text: widget.courseTitle, size: 20),
+        title: defaultText(
+          text: widget.courseTitle,
+          size: 20,
+          context: context,
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 24),
           onPressed: () => Navigator.pop(context),
@@ -58,6 +62,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
             Container(
               padding: const EdgeInsets.all(12),
+              width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.grey.withOpacity(0.1),
                 border: Border.all(color: Colors.white12),
@@ -67,9 +72,14 @@ class _LessonScreenState extends State<LessonScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  defaultText(text: widget.lessonTitle, size: 16),
+                  defaultText(
+                    text: widget.lessonTitle,
+                    size: 16,
+                    context: context,
+                  ),
                   SizedBox(height: 5),
                   defaultText(
+                    context: context,
                     text: widget.lessonDescription,
                     size: 14,
                     color: Colors.grey,

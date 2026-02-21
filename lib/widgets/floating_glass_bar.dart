@@ -1,5 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 
 class FloatingGlassBar extends StatelessWidget {
@@ -14,6 +17,10 @@ class FloatingGlassBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     return Positioned(
       bottom: 20,
       left: 20,
@@ -39,9 +46,24 @@ class FloatingGlassBar extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _navItem(Icons.home, 'Home', 0),
-                _navItem(Icons.favorite_border, 'Favorites', 1),
-                _navItem(Icons.person_outline, 'Profile', 2),
+                _navItem(
+                  context,
+                  Icons.home,
+                  isArabic ? "الرئيسية" : "Home",
+                  0,
+                ),
+                _navItem(
+                  context,
+                  Icons.favorite_border,
+                  isArabic ? "المفضلة" : "Favorites",
+                  1,
+                ),
+                _navItem(
+                  context,
+                  Icons.person_outline,
+                  isArabic ? "الملف الشخصي" : "Profile",
+                  2,
+                ),
               ],
             ),
           ),
@@ -50,7 +72,12 @@ class FloatingGlassBar extends StatelessWidget {
     );
   }
 
-  Widget _navItem(IconData icon, String label, int index) {
+  Widget _navItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    int index,
+  ) {
     final isSelected = currentIndex == index;
 
     return GestureDetector(
@@ -80,6 +107,7 @@ class FloatingGlassBar extends StatelessWidget {
             Icon(icon, color: isSelected ? Colors.white : Colors.grey),
             const SizedBox(height: 4),
             defaultText(
+              context: context,
               text: label,
               size: 12,
               color: isSelected ? Colors.white : Colors.grey,

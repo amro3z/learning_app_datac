@@ -17,7 +17,6 @@ class CoursesCubit extends Cubit<LearnState> {
     try {
       final courses = await learningRepo.getCoursesList();
 
-      /// 🔥 published فقط
       _allCourses = courses.where((c) => c.status == "published").toList();
 
       isFiltering = false;
@@ -28,28 +27,35 @@ class CoursesCubit extends Cubit<LearnState> {
     }
   }
 
-void filterCourses({
+  void filterCourses({
     String? search,
     String? difficulty,
     String? sortBy,
     int? categoryId,
+    required String languageCode,
   }) {
     List<CoursesModel> result = List.from(_allCourses);
 
-    if (search != null && search.isNotEmpty) {
-      result = result
-          .where((c) => c.title.toLowerCase().contains(search.toLowerCase()))
-          .toList();
+    /// 🔍 SEARCH
+    if (search != null && search.trim().isNotEmpty) {
+      result = result.where((c) {
+        final title = languageCode == 'ar' ? c.titleAr : c.titleEn;
+
+        return title.toLowerCase().contains(search.toLowerCase());
+      }).toList();
     }
 
+    /// 🗂 CATEGORY
     if (categoryId != null) {
       result = result.where((c) => c.categoryID == categoryId).toList();
     }
 
+    /// 🎯 DIFFICULTY
     if (difficulty != null) {
       result = result.where((c) => c.level == difficulty).toList();
     }
 
+    /// 🔄 SORT
     if (sortBy != null) {
       if (sortBy == "Recent") {
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -58,22 +64,14 @@ void filterCourses({
       }
     }
 
-    isFiltering =
-        result.length != _allCourses.length ||
-        search != null && search.isNotEmpty ||
-        categoryId != null ||
-        difficulty != null ||
-        sortBy != null;
+    isFiltering = result.length != _allCourses.length;
 
     emit(CoursesLoaded(courses: _allCourses, filteredCourses: result));
   }
 
-
-
-void resetFilters() {
+  void resetFilters() {
     isFiltering = false;
 
     emit(CoursesLoaded(courses: _allCourses, filteredCourses: _allCourses));
   }
-
 }

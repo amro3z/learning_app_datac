@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/categories_state.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/widgets/category_chip.dart';
 
 class CategoriesChipsSection extends StatelessWidget {
@@ -22,24 +24,32 @@ class CategoriesChipsSection extends StatelessWidget {
           children: state.categories.map((cat) {
             final isSelected = state.selectedCategoryId == cat.id;
 
-return CategoryChip(
+            return CategoryChip(
               category: cat,
               isSelected: isSelected,
               onTap: () {
                 final categoriesCubit = context.read<CategoriesCubit>();
                 final coursesCubit = context.read<CoursesCubit>();
 
+                final langState = context.read<LanguageCubit>().state;
+
+                final languageCode = langState is LanguageCubitLoaded
+                    ? langState.languageCode
+                    : 'en';
+
                 if (isSelected) {
-                  // إلغاء الفلترة
                   categoriesCubit.selectCategory(null);
                   coursesCubit.resetFilters();
                 } else {
                   categoriesCubit.selectCategory(cat.id);
-                  coursesCubit.filterCourses(categoryId: cat.id);
+
+                  coursesCubit.filterCourses(
+                    categoryId: cat.id,
+                    languageCode: languageCode,
+                  );
                 }
               },
             );
-
           }).toList(),
         );
       },

@@ -40,9 +40,11 @@ void customDialog({
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  defaultText(text: title, size: 24, bold: true, color: Colors.white),
+                  defaultText(text: title, size: 24, bold: true, color: Colors.white ,
+                    context: context,
+                  ),
                   const SizedBox(height: 12),
-                  defaultText(text: message, size: 16 , color: Colors.white ),
+                  defaultText(text: message, size: 16 , color: Colors.white , context: context),
                   const SizedBox(height: 24),
                   CustomGlowButton(
                     title: 'ok',

@@ -5,8 +5,10 @@ class CoursesModel {
   late String status;
   late DateTime createdAt;
   DateTime? dateUpdated;
-  late String title;
-  late String description;
+  late String titleAr;
+  late String titleEn;
+  late String descriptionAr;
+  late String descriptionEn;
   late String thumbnail;
   late double rating;
   late int categoryID;
@@ -19,8 +21,10 @@ class CoursesModel {
     dateUpdated = json['date_updated'] != null
         ? DateTime.parse(json['date_updated'])
         : null;
-    title = json['title'];
-    description = json['description'];
+    titleAr = json['title']['ar'] ;
+    titleEn = json['title']['en'];
+    descriptionAr = json['description']['ar'] ;
+    descriptionEn = json['description']['en'];
     thumbnail = '$fileUrl${json['thumbnail']}';
     rating = (json['rating'] ?? 0).toDouble();
     categoryID = json['category'];

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/massage_dialog.dart';
 
@@ -9,12 +11,18 @@ class DeleteAccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     return GestureDetector(
       onTap: () {
         customDialog(
           context: context,
-          title: "Confirm Delete",
-          message: "Are you sure you want to delete your account permanently?",
+          title: isArabic ? "تأكيد الحذف" : "Confirm Delete",
+          message: isArabic
+              ? "هل أنت متأكد أنك تريد حذف الحساب نهائيًا؟"
+              : "Are you sure you want to delete your account permanently?",
           onClose: () async {
             Navigator.of(context).pop();
 
@@ -31,8 +39,10 @@ class DeleteAccountCard extends StatelessWidget {
             } else {
               customDialog(
                 context: context,
-                title: "Error",
-                message: "Failed to delete account",
+                title: isArabic ? "خطأ" : "Error",
+                message: isArabic
+                    ? "فشل في حذف الحساب"
+                    : "Failed to delete account",
               );
             }
           },
@@ -44,12 +54,12 @@ class DeleteAccountCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.grey.withOpacity(0.1),
           border: Border.all(color: Colors.red.withOpacity(0.5), width: 1.5),
-          borderRadius: BorderRadius.circular(812),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: defaultText(
-          text: "Delete Account",
+          context: context,
+          text: isArabic ? "حذف الحساب" : "Delete Account",
           size: 16,
-          bold: false,
           color: Colors.red,
           isCenter: false,
         ),

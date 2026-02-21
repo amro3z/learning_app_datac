@@ -30,6 +30,7 @@ class OfflineOverlay extends StatelessWidget {
                   const Icon(Icons.wifi_off, color: Colors.redAccent, size: 48),
                   const SizedBox(height: 12),
                   defaultText(
+                                            context: context,
                     text: 'No Internet Connection',
                     size: 18,
                     color: Colors.white,
@@ -37,6 +38,7 @@ class OfflineOverlay extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   defaultText(
+                                            context: context,
                     text: 'Please check your connection',
                     size: 22,
                     color: Colors.grey,

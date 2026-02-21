@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
 
@@ -10,7 +12,8 @@ class RecommendedCard extends StatefulWidget {
   const RecommendedCard({
     super.key,
     required this.courseId,
-    required this.title,
+    required this.titleEn,
+    required this.titleAr,
     required this.author,
     required this.rating,
     required this.imagePath,
@@ -18,8 +21,9 @@ class RecommendedCard extends StatefulWidget {
   });
 
   final int courseId;
-  final String title;
-  final String author;
+  final String titleEn;
+  final String titleAr;
+  final String author; 
   final double rating;
   final String imagePath;
   final bool isEnrolled;
@@ -33,6 +37,13 @@ class _RecommendedCardState extends State<RecommendedCard> {
 
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final languageCode = langState is LanguageCubitLoaded
+        ? langState.languageCode
+        : 'en';
+
+    final title = languageCode == 'ar' ? widget.titleAr : widget.titleEn;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -56,7 +67,8 @@ class _RecommendedCardState extends State<RecommendedCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               defaultText(
-                text: widget.title,
+                                        context: context,
+                text: title,
                 size: 14,
                 color: Colors.white,
                 bold: true,
@@ -64,18 +76,19 @@ class _RecommendedCardState extends State<RecommendedCard> {
               ),
               const SizedBox(height: 4),
               defaultText(
-                text: widget.author,
+                                        context: context,
+                text: widget.author, // مش مترجم
                 size: 12,
                 color: Colors.white.withOpacity(0.6),
                 isCenter: false,
               ),
               const SizedBox(height: 8),
-              defaultText(text: "⭐ ${widget.rating}", size: 12),
+              defaultText(text: "⭐ ${widget.rating}", size: 12 ,                         context: context,
+              ),
               const SizedBox(height: 10),
-
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: _buildButton(context),
+                child: _buildButton(context, languageCode),
               ),
             ],
           ),
@@ -84,21 +97,20 @@ class _RecommendedCardState extends State<RecommendedCard> {
     );
   }
 
-  Widget _buildButton(BuildContext context) {
+  Widget _buildButton(BuildContext context, String languageCode) {
     if (widget.isEnrolled) {
-      return _successButton();
+      return _successButton(languageCode);
     }
 
     if (_loading) {
       return _loadingButton();
     }
 
-    return _enrollButton(context);
+    return _enrollButton(context, languageCode);
   }
 
-  Widget _enrollButton(BuildContext context) {
+  Widget _enrollButton(BuildContext context, String languageCode) {
     return SizedBox(
-      key: const ValueKey('enroll'),
       width: 100,
       height: 32,
       child: ElevatedButton(
@@ -119,18 +131,23 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   courseId: widget.courseId,
                   userId: context.read<UserCubit>().userId!,
                 );
-                await context.read<EnrollmentsCubit>().getAllEnrollments(userId: context.read<UserCubit>().userId!);
+
+                await context.read<EnrollmentsCubit>().getAllEnrollments(
+                  userId: context.read<UserCubit>().userId!,
+                );
 
                 setState(() => _loading = false);
               },
-        child: const Text('Enroll', style: TextStyle(fontSize: 12)),
+        child: Text(
+          languageCode == 'ar' ? 'اشترك' : 'Enroll',
+          style: const TextStyle(fontSize: 12),
+        ),
       ),
     );
   }
 
   Widget _loadingButton() {
     return const SizedBox(
-      key: ValueKey('loading'),
       width: 100,
       height: 32,
       child: Center(
@@ -143,93 +160,101 @@ class _RecommendedCardState extends State<RecommendedCard> {
     );
   }
 
-  Widget _successButton() {
+  Widget _successButton(String languageCode) {
     return Container(
-      key: const ValueKey('success'),
       width: 100,
       height: 32,
       decoration: BoxDecoration(
         color: Colors.green,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Center(
-        child: Icon(Icons.check, color: Colors.white, size: 18),
+      child: Center(
+        child: languageCode == 'ar'
+            ? const Text(
+                'مشترك',
+                style: TextStyle(color: Colors.white, fontSize: 12),
+              )
+            : const Icon(Icons.check, color: Colors.white, size: 18),
       ),
     );
   }
 }
-
 
 class RecommendedCourses extends StatelessWidget {
   const RecommendedCourses({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RecommendedCubit, RecommendedState>(
-      builder: (context, state) {
-        if (state is RecommendedLoading || state is RecommendedInitial) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return BlocBuilder<LanguageCubit, LanguageCubitState>(
+      builder: (context, langState) {
+        final languageCode = langState is LanguageCubitLoaded
+            ? langState.languageCode
+            : 'en';
 
-        if (state is RecommendedError) {
-          return Center(child: Text(state.message));
-        }
+        return BlocBuilder<RecommendedCubit, RecommendedState>(
+          builder: (context, state) {
+            if (state is RecommendedLoading || state is RecommendedInitial) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        if (state is RecommendedLoaded) {
-          final recommends = state.recommends;
-          final courses = state.courses;
+            if (state is RecommendedError) {
+              return Center(child: Text(state.message));
+            }
 
-          /// ===== ENROLLMENTS STATE =====
-          final enrollmentsState = context.watch<EnrollmentsCubit>().state;
+            if (state is RecommendedLoaded) {
+              final recommends = state.recommends;
+              final courses = state.courses;
 
-          final Set<int> enrolledCourseIds =
-              enrollmentsState is EnrollmentsLoaded
-                  ? enrollmentsState.enrollments
-                      .map((e) => e.courseId)
-                      .toSet()
+              final enrollmentsState = context.watch<EnrollmentsCubit>().state;
+
+              final Set<int> enrolledCourseIds =
+                  enrollmentsState is EnrollmentsLoaded
+                  ? enrollmentsState.enrollments.map((e) => e.courseId).toSet()
                   : <int>{};
 
-          /// ===== MAP COURSES =====
-          final Map<int, CoursesModel> courseMap = {
-            for (var course in courses) course.id: course,
-          };
+              final Map<int, CoursesModel> courseMap = {
+                for (var course in courses) course.id: course,
+              };
 
-          /// ===== FILTER RECOMMENDED COURSES =====
-          final List<CoursesModel> recommendedCourses = recommends
-              .map((r) => courseMap[r.recommendCourse])
-              .whereType<CoursesModel>()
-              .toList();
+              final List<CoursesModel> recommendedCourses = recommends
+                  .map((r) => courseMap[r.recommendCourse])
+                  .whereType<CoursesModel>()
+                  .toList();
 
-          if (recommendedCourses.isEmpty) {
-            return const Center(
-              child: Text(
-                'No recommended courses',
-                style: TextStyle(color: Colors.white70),
-              ),
-            );
-          }
+              if (recommendedCourses.isEmpty) {
+                return Center(
+                  child: Text(
+                    languageCode == 'ar'
+                        ? 'لا توجد كورسات مقترحة'
+                        : 'No recommended courses',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                );
+              }
 
-          return Column(
-            children: recommendedCourses.map((course) {
-              final bool isEnrolled =
-                  enrolledCourseIds.contains(course.id);
+              return Column(
+                children: recommendedCourses.map((course) {
+                  final bool isEnrolled = enrolledCourseIds.contains(course.id);
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: RecommendedCard(
-                  courseId: course.id,
-                  imagePath: course.thumbnail,
-                  title: course.title,
-                  author: course.instructorName,
-                  rating: course.rating,
-                  isEnrolled: isEnrolled,
-                ),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: RecommendedCard(
+                      courseId: course.id,
+                      imagePath: course.thumbnail,
+                      titleEn: course.titleEn,
+                      titleAr: course.titleAr,
+                      author: course.instructorName, // ثابت
+                      rating: course.rating,
+                      isEnrolled: isEnrolled,
+                    ),
+                  );
+                }).toList(),
               );
-            }).toList(),
-          );
-        }
+            }
 
-        return const SizedBox.shrink();
+            return const SizedBox.shrink();
+          },
+        );
       },
     );
   }

@@ -2,6 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/cubits/states/user_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_form_textfield.dart';
@@ -20,23 +22,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void _onLoginPressed(BuildContext context) {
-    context.read<UserCubit>().login(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     return BlocListener<UserCubit, UserState>(
-      listenWhen: (prev, curr) => prev is UserLoading && curr is UserLoaded,
       listener: (context, state) {
         if (state is UserLoaded) {
           Navigator.pushReplacementNamed(context, '/home');
@@ -45,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (state is UserError) {
           customDialog(
             context: context,
-            title: 'Error',
+            title: isArabic ? 'خطأ' : 'Error',
             message: state.message,
           );
         }
@@ -64,52 +55,51 @@ class _LoginScreenState extends State<LoginScreen> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   schoolSign(),
                   const SizedBox(height: 20),
+
                   defaultText(
-                    text: 'Welcome Back',
+                    context: context,
+                    text: isArabic ? 'مرحبًا بعودتك' : 'Welcome Back',
                     size: 22,
-                    color: Colors.white,
-                    bold: true,
                   ),
+
                   const SizedBox(height: 30),
 
-                  /// Email
                   CustomFormTextField(
                     controller: _emailController,
-                    labelText: 'Email address',
-                    hintText: 'Email address',
+                    labelText: isArabic ? 'البريد الإلكتروني' : 'Email address',
+                    hintText: isArabic
+                        ? 'أدخل بريدك الإلكتروني'
+                        : 'Email address',
                     keyboardType: CustomTextFieldType.email,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
-                    suffixWidget: const Icon(Icons.email, color: Colors.grey),
                   ),
 
                   const SizedBox(height: 16),
 
-                  /// Password
                   CustomFormTextField(
                     controller: _passwordController,
-                    labelText: 'Password',
-                    hintText: 'Password',
+                    labelText: isArabic ? 'كلمة المرور' : 'Password',
+                    hintText: isArabic ? 'كلمة المرور' : 'Password',
                     keyboardType: CustomTextFieldType.password,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     obscureText: true,
-                    suffixWidget: const Icon(Icons.lock, color: Colors.grey),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                   ),
 
                   const SizedBox(height: 24),
 
-                  /// Login Button (loading-aware)
                   BlocBuilder<UserCubit, UserState>(
                     builder: (context, state) {
                       final isLoading = state is UserLoading;
 
                       return CustomGlowButton(
-                        title: isLoading ? 'Loading...' : 'Login',
+                        title: isLoading
+                            ? (isArabic ? 'جاري التحميل...' : 'Loading...')
+                            : (isArabic ? 'تسجيل الدخول' : 'Login'),
                         width: double.infinity,
-                        onPressed: state is UserLoading
+                        onPressed: isLoading
                             ? () {}
                             : () {
                                 context.read<UserCubit>().login(
@@ -123,14 +113,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  /// Register
                   RichText(
                     text: TextSpan(
-                      text: "Don't have an account? ",
-                      style: const TextStyle(color: Colors.grey),
+                      text: isArabic
+                          ? "ليس لديك حساب؟ "
+                          : "Don't have an account? ",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontFamily: isArabic
+                            ? 'CustomArabicFont'
+                            : 'CustomEnglishFont',
+                      ),
                       children: [
                         TextSpan(
-                          text: 'Sign Up',
+                          text: isArabic ? 'إنشاء حساب' : 'Sign Up',
                           style: const TextStyle(
                             color: Color(0xFF4FACFE),
                             fontWeight: FontWeight.w600,

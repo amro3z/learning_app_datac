@@ -43,6 +43,7 @@ class CustomGlowButton extends StatelessWidget {
         ),
         onPressed: onPressed,
         child: defaultText(
+                                  context: context,
           text: title,
           size: textSize ?? getScreenHeight(context) * 0.02,
           bold: true,

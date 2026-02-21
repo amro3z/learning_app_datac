@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/lessons_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/cubits/states/user_state.dart';
 import 'package:training/helper/base.dart';
 
@@ -16,13 +18,15 @@ class ProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final userId = context.read<UserCubit>().userId;
 
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     int enrolledCount = 0;
     int completedCoursesCount = 0;
     double completedHours = 0;
 
-    /// =========================
-    /// ENROLLMENTS DATA
-    /// =========================
+    /// ================= ENROLLMENTS =================
     final enrollmentsState = context.watch<EnrollmentsCubit>().state;
 
     if (enrollmentsState is EnrollmentsLoaded && userId != null) {
@@ -37,9 +41,7 @@ class ProfileCard extends StatelessWidget {
           .length;
     }
 
-    /// =========================
-    /// COMPLETED LESSON HOURS
-    /// =========================
+    /// ================= LESSON HOURS =================
     final lessonsState = context.watch<LessonsCubit>().state;
 
     if (lessonsState is LessonsLoaded && userId != null) {
@@ -48,14 +50,12 @@ class ProfileCard extends StatelessWidget {
           .toList();
 
       for (final lessonProgress in completedLessons) {
-        final lesson = lessonsState.lessons.firstWhere(
-          (l) => l.id == lessonProgress.lesson,
-          orElse: () => null as dynamic,
-        );
+        final lesson = lessonsState.lessons
+            .where((l) => l.id == lessonProgress.lesson)
+            .firstOrNull;
 
         if (lesson != null) {
           completedHours += lesson.duration / 60;
-          // duration بالدقايق → نحولها لساعات
         }
       }
     }
@@ -69,60 +69,19 @@ class ProfileCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          /// =========================
           /// USER INFO
-          /// =========================
           Row(
             children: [
               GestureDetector(
                 onTap: state.isUploading ? null : () => pickImage(context),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      width: 92,
-                      height: 92,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.35),
-                            blurRadius: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 86,
-                      height: 86,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.blueAccent, width: 2),
-                      ),
-                    ),
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: state.avatarUrl != null
-                          ? NetworkImage(state.avatarUrl!)
-                          : null,
-                      child: state.avatarUrl == null
-                          ? const Icon(Icons.person, size: 32)
-                          : null,
-                    ),
-                    if (state.isUploading)
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.45),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: CircularProgressIndicator(strokeWidth: 3),
-                        ),
-                      ),
-                  ],
+                child: CircleAvatar(
+                  radius: 40,
+                  backgroundImage: state.avatarUrl != null
+                      ? NetworkImage(state.avatarUrl!)
+                      : null,
+                  child: state.avatarUrl == null
+                      ? const Icon(Icons.person, size: 32)
+                      : null,
                 ),
               ),
               const SizedBox(width: 16),
@@ -131,13 +90,14 @@ class ProfileCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     defaultText(
+                      context: context,
                       text: state.name,
                       size: 20,
-                      bold: true,
                       isCenter: false,
                     ),
                     const SizedBox(height: 4),
                     defaultText(
+                      context: context,
                       text: state.email,
                       size: 14,
                       color: Colors.grey,
@@ -149,58 +109,56 @@ class ProfileCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 12),
-          const Divider(height: 32, color: Colors.white12),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
+          const Divider(color: Colors.white12),
+          const SizedBox(height: 20),
 
-          /// =========================
           /// STATS
-          /// =========================
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              /// ENROLLED
-              Column(
-                children: [
-                  defaultText(
-                    text: enrolledCount.toString(),
-                    size: 16,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(height: 4),
-                  defaultText(text: "Enrolled", size: 14, color: Colors.grey),
-                ],
+              _statItem(
+                context,
+                enrolledCount.toString(),
+                isArabic ? "المسجل" : "Enrolled",
+                Colors.blue,
               ),
-
-              /// COMPLETED COURSES
-              Column(
-                children: [
-                  defaultText(
-                    text: completedCoursesCount.toString(),
-                    size: 16,
-                    color: Colors.purple,
-                  ),
-                  const SizedBox(height: 4),
-                  defaultText(text: "Completed", size: 14, color: Colors.grey),
-                ],
+              _statItem(
+                context,
+                completedCoursesCount.toString(),
+                isArabic ? "المكتمل" : "Completed",
+                Colors.purple,
               ),
-
-              /// HOURS
-              Column(
-                children: [
-                  defaultText(
-                    text: completedHours.toStringAsFixed(1),
-                    size: 16,
-                    color: Colors.green,
-                  ),
-                  const SizedBox(height: 4),
-                  defaultText(text: "Hours", size: 14, color: Colors.grey),
-                ],
+              _statItem(
+                context,
+                completedHours.toStringAsFixed(1),
+                isArabic ? "ساعات" : "Hours",
+                Colors.green,
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _statItem(
+    BuildContext context,
+    String value,
+    String label,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        defaultText(context: context, text: value, size: 16, color: color),
+        const SizedBox(height: 4),
+        defaultText(
+          context: context,
+          text: label,
+          size: 14,
+          color: Colors.grey,
+        ),
+      ],
     );
   }
 }

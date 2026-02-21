@@ -7,8 +7,10 @@ import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/categories_state.dart';
 import 'package:training/cubits/states/courses_state.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
@@ -53,13 +55,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     return Scaffold(
       body: Stack(
         children: [
           IndexedStack(
             index: currentIndex,
             children: [
-              _homePage(),
+              _homePage(isArabic),
               const FavoriteScreen(),
               const ProfilePage(),
             ],
@@ -75,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _homePage() {
+  Widget _homePage(bool isArabic) {
     return RefreshIndicator(
       onRefresh: _loadHomeData,
       child: SingleChildScrollView(
@@ -91,20 +97,26 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             SizedBox(height: kToolbarHeight),
 
-            /// ===== HEADER =====
-            defaultText(text: 'Hello, Learner 👋', size: 24, isCenter: false),
+            /// HEADER
+            defaultText(
+              context: context,
+              text: isArabic ? 'مرحبًا، متعلم 👋' : 'Hello, Learner 👋',
+              size: 24,
+              isCenter: false,
+            ),
             const SizedBox(height: 6),
             defaultText(
-              text: 'What would you like to learn today?',
+              context: context,
+              text: isArabic
+                  ? 'ماذا تحب أن تتعلم اليوم؟'
+                  : 'What would you like to learn today?',
               size: 14,
               color: Colors.white70,
               isCenter: false,
             ),
 
             const SizedBox(height: 20),
-
             const CoursesSearchBar(),
-
             const SizedBox(height: 20),
 
             BlocBuilder<CoursesCubit, LearnState>(
@@ -123,15 +135,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    defaultText(text: 'Categories', size: 18, isCenter: false),
+                    defaultText(
+                      context: context,
+                      text: isArabic ? 'التصنيفات' : 'Categories',
+                      size: 18,
+                      isCenter: false,
+                    ),
                     const SizedBox(height: 12),
                     const CategoriesChipsSection(),
                     const SizedBox(height: 24),
 
                     if (coursesCubit.isFiltering || isCategorySelected)
-                      _filteredCoursesSection(state.filteredCourses)
+                      _filteredCoursesSection(state.filteredCourses, isArabic)
                     else
-                      _defaultHomeSections(),
+                      _defaultHomeSections(isArabic),
                   ],
                 );
               },
@@ -142,14 +159,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// ================= FILTERED COURSES =================
-  Widget _filteredCoursesSection(List courses) {
+  Widget _filteredCoursesSection(List courses, bool isArabic) {
     if (courses.isEmpty) {
       return Padding(
         padding: const EdgeInsets.only(top: 40),
         child: Center(
           child: defaultText(
-            text: "No courses found",
+            context: context,
+            text: isArabic ? "لا توجد دورات" : "No courses found",
             size: 20,
             color: Colors.white70,
           ),
@@ -163,10 +180,10 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.only(bottom: 16),
           child: CourseCard(
             imagePath: course.thumbnail,
-            title: course.title,
+            title: isArabic ? course.titleAr : course.titleEn,
             author: course.instructorName,
             rating: course.rating,
-            description: course.description,
+            description: isArabic ? course.descriptionAr : course.descriptionEn,
             isFiltering: true,
             courseId: course.id,
           ),
@@ -175,24 +192,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// ================= DEFAULT HOME CONTENT =================
-  Widget _defaultHomeSections() {
+  Widget _defaultHomeSections(bool isArabic) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        defaultText(text: 'Continue Learning', size: 18, isCenter: false),
+        defaultText(
+          context: context,
+          text: isArabic ? 'استكمل التعلم' : 'Continue Learning',
+          size: 18,
+          isCenter: false,
+        ),
         const SizedBox(height: 12),
         const EnrollmentCourse(),
 
         const SizedBox(height: 24),
 
-        defaultText(text: "Recommended Courses", size: 18, isCenter: false),
+        defaultText(
+          context: context,
+          text: isArabic ? 'الدورات المقترحة' : 'Recommended Courses',
+          size: 18,
+          isCenter: false,
+        ),
         const SizedBox(height: 12),
         const RecommendedCourses(),
 
         const SizedBox(height: 24),
 
-        defaultText(text: "Popular This Week", size: 18, isCenter: false),
+        defaultText(
+          context: context,
+          text: isArabic ? 'الأكثر شعبية هذا الأسبوع' : 'Popular This Week',
+          size: 18,
+          isCenter: false,
+        ),
         const SizedBox(height: 12),
         const PopularCourses(),
       ],

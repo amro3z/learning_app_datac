@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:training/helper/base.dart';
 
-Widget instructorCard({required String instructor}) {
+Widget instructorCard({required String instructor , required BuildContext context}) {
   return Row(
     mainAxisAlignment: MainAxisAlignment.start,
     children: [
@@ -42,12 +42,13 @@ Widget instructorCard({required String instructor}) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           defaultText(
+            context: context,
             text: "Instructor",
             size: 12,
             isCenter: false,
             color: Colors.grey,
           ),
-          defaultText(text: instructor, size: 14, isCenter: false),
+          defaultText(text: instructor, size: 14, isCenter: false, context: context),
         ],
       ),
     ],

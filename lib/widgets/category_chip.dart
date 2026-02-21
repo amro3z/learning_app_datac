@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/data/models/categories.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 
 class CategoryChip extends StatelessWidget {
@@ -16,6 +19,13 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final languageCode = langState is LanguageCubitLoaded
+        ? langState.languageCode
+        : 'en';
+
+    final title = languageCode == 'ar' ? category.titleAr : category.titleEn;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -29,7 +39,8 @@ class CategoryChip extends StatelessWidget {
           ),
         ),
         child: defaultText(
-          text: category.title,
+          context: context,
+          text: title,
           size: 14,
           isCenter: false,
           color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),

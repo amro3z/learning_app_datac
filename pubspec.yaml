@@ -36,6 +36,7 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^9.1.1
   flutter_inappwebview: ^6.1.5
+  flutter_localization: ^0.3.3
   http: ^1.6.0
   image_picker: ^1.2.1
   path: ^1.9.1
@@ -69,10 +70,14 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: CustomFont
+    - family: CustomEnglishFont
       fonts:
-        - asset: assets/fonts/Poppins-Bold.ttf
-        - asset: assets/fonts/Poppins-Medium.ttf
+        - asset: assets/fonts/English/Poppins-Bold.ttf
+        - asset: assets/fonts/English/Poppins-Medium.ttf
+    - family: CustomArabicFont
+      fonts:
+        - asset: assets/fonts/Arabic/Cairo-Bold.ttf
+        - asset: assets/fonts/Arabic/Cairo-Medium.ttf
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

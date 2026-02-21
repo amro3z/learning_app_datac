@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_form_textfield.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
@@ -22,6 +24,10 @@ class _EditNameCardState extends State<EditNameCard> {
 
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -31,10 +37,14 @@ class _EditNameCardState extends State<EditNameCard> {
       ),
       child: Column(
         children: [
-          /// Header
           Row(
             children: [
-              defaultText(text: "Edit Name", size: 16, isCenter: false),
+              defaultText(
+                context: context,
+                text: isArabic ? "تعديل الاسم" : "Edit Name",
+                size: 16,
+                isCenter: false,
+              ),
               const Spacer(),
               IconButton(
                 icon: Icon(
@@ -52,7 +62,6 @@ class _EditNameCardState extends State<EditNameCard> {
             ],
           ),
 
-          /// Expanded Form
           if (expanded) ...[
             const SizedBox(height: 12),
 
@@ -61,18 +70,21 @@ class _EditNameCardState extends State<EditNameCard> {
               child: Column(
                 children: [
                   CustomFormTextField(
-                    labelText: "First Name",
-                    hintText: "Enter first name",
+                    labelText: isArabic ? "الاسم الأول" : "First Name",
+                    hintText: isArabic
+                        ? "ادخل الاسم الأول"
+                        : "Enter first name",
                     controller: firstNameController,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     keyboardType: CustomTextFieldType.name,
                   ),
-
                   const SizedBox(height: 12),
 
                   CustomFormTextField(
-                    labelText: "Family Name",
-                    hintText: "Enter family name",
+                    labelText: isArabic ? "اسم العائلة" : "Family Name",
+                    hintText: isArabic
+                        ? "ادخل اسم العائلة"
+                        : "Enter family name",
                     controller: lastNameController,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     keyboardType: CustomTextFieldType.name,
@@ -81,7 +93,7 @@ class _EditNameCardState extends State<EditNameCard> {
                   const SizedBox(height: 16),
 
                   CustomGlowButton(
-                    title: "Save",
+                    title: isArabic ? "حفظ" : "Save",
                     width: double.infinity,
                     onPressed: () async {
                       if (!_formKey.currentState!.validate()) return;
@@ -103,8 +115,10 @@ class _EditNameCardState extends State<EditNameCard> {
 
                       customDialog(
                         context: context,
-                        title: "Success",
-                        message: "Your name has been updated successfully",
+                        title: isArabic ? "نجاح" : "Success",
+                        message: isArabic
+                            ? "تم تحديث الاسم بنجاح"
+                            : "Your name has been updated successfully",
                       );
                     },
                   ),

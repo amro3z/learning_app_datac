@@ -10,71 +10,85 @@ class PopularCard extends StatelessWidget {
   const PopularCard({
     super.key,
     required this.imageUrl,
-    required this.titleEn,
-    required this.titleAr,
+    required this.title,
     required this.rating,
     required this.author,
+    required this.description,
+    required this.courseId,
   });
 
   final String imageUrl;
-  final String titleEn;
-  final String titleAr;
+  final String title;
   final double rating;
-  final String author; // ثابت
-
+  final String author;
+  final String description;
+  final int courseId;
   @override
   Widget build(BuildContext context) {
-    final langState = context.watch<LanguageCubit>().state;
-    final languageCode = langState is LanguageCubitLoaded
-        ? langState.languageCode
-        : 'en';
 
-    final title = languageCode == 'ar' ? titleAr : titleEn;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
-        border: Border.all(color: Colors.white12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.network(
-            imageUrl,
-            height: 100,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.all(6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                defaultText(
-                                          context: context,
-                  text: title,
-                  size: 16,
-                  color: Colors.white,
-                  bold: true,
-                  isCenter: false,
-                ),
-                const SizedBox(height: 4),
-                defaultText(
-                                          context: context,
-                  text: author,
-                  size: 14,
-                  bold: false,
-                  color: Colors.white70,
-                ),
-                const SizedBox(height: 4),
-                defaultText(text: "⭐ $rating", size: 14, bold: false ,                         context: context,
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/course_details',
+          arguments: {
+            'imageURL': imageUrl,
+            'title': title,
+            'instructor': author,
+            'description': description,
+            'courseId': courseId,
+          },
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey.withOpacity(0.1),
+          border: Border.all(color: Colors.white12),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.network(
+              imageUrl,
+              height: 100,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.all(6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  defaultText(
+                    context: context,
+                    text: title,
+                    size: 16,
+                    color: Colors.white,
+                    bold: true,
+                    isCenter: false,
+                  ),
+                  const SizedBox(height: 4),
+                  defaultText(
+                    context: context,
+                    text: author,
+                    size: 14,
+                    bold: false,
+                    color: Colors.white70,
+                  ),
+                  const SizedBox(height: 4),
+                  defaultText(
+                    text: "⭐ $rating",
+                    size: 14,
+                    bold: false,
+                    context: context,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -85,6 +99,10 @@ class PopularCourses extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+        final langState = context.watch<LanguageCubit>().state;
+    final languageCode = langState is LanguageCubitLoaded
+        ? langState.languageCode
+        : 'en';
     return BlocBuilder<LanguageCubit, LanguageCubitState>(
       builder: (context, langState) {
         return BlocBuilder<PopularCubit, PopularState>(
@@ -124,10 +142,11 @@ class PopularCourses extends StatelessWidget {
 
                   return PopularCard(
                     imageUrl: course.thumbnail,
-                    titleEn: course.titleEn,
-                    titleAr: course.titleAr,
+                    title: languageCode == 'ar' ? course.titleAr : course.titleEn,
                     rating: course.rating,
                     author: course.instructorName,
+                    description: languageCode == 'ar' ? course.descriptionAr : course.descriptionEn,
+                    courseId: course.id,
                   );
                 },
               );

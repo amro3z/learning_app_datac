@@ -23,7 +23,6 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
   final TextEditingController searchController = TextEditingController();
 
-  /// 🔥 ثابتة داخليًا (القيمة الحقيقية إنجليزي)
   final sortOptions = {
     'Recent': {'en': 'Recent', 'ar': 'الأحدث'},
     'Rating': {'en': 'Rating', 'ar': 'التقييم'},
@@ -61,7 +60,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                   Icons.filter_list_sharp,
                   color: Colors.white70,
                 ),
-                onPressed: () => _openFiltersSheet(languageCode),
+                onPressed: () => _openFiltersSheet(languageCode, state),
               ),
               onChanged: (value) {
                 context.read<CoursesCubit>().filterCourses(
@@ -79,162 +78,158 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
     );
   }
 
-  void _openFiltersSheet(String languageCode) {
+  void _openFiltersSheet(String languageCode, CategoriesLoaded state) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) {
-        return BlocBuilder<CategoriesCubit, CategoriesState>(
-          builder: (context, state) {
-            if (state is! CategoriesLoaded) {
-              return const SizedBox.shrink();
-            }
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final selectedCategory = state.categories.firstWhereOrNull(
+              (c) => c.id == state.selectedCategoryId,
+            );
 
-            return StatefulBuilder(
-              builder: (context, setSheetState) {
-                final selectedCategory = state.categories.firstWhereOrNull(
-                  (c) => c.id == state.selectedCategoryId,
-                );
-
-                return Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0F0F0F),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(28),
+            return Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFF0F0F0F),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    defaultText(
+                      context: context,
+                      text: languageCode == 'ar' ? "الفلاتر" : "Filters",
+                      size: 20,
+                      bold: true,
+                      isCenter: false,
                     ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 20),
+
+                    /// SORT
+                    _sectionTitle(languageCode == 'ar' ? 'الترتيب' : 'Sort by'),
+
+                    _singleSelectChips(
+                      options: sortOptions.keys.toList(),
+                      selected: sortBy,
+                      languageCode: languageCode,
+                      displayMap: sortOptions,
+                      onSelected: (value) {
+                        setSheetState(() {
+                          sortBy = (sortBy == value) ? null : value;
+                        });
+
+                        _applyFilter(state, languageCode);
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    /// CATEGORY
+                    _sectionTitle(
+                      languageCode == 'ar' ? 'التصنيف' : 'Category',
+                    ),
+
+                    _singleSelectChips(
+                      options: state.categories
+                          .map((c) => c.id.toString())
+                          .toList(),
+                      selected: selectedCategory?.id.toString(),
+                      languageCode: languageCode,
+                      displayMap: {
+                        for (var c in state.categories)
+                          c.id.toString(): {'en': c.titleEn, 'ar': c.titleAr},
+                      },
+                      onSelected: (value) {
+                        context.read<CategoriesCubit>().selectCategory(
+                          int.parse(value),
+                        );
+
+                        _applyFilter(
+                          state,
+                          languageCode,
+                          categoryId: int.parse(value),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    /// DIFFICULTY
+                    _sectionTitle(
+                      languageCode == 'ar' ? 'المستوى' : 'Difficulty',
+                    ),
+
+                    _singleSelectChips(
+                      options: difficultyOptions.keys.toList(),
+                      selected: difficulty,
+                      languageCode: languageCode,
+                      displayMap: difficultyOptions,
+                      onSelected: (value) {
+                        setSheetState(() {
+                          difficulty = (difficulty == value) ? null : value;
+                        });
+
+                        _applyFilter(state, languageCode);
+                      },
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        defaultText(
-                          context: context,
-                          text: languageCode == 'ar' ? "الفلاتر" : "Filters",
-                          size: 20,
-                          bold: true,
-                          isCenter: false,
-                        ),
-                        const SizedBox(height: 20),
-
-                        /// SORT
-                        _sectionTitle(
-                          languageCode == 'ar' ? 'الترتيب' : 'Sort by',
-                        ),
-
-                        _singleSelectChips(
-                          options: sortOptions.keys.toList(),
-                          selected: sortBy,
-                          languageCode: languageCode,
-                          displayMap: sortOptions,
-                          onSelected: (value) {
+                        CustomGlowButton(
+                          title: languageCode == 'ar' ? "إعادة ضبط" : "Reset",
+                          width: 120,
+                          onPressed: () {
                             setSheetState(() {
-                              sortBy = (sortBy == value) ? null : value;
+                              sortBy = null;
+                              difficulty = null;
                             });
-                          },
-                        ),
 
-                        const SizedBox(height: 20),
-
-                        /// CATEGORY
-                        _sectionTitle(
-                          languageCode == 'ar' ? 'التصنيف' : 'Category',
-                        ),
-
-                        _singleSelectChips(
-                          options: state.categories
-                              .map((c) => c.id.toString())
-                              .toList(),
-                          selected: selectedCategory?.id.toString(),
-                          languageCode: languageCode,
-                          displayMap: {
-                            for (var c in state.categories)
-                              c.id.toString(): {
-                                'en': c.titleEn,
-                                'ar': c.titleAr,
-                              },
-                          },
-                          onSelected: (value) {
                             context.read<CategoriesCubit>().selectCategory(
-                              int.parse(value),
+                              null,
                             );
+
+                            context.read<CoursesCubit>().resetFilters();
+
+                            searchController.clear();
                           },
                         ),
-
-                        const SizedBox(height: 20),
-
-                        /// DIFFICULTY
-                        _sectionTitle(
-                          languageCode == 'ar' ? 'المستوى' : 'Difficulty',
-                        ),
-
-                        _singleSelectChips(
-                          options: difficultyOptions.keys.toList(),
-                          selected: difficulty,
-                          languageCode: languageCode,
-                          displayMap: difficultyOptions,
-                          onSelected: (value) {
-                            setSheetState(() {
-                              difficulty = (difficulty == value) ? null : value;
-                            });
+                        CustomGlowButton(
+                          title: languageCode == 'ar' ? "تطبيق" : "Apply",
+                          width: 120,
+                          onPressed: () {
+                            Navigator.pop(context);
                           },
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            /// RESET
-                            CustomGlowButton(
-                              title: languageCode == 'ar'
-                                  ? "إعادة ضبط"
-                                  : "Reset",
-                              width: 120,
-                              onPressed: () {
-                                setSheetState(() {
-                                  sortBy = null;
-                                  difficulty = null;
-                                });
-
-                                context.read<CategoriesCubit>().selectCategory(
-                                  null,
-                                );
-
-                                context.read<CoursesCubit>().resetFilters();
-
-                                searchController.clear();
-                              },
-                            ),
-
-                            /// APPLY
-                            CustomGlowButton(
-                              title: languageCode == 'ar' ? "تطبيق" : "Apply",
-                              width: 120,
-                              onPressed: () {
-                                context.read<CoursesCubit>().filterCourses(
-                                  search: searchController.text,
-                                  categoryId: state.selectedCategoryId,
-                                  difficulty: difficulty,
-                                  sortBy: sortBy,
-                                  languageCode: languageCode,
-                                );
-
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ],
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
+                  ],
+                ),
+              ),
             );
           },
         );
       },
+    );
+  }
+
+  void _applyFilter(
+    CategoriesLoaded state,
+    String languageCode, {
+    int? categoryId,
+  }) {
+    context.read<CoursesCubit>().filterCourses(
+      search: searchController.text,
+      categoryId: categoryId ?? state.selectedCategoryId,
+      difficulty: difficulty,
+      sortBy: sortBy,
+      languageCode: languageCode,
     );
   }
 

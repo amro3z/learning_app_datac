@@ -116,20 +116,46 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             const SizedBox(height: 20),
+
+            /// 🔥 مهم: السيرش برا أي BlocBuilder
             const CoursesSearchBar(),
+
             const SizedBox(height: 20),
 
             BlocBuilder<CoursesCubit, LearnState>(
               builder: (context, state) {
-                final coursesCubit = context.read<CoursesCubit>();
+                final coursesCubit = context.watch<CoursesCubit>();
                 final categoriesState = context.watch<CategoriesCubit>().state;
 
                 final isCategorySelected =
                     categoriesState is CategoriesLoaded &&
                     categoriesState.selectedCategoryId != null;
 
+                if (state is CoursesLoading) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                if (state is CoursesError) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 40),
+                    child: Center(
+                      child: defaultText(
+                        context: context,
+                        text: state.message,
+                        size: 16,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  );
+                }
+
                 if (state is! CoursesLoaded) {
-                  return const SizedBox.shrink();
+                  return const SizedBox();
                 }
 
                 return Column(

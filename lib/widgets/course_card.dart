@@ -187,7 +187,7 @@ class EnrollmentCourse extends StatelessWidget {
                     final cubit = context.read<FavoritesCubit>();
 
                     if (isFavorite) {
-                      cubit.deleteFavorite(favoriteID: fav!.id, userId: userId);
+                      cubit.deleteFavorite(favoriteID: fav.id, userId: userId);
                     } else {
                       cubit.addToFavorites(courseId: course.id, userId: userId);
                     }

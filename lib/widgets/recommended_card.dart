@@ -140,7 +140,8 @@ class _RecommendedCardState extends State<RecommendedCard> {
               },
         child: Text(
           languageCode == 'ar' ? 'اشترك' : 'Enroll',
-          style: const TextStyle(fontSize: 12),
+          style:  TextStyle(fontSize: 12  , fontFamily: languageCode == 'ar'
+           ? 'CustomArabicFont' : 'CustomEnglishFont',),
         ),
       ),
     );
@@ -227,7 +228,8 @@ class RecommendedCourses extends StatelessWidget {
                     languageCode == 'ar'
                         ? 'لا توجد كورسات مقترحة'
                         : 'No recommended courses',
-                    style: const TextStyle(color: Colors.white70),
+                    style:  TextStyle(color: Colors.white70 , fontFamily:   languageCode == 'ar'
+                     ? 'CustomArabicFont' : 'CustomEnglishFont',),
                   ),
                 );
               }
@@ -243,7 +245,7 @@ class RecommendedCourses extends StatelessWidget {
                       imagePath: course.thumbnail,
                       titleEn: course.titleEn,
                       titleAr: course.titleAr,
-                      author: course.instructorName, // ثابت
+                      author: course.instructorName, 
                       rating: course.rating,
                       isEnrolled: isEnrolled,
                     ),

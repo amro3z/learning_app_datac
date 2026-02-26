@@ -2,6 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 class NetworkService {
+static bool _isConnected = true;
+
+  static bool get isConnected => _isConnected;
+
   static final StreamController<bool> _controller =
       StreamController<bool>.broadcast();
 
@@ -14,6 +18,7 @@ class NetworkService {
 
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       final hasNet = await _checkInternet();
+      _isConnected = hasNet; 
       _controller.add(hasNet);
     });
   }

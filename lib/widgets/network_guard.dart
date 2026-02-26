@@ -15,7 +15,6 @@ class NetworkGuard extends StatelessWidget {
       initialData: true,
       builder: (context, snapshot) {
         final connected = snapshot.data ?? true;
-
         return Stack(
           children: [
             child,

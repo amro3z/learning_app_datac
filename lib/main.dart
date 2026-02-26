@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -19,7 +20,9 @@ import 'package:training/data/local/sqldb.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/firebase_options.dart';
 import 'package:training/route.dart';
+import 'package:training/services/network_service.dart';
 import 'package:training/services/tokens/auths_service.dart';
+import 'package:training/widgets/network_guard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +30,8 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await AuthService().init();
+
+  NetworkService.startListening();
 
   final webService = LearningWebservice();
   final repo = LearningRepo(learningWebService: webService, sqldb: Sqldb());
@@ -42,32 +47,27 @@ void main() async {
   final favoritesCubit = FavoritesCubit(repo: repo, webservice: webService);
 
   runApp(
+
     MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => LanguageCubit()),
         BlocProvider(create: (_) => userCubit..restoreSession()),
-
         BlocProvider(create: (_) => enrollmentsCubit),
         BlocProvider(create: (_) => favoritesCubit),
-
         BlocProvider(
           create: (_) => CoursesCubit(learningRepo: repo)..getAllCourses(),
         ),
-
         BlocProvider(
           create: (_) =>
               CategoriesCubit(learningRepo: repo)..getAllCategories(),
         ),
-
         BlocProvider(
           create: (_) =>
               RecommendedCubit(learningRepo: repo)..getRecommendedList(),
         ),
-
         BlocProvider(
           create: (_) => PopularCubit(learningRepo: repo)..getPopularList(),
         ),
-
         BlocProvider(
           create: (_) =>
               LessonsCubit(repo: repo, enrollmentsCubit: enrollmentsCubit)
@@ -82,6 +82,27 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  void _reloadCubits(BuildContext context) {
+    if (!NetworkService.isConnected) return;
+
+    context.read<CoursesCubit>().getAllCourses();
+    context.read<CategoriesCubit>().getAllCategories();
+    context.read<RecommendedCubit>().getRecommendedList();
+    context.read<PopularCubit>().getPopularList();
+    context.read<LessonsCubit>().getLessons();
+
+    final userState = context.read<UserCubit>().state;
+
+    if (userState is UserLoaded) {
+      final userId = context.read<UserCubit>().userId;
+      if (userId != null) {
+        context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
+
+        context.read<FavoritesCubit>().getFavoritesList(userId: userId);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<UserCubit, UserState>(
@@ -93,7 +114,6 @@ class MyApp extends StatelessWidget {
 
         if (state is UserLoaded) {
           final userId = context.read<UserCubit>().userId;
-
           if (userId != null) {
             context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
 
@@ -113,30 +133,26 @@ class MyApp extends StatelessWidget {
 
           return MaterialApp(
             debugShowCheckedModeBanner: false,
-
             locale: Locale(languageCode),
-
             supportedLocales: const [Locale('en'), Locale('ar')],
-
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-
             builder: (context, child) {
               return Directionality(
                 textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-                child: child!,
+                child: NetworkGuard(
+                  onRetry: () => _reloadCubits(context),
+                  child: child!,
+                ),
               );
             },
-
             themeMode: ThemeMode.dark,
-
             theme: ThemeData.dark().copyWith(
               scaffoldBackgroundColor: const Color(0xFF121212),
             ),
-
             initialRoute: '/login',
             onGenerateRoute: AppRoute().generateRoute,
           );

@@ -1,6 +1,9 @@
+// lib/widgets/course_card.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:collection/collection.dart';
+
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
@@ -8,6 +11,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/favorites.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/services/network_service.dart';
 
 class CourseCard extends StatelessWidget {
   final String title;
@@ -37,8 +41,31 @@ class CourseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
     return GestureDetector(
       onTap: () {
+        if (!NetworkService.isConnected) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.black,
+              showCloseIcon: true,
+              content: Text(
+                isArabic ? 'لا يوجد اتصال بالإنترنت' : 'No internet connection',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: isArabic
+                      ? 'CustomArabicFont'
+                      : 'CustomEnglishFont',
+                ),
+              ),
+            ),
+          );
+          return;
+        }
+
         Navigator.pushNamed(
           context,
           '/course_details',
@@ -71,6 +98,28 @@ class CourseCard extends StatelessWidget {
                     height: 140,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        height: 140,
+                        width: double.infinity,
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(strokeWidth: 2),
+                      );
+                    },
+                    errorBuilder: (context, error, stack) {
+                      return Container(
+                        height: 140,
+                        width: double.infinity,
+                        color: Colors.white10,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          size: 40,
+                          color: Colors.white54,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 if (isFiltering != true)
@@ -111,7 +160,7 @@ class CourseCard extends StatelessWidget {
                     isCenter: false,
                   ),
                   const SizedBox(height: 8),
-                  ratingWidget(value: rating ,                         context: context),
+                  ratingWidget(value: rating, context: context),
                   const SizedBox(height: 10),
                   if (isFiltering != true && progress != null)
                     progressBar(progress: progress!),
@@ -162,7 +211,6 @@ class EnrollmentCourse extends StatelessWidget {
           return Column(
             children: uniqueEnrollments.values.map((e) {
               final course = courseMap[e.courseId]!;
-
               final fav = favorites
                   .where((f) => f.courseId == course.id)
                   .cast<FavoritesModel?>()
@@ -253,9 +301,7 @@ class FavoriteCourses extends StatelessWidget {
         return Column(
           children: uniqueFavorites.values.map((fav) {
             final course = courseMap[fav.courseId];
-            if (course == null) {
-              return const SizedBox.shrink();
-            }
+            if (course == null) return const SizedBox.shrink();
 
             final progress = progressMap[fav.courseId] ?? 0.0;
 

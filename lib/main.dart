@@ -143,10 +143,7 @@ class MyApp extends StatelessWidget {
             builder: (context, child) {
               return Directionality(
                 textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-                child: NetworkGuard(
-                  onRetry: () => _reloadCubits(context),
-                  child: child!,
-                ),
+                child: child!,
               );
             },
             themeMode: ThemeMode.dark,

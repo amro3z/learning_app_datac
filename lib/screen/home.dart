@@ -1,5 +1,8 @@
+// lib/screen/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
@@ -11,7 +14,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/categories_state.dart';
 import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
-import 'package:training/data/local/sqldb.dart';
+
 import 'package:training/helper/base.dart';
 import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
@@ -21,6 +24,7 @@ import 'package:training/widgets/floating_glass_bar.dart';
 import 'package:training/widgets/recommended_card.dart';
 import 'package:training/widgets/popular_card.dart';
 import 'package:training/widgets/searchbar.dart';
+import 'package:training/services/network_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,23 +35,26 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int currentIndex = 0;
-  final Sqldb sqldb = Sqldb();
 
-@override
+  @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _loadHomeData();
-      await sqldb.debugPrintAllTables();
     });
   }
 
-  Future<void> _loadHomeData() async {
+  Future<void> _loadHomeData({bool forceRefresh = false}) async {
     if (!mounted) return;
 
     final userId = context.read<UserCubit>().userId;
     if (userId == null) return;
+
+    final online = NetworkService.isConnected;
+
+    if (forceRefresh && !online) return;
+
+    final refresh = forceRefresh; 
 
     final coursesCubit = context.read<CoursesCubit>();
     final enrollCubit = context.read<EnrollmentsCubit>();
@@ -57,12 +64,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final catCubit = context.read<CategoriesCubit>();
 
     await Future.wait([
-      coursesCubit.getAllCourses(),
-      enrollCubit.getAllEnrollments(userId: userId),
-      favCubit.getFavoritesList(userId: userId),
-      recCubit.getRecommendedList(),
-      popCubit.getPopularList(),
-      catCubit.getAllCategories(),
+      coursesCubit.getAllCourses(forceRefresh: refresh),
+      enrollCubit.getAllEnrollments(userId: userId, forceRefresh: refresh),
+      favCubit.getFavoritesList(userId: userId, forceRefresh: refresh),
+      recCubit.getRecommendedList(forceRefresh: refresh),
+      popCubit.getPopularList(forceRefresh: refresh),
+      catCubit.getAllCategories(forceRefresh: refresh),
     ]);
   }
 
@@ -96,7 +103,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _homePage(bool isArabic) {
     return RefreshIndicator(
-      onRefresh: _loadHomeData,
+      onRefresh: () async {
+        if (!NetworkService.isConnected) {
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.black,
+              showCloseIcon: true,
+              content: Text(
+                isArabic ? 'لا يوجد اتصال بالإنترنت' : 'No internet connection',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: isArabic
+                      ? 'CustomArabicFont'
+                      : 'CustomEnglishFont',
+                ),
+              ),
+            ),
+          );
+          return;
+        }
+
+        await _loadHomeData(forceRefresh: true);
+      },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(
@@ -109,16 +139,13 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: kToolbarHeight),
-
             defaultText(
               context: context,
               text: isArabic ? 'مرحبًا، متعلم 👋' : 'Hello, Learner 👋',
               size: 24,
               isCenter: false,
             ),
-
             const SizedBox(height: 6),
-
             defaultText(
               context: context,
               text: isArabic
@@ -128,13 +155,9 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.white70,
               isCenter: false,
             ),
-
             const SizedBox(height: 20),
-
             const CoursesSearchBar(),
-
             const SizedBox(height: 20),
-
             BlocBuilder<CoursesCubit, LearnState>(
               builder: (context, state) {
                 final coursesCubit = context.watch<CoursesCubit>();
@@ -183,7 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 12),
                     const CategoriesChipsSection(),
                     const SizedBox(height: 24),
-
                     if (coursesCubit.isFiltering || isCategorySelected)
                       _filteredCoursesSection(state.filteredCourses, isArabic)
                     else

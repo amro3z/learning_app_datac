@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -9,12 +8,27 @@ class Sqldb {
   Future<Database> initializeDb() async {
     final path = join(await getDatabasesPath(), 'learn.db');
 
-    final database = await openDatabase(path, version: 1, onCreate: _onCreate);
+    final database = await openDatabase(
+      path,
+      version: 2, // 👈 bump version (adds meta table)
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
 
     return database;
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    // =======================
+    // META (for caching TTL)
+    // =======================
+    await db.execute('''
+      CREATE TABLE app_meta (
+        key TEXT PRIMARY KEY,
+        value TEXT
+      );
+    ''');
+
     // =======================
     // CATEGORIES
     // =======================
@@ -178,7 +192,19 @@ class Sqldb {
     await db.execute(
       'CREATE INDEX idx_recommend_course ON recommend(recommend_course_id);',
     );
-    log('============================================================== Database created ==============================================================');
+
+    log('DB created (v$version)');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS app_meta (
+          key TEXT PRIMARY KEY,
+          value TEXT
+        );
+      ''');
+    }
   }
 
   Future<Database> get db async {
@@ -186,58 +212,55 @@ class Sqldb {
     return _db!;
   }
 
-  readData({
-    required String Sql
-  }) async{
-    Database dbClient = await db;
-    var res = await dbClient.rawQuery(Sql);
-    return res;
-  }
-    updateData({required String Sql}) async {
-    Database dbClient = await db;
-    int res = await dbClient.rawUpdate(Sql);
-    return res;
-  }
-  insertData({required String Sql}) async {
-    Database dbClient = await db;
-    int res = await dbClient.rawInsert(Sql);
-    return res;
-  }
-    deleteData({required String Sql}) async {
-    Database dbClient = await db;
-    int res = await dbClient.rawDelete(Sql);
-    return res;
+  // ---------- Safer parameterized helpers ----------
+
+  Future<List<Map<String, Object?>>> readData({
+    required String sql,
+    List<Object?>? args,
+  }) async {
+    final dbClient = await db;
+    return dbClient.rawQuery(sql, args);
   }
 
-
-  Future<void> debugPrintAllTables() async {
-  final dbClient = await db;
-
-  final tables = [
-    "categories",
-    "courses",
-    "lessons",
-    "enrollments",
-    "favorites",
-    "lesson_progress",
-    "popular",
-    "recommend",
-    "instructors"
-  ];
-
-  for (var table in tables) {
-    final data = await dbClient.query(table);
-
-    print("========== $table ==========");
-    for (var row in data) {
-      print(row);
-    }
-
-    if (data.isEmpty) {
-      print("Table is empty");
-    }
-
-    print("\n");
+  Future<int> insertData({required String sql, List<Object?>? args}) async {
+    final dbClient = await db;
+    return dbClient.rawInsert(sql, args);
   }
-}
+
+  Future<int> updateData({required String sql, List<Object?>? args}) async {
+    final dbClient = await db;
+    return dbClient.rawUpdate(sql, args);
+  }
+
+  Future<int> deleteData({required String sql, List<Object?>? args}) async {
+    final dbClient = await db;
+    return dbClient.rawDelete(sql, args);
+  }
+
+  Future<void> runBatch(Future<void> Function(Batch b) fn) async {
+    final dbClient = await db;
+    await dbClient.transaction((txn) async {
+      final b = txn.batch();
+      await fn(b);
+      await b.commit(noResult: true);
+    });
+  }
+
+  // ---------- cache meta helpers ----------
+
+  Future<String?> getMeta(String key) async {
+    final rows = await readData(
+      sql: 'SELECT value FROM app_meta WHERE key = ?',
+      args: [key],
+    );
+    if (rows.isEmpty) return null;
+    return rows.first['value'] as String?;
+  }
+
+  Future<void> setMeta(String key, String value) async {
+    await insertData(
+      sql: 'INSERT OR REPLACE INTO app_meta(key, value) VALUES(?, ?)',
+      args: [key, value],
+    );
+  }
 }

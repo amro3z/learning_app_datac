@@ -1,125 +1,178 @@
+// lib/services/tokens/api_client.dart
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:training/services/tokens/auths_service.dart';
 
 class ApiClient {
   final AuthService _auth = AuthService();
-  AuthService get auth => _auth; 
+  AuthService get auth => _auth;
+
+  static const Duration _timeout = Duration(seconds: 15);
 
   Future<http.Response> get(String url) async {
-    final res = await http.get(
-      Uri.parse(url),
-      headers: {"Authorization": "Bearer ${_auth.token}"},
-    );
+    try {
+      final res = await http
+          .get(
+            Uri.parse(url),
+            headers: {"Authorization": "Bearer ${_auth.token}"},
+          )
+          .timeout(_timeout);
 
-    if (_isExpired(res)) {
-      final ok = await _auth.refreshTokenIfNeeded();
-      if (!ok) throw Exception("Session expired");
+      if (_isExpired(res)) {
+        final ok = await _auth.refreshTokenIfNeeded();
+        if (!ok) throw Exception("Session expired");
 
-      return http.get(
-        Uri.parse(url),
-        headers: {"Authorization": "Bearer ${_auth.token}"},
-      );
+        return await http
+            .get(
+              Uri.parse(url),
+              headers: {"Authorization": "Bearer ${_auth.token}"},
+            )
+            .timeout(_timeout);
+      }
+
+      return res;
+    } on SocketException {
+      throw const SocketException('NO_INTERNET');
+    } on http.ClientException {
+      throw const SocketException('NO_INTERNET');
+    } on TimeoutException {
+      throw const SocketException('NO_INTERNET');
     }
-
-    return res;
   }
 
-Future<http.Response> post(
+  Future<http.Response> post(
     String url, {
     Map<String, String>? headers,
     Object? body,
   }) async {
-    final res = await http.post(
-      Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer ${_auth.token}",
-        "Content-Type": "application/json",
-        ...?headers,
-      },
-      body: body,
-    );
+    try {
+      final res = await http
+          .post(
+            Uri.parse(url),
+            headers: {
+              "Authorization": "Bearer ${_auth.token}",
+              "Content-Type": "application/json",
+              ...?headers,
+            },
+            body: body,
+          )
+          .timeout(_timeout);
 
-    if (_isExpired(res)) {
-      final ok = await _auth.refreshTokenIfNeeded();
-      if (!ok) throw Exception("Session expired");
+      if (_isExpired(res)) {
+        final ok = await _auth.refreshTokenIfNeeded();
+        if (!ok) throw Exception("Session expired");
 
-      return http.post(
-        Uri.parse(url),
-        headers: {
-          "Authorization": "Bearer ${_auth.token}",
-          "Content-Type": "application/json",
-          ...?headers,
-        },
-        body: body,
-      );
+        return await http
+            .post(
+              Uri.parse(url),
+              headers: {
+                "Authorization": "Bearer ${_auth.token}",
+                "Content-Type": "application/json",
+                ...?headers,
+              },
+              body: body,
+            )
+            .timeout(_timeout);
+      }
+
+      return res;
+    } on SocketException {
+      throw const SocketException('NO_INTERNET');
+    } on http.ClientException {
+      throw const SocketException('NO_INTERNET');
+    } on TimeoutException {
+      throw const SocketException('NO_INTERNET');
     }
-
-    return res;
   }
 
   Future<http.Response> delete(
-  String url, {
-  Map<String, String>? headers,
-  Object? body,
-}) async {
-  final res = await http.delete(
-    Uri.parse(url),
-    headers: {
-      "Authorization": "Bearer ${_auth.token}",
-      "Content-Type": "application/json",
-      ...?headers,
-    },
-    body: body,
-  );
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    try {
+      final res = await http
+          .delete(
+            Uri.parse(url),
+            headers: {
+              "Authorization": "Bearer ${_auth.token}",
+              "Content-Type": "application/json",
+              ...?headers,
+            },
+            body: body,
+          )
+          .timeout(_timeout);
 
-  if (_isExpired(res)) {
-    final ok = await _auth.refreshTokenIfNeeded();
-    if (!ok) throw Exception("Session expired");
+      if (_isExpired(res)) {
+        final ok = await _auth.refreshTokenIfNeeded();
+        if (!ok) throw Exception("Session expired");
 
-    return http.delete(
-      Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer ${_auth.token}",
-        "Content-Type": "application/json",
-        ...?headers,
-      },
-      body: body,
-    );
+        return await http
+            .delete(
+              Uri.parse(url),
+              headers: {
+                "Authorization": "Bearer ${_auth.token}",
+                "Content-Type": "application/json",
+                ...?headers,
+              },
+              body: body,
+            )
+            .timeout(_timeout);
+      }
+
+      return res;
+    } on SocketException {
+      throw const SocketException('NO_INTERNET');
+    } on http.ClientException {
+      throw const SocketException('NO_INTERNET');
+    } on TimeoutException {
+      throw const SocketException('NO_INTERNET');
+    }
   }
-
-  return res;
-}
-
 
   Future<http.Response> patch(
     String url, {
     required Map<String, dynamic> body,
   }) async {
-    final res = await http.patch(
-      Uri.parse(url),
-      headers: {
-        "Authorization": "Bearer ${_auth.token}",
-        "Content-Type": "application/json",
-      },
-      body: jsonEncode(body),
-    );
+    try {
+      final res = await http
+          .patch(
+            Uri.parse(url),
+            headers: {
+              "Authorization": "Bearer ${_auth.token}",
+              "Content-Type": "application/json",
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(_timeout);
 
-    if (_isExpired(res)) {
-      final ok = await _auth.refreshTokenIfNeeded();
-      if (!ok) throw Exception("Session expired");
+      if (_isExpired(res)) {
+        final ok = await _auth.refreshTokenIfNeeded();
+        if (!ok) throw Exception("Session expired");
 
-      return http.patch(
-        Uri.parse(url),
-        headers: {
-          "Authorization": "Bearer ${_auth.token}",
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode(body),
-      );
+        return await http
+            .patch(
+              Uri.parse(url),
+              headers: {
+                "Authorization": "Bearer ${_auth.token}",
+                "Content-Type": "application/json",
+              },
+              body: jsonEncode(body),
+            )
+            .timeout(_timeout);
+      }
+
+      return res;
+    } on SocketException {
+      throw const SocketException('NO_INTERNET');
+    } on http.ClientException {
+      throw const SocketException('NO_INTERNET');
+    } on TimeoutException {
+      throw const SocketException('NO_INTERNET');
     }
-
-    return res;
   }
 
   bool _isExpired(http.Response res) {

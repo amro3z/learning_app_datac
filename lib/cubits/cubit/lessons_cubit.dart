@@ -14,14 +14,25 @@ class LessonsCubit extends Cubit<LessonsState> {
   final LearningRepo repo;
   final EnrollmentsCubit enrollmentsCubit;
 
-  Future<void> getLessons() async {
+Future<void> getLessons({bool forceRefresh = false}) async {
     emit(LessonsLoading());
 
     try {
-      final lessons = await repo.getLessonList();
+      final lessons = await repo.getLessonList(forceRefresh: forceRefresh);
+
       final progress = await repo.getLessonProgressList();
 
       emit(LessonsLoaded(lessons: lessons, progress: progress));
+
+      if (!forceRefresh) {
+        Future.microtask(() async {
+          final freshLessons = await repo.getLessonList(forceRefresh: true);
+
+          final freshProgress = await repo.getLessonProgressList();
+
+          emit(LessonsLoaded(lessons: freshLessons, progress: freshProgress));
+        });
+      }
     } catch (e) {
       emit(LessonsError(message: e.toString()));
     }

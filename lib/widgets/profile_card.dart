@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/lessons_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
@@ -26,7 +27,6 @@ class ProfileCard extends StatelessWidget {
     int completedCoursesCount = 0;
     double completedHours = 0;
 
-    /// ================= ENROLLMENTS =================
     final enrollmentsState = context.watch<EnrollmentsCubit>().state;
 
     if (enrollmentsState is EnrollmentsLoaded && userId != null) {
@@ -41,7 +41,6 @@ class ProfileCard extends StatelessWidget {
           .length;
     }
 
-    /// ================= LESSON HOURS =================
     final lessonsState = context.watch<LessonsCubit>().state;
 
     if (lessonsState is LessonsLoaded && userId != null) {
@@ -69,19 +68,50 @@ class ProfileCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          /// USER INFO
           Row(
             children: [
               GestureDetector(
                 onTap: state.isUploading ? null : () => pickImage(context),
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundImage: state.avatarUrl != null
-                      ? NetworkImage(state.avatarUrl!)
-                      : null,
-                  child: state.avatarUrl == null
-                      ? const Icon(Icons.person, size: 32)
-                      : null,
+                child: SizedBox(
+                  width: 80,
+                  height: 80,
+                  child: ClipOval(
+                    child: state.avatarUrl == null
+                        ? Container(
+                            color: Colors.white10,
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.person,
+                              size: 32,
+                              color: Colors.white70,
+                            ),
+                          )
+                        : Image.network(
+                            state.avatarUrl!,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return Container(
+                                color: Colors.white10,
+                                alignment: Alignment.center,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stack) {
+                              return Container(
+                                color: Colors.white10,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 32,
+                                  color: Colors.white70,
+                                ),
+                              );
+                            },
+                          ),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -108,12 +138,9 @@ class ProfileCard extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
           const Divider(color: Colors.white12),
           const SizedBox(height: 20),
-
-          /// STATS
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [

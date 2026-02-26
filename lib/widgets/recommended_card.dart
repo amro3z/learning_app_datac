@@ -1,3 +1,4 @@
+// lib/widgets/recommended_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
@@ -7,6 +8,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/services/network_service.dart';
 
 class RecommendedCard extends StatefulWidget {
   const RecommendedCard({
@@ -23,7 +25,7 @@ class RecommendedCard extends StatefulWidget {
   final int courseId;
   final String titleEn;
   final String titleAr;
-  final String author; 
+  final String author;
   final double rating;
   final String imagePath;
   final bool isEnrolled;
@@ -55,42 +57,47 @@ class _RecommendedCardState extends State<RecommendedCard> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              widget.imagePath,
+            child: _NetworkOrPlaceholderImage(
+              imageUrl: widget.imagePath,
               height: 110,
               width: 110,
-              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              defaultText(
-                                        context: context,
-                text: title,
-                size: 14,
-                color: Colors.white,
-                bold: true,
-                isCenter: false,
-              ),
-              const SizedBox(height: 4),
-              defaultText(
-                                        context: context,
-                text: widget.author, // مش مترجم
-                size: 12,
-                color: Colors.white.withOpacity(0.6),
-                isCenter: false,
-              ),
-              const SizedBox(height: 8),
-              defaultText(text: "⭐ ${widget.rating}", size: 12 ,                         context: context,
-              ),
-              const SizedBox(height: 10),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _buildButton(context, languageCode),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                defaultText(
+                  context: context,
+                  text: title,
+                  size: 14,
+                  color: Colors.white,
+                  bold: true,
+                  isCenter: false,
+                ),
+                const SizedBox(height: 4),
+                defaultText(
+                  context: context,
+                  text: widget.author,
+                  size: 12,
+                  color: Colors.white.withOpacity(0.6),
+                  isCenter: false,
+                ),
+                const SizedBox(height: 8),
+                defaultText(
+                  text: "⭐ ${widget.rating}",
+                  size: 12,
+                  context: context,
+                ),
+                const SizedBox(height: 10),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _buildButton(context, languageCode),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -98,14 +105,8 @@ class _RecommendedCardState extends State<RecommendedCard> {
   }
 
   Widget _buildButton(BuildContext context, String languageCode) {
-    if (widget.isEnrolled) {
-      return _successButton(languageCode);
-    }
-
-    if (_loading) {
-      return _loadingButton();
-    }
-
+    if (widget.isEnrolled) return _successButton(languageCode);
+    if (_loading) return _loadingButton();
     return _enrollButton(context, languageCode);
   }
 
@@ -123,6 +124,16 @@ class _RecommendedCardState extends State<RecommendedCard> {
         onPressed: _loading
             ? null
             : () async {
+                if (!NetworkService.isConnected) {
+                  final msg = languageCode == 'ar'
+                      ? 'مفيش نت'
+                      : 'No internet connection';
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(msg)));
+                  return;
+                }
+
                 if (widget.isEnrolled) return;
 
                 setState(() => _loading = true);
@@ -136,12 +147,16 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   userId: context.read<UserCubit>().userId!,
                 );
 
-                setState(() => _loading = false);
+                if (mounted) setState(() => _loading = false);
               },
         child: Text(
           languageCode == 'ar' ? 'اشترك' : 'Enroll',
-          style:  TextStyle(fontSize: 12  , fontFamily: languageCode == 'ar'
-           ? 'CustomArabicFont' : 'CustomEnglishFont',),
+          style: TextStyle(
+            fontSize: 12,
+            fontFamily: languageCode == 'ar'
+                ? 'CustomArabicFont'
+                : 'CustomEnglishFont',
+          ),
         ),
       ),
     );
@@ -228,8 +243,12 @@ class RecommendedCourses extends StatelessWidget {
                     languageCode == 'ar'
                         ? 'لا توجد كورسات مقترحة'
                         : 'No recommended courses',
-                    style:  TextStyle(color: Colors.white70 , fontFamily:   languageCode == 'ar'
-                     ? 'CustomArabicFont' : 'CustomEnglishFont',),
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontFamily: languageCode == 'ar'
+                          ? 'CustomArabicFont'
+                          : 'CustomEnglishFont',
+                    ),
                   ),
                 );
               }
@@ -245,7 +264,7 @@ class RecommendedCourses extends StatelessWidget {
                       imagePath: course.thumbnail,
                       titleEn: course.titleEn,
                       titleAr: course.titleAr,
-                      author: course.instructorName, 
+                      author: course.instructorName,
                       rating: course.rating,
                       isEnrolled: isEnrolled,
                     ),
@@ -258,6 +277,72 @@ class RecommendedCourses extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _NetworkOrPlaceholderImage extends StatelessWidget {
+  const _NetworkOrPlaceholderImage({
+    required this.imageUrl,
+    required this.height,
+    required this.width,
+    this.borderRadius,
+  });
+
+  final String imageUrl;
+  final double height;
+  final double width;
+  final BorderRadius? borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    final online = NetworkService.isConnected;
+
+    Widget placeholder() {
+      return Container(
+        height: height,
+        width: width,
+        color: Colors.white10,
+        child: const Center(
+          child: Icon(
+            Icons.image_not_supported_outlined,
+            color: Colors.white54,
+          ),
+        ),
+      );
+    }
+
+    if (!online) {
+      return ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.zero,
+        child: placeholder(),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: borderRadius ?? BorderRadius.zero,
+      child: Image.network(
+        imageUrl,
+        height: height,
+        width: width,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => placeholder(),
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Container(
+            height: height,
+            width: width,
+            color: Colors.white10,
+            child: const Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

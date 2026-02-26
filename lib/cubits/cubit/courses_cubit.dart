@@ -11,17 +11,29 @@ class CoursesCubit extends Cubit<LearnState> {
   List<CoursesModel> _allCourses = [];
   bool isFiltering = false;
 
-  Future<void> getAllCourses() async {
+  Future<void> getAllCourses({bool forceRefresh = false}) async {
     emit(CoursesLoading());
 
     try {
-      final courses = await learningRepo.getCoursesList();
+      final local = await learningRepo.getCoursesList(
+        forceRefresh: forceRefresh,
+      );
 
-      _allCourses = courses.where((c) => c.status == "published").toList();
-
-      isFiltering = false;
+      _allCourses = local.where((c) => c.status == "published").toList();
 
       emit(CoursesLoaded(courses: _allCourses, filteredCourses: _allCourses));
+
+      if (!forceRefresh) {
+        Future.microtask(() async {
+          final fresh = await learningRepo.getCoursesList(forceRefresh: true);
+
+          _allCourses = fresh.where((c) => c.status == "published").toList();
+
+          emit(
+            CoursesLoaded(courses: _allCourses, filteredCourses: _allCourses),
+          );
+        });
+      }
     } catch (e) {
       emit(CoursesError(e.toString()));
     }
@@ -29,13 +41,11 @@ class CoursesCubit extends Cubit<LearnState> {
 
   void setCourses(List<CoursesModel> courses) {
     _allCourses = courses;
-
     emit(CoursesLoaded(courses: courses, filteredCourses: courses));
   }
 
   void resetFilters() {
     isFiltering = false;
-
     emit(CoursesLoaded(courses: _allCourses, filteredCourses: _allCourses));
   }
 
@@ -53,40 +63,30 @@ class CoursesCubit extends Cubit<LearnState> {
     final hasDifficulty = difficulty != null && difficulty.trim().isNotEmpty;
     final hasSort = sortBy != null && sortBy.trim().isNotEmpty;
 
-    /// 🔎 SEARCH (عربي + إنجليزي)
     if (hasSearch) {
       final query = search!.trim().toLowerCase();
 
       filtered = filtered.where((course) {
-        final titleAr = course.titleAr.toLowerCase();
-        final titleEn = course.titleEn.toLowerCase();
-        final descAr = course.descriptionAr.toLowerCase();
-        final descEn = course.descriptionEn.toLowerCase();
-
-        return titleAr.contains(query) ||
-            titleEn.contains(query) ||
-            descAr.contains(query) ||
-            descEn.contains(query);
+        return course.titleAr.toLowerCase().contains(query) ||
+            course.titleEn.toLowerCase().contains(query) ||
+            course.descriptionAr.toLowerCase().contains(query) ||
+            course.descriptionEn.toLowerCase().contains(query);
       }).toList();
     }
 
-    /// 📂 CATEGORY
     if (hasCategory) {
       filtered = filtered
           .where((course) => course.categoryID == categoryId)
           .toList();
     }
 
-    /// 🎯 DIFFICULTY
     if (hasDifficulty) {
       final levelQuery = difficulty!.trim().toLowerCase();
-
       filtered = filtered
           .where((course) => course.level.trim().toLowerCase() == levelQuery)
           .toList();
     }
 
-    /// 🔃 SORT
     if (hasSort) {
       if (sortBy == 'Recent') {
         filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));

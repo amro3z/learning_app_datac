@@ -13,14 +13,32 @@ class FavoritesCubit extends Cubit<FavoritesState> {
   final LearningWebservice webservice;
   final LearningRepo repo;
 
-  Future<void> getFavoritesList({required String userId}) async {
+Future<void> getFavoritesList({
+    required String userId,
+    bool forceRefresh = false,
+  }) async {
     emit(FavoritesLoading());
+
     try {
-      final favoritesList = await repo.getFavoriteList(userId: userId);
+      final local = await repo.getFavoriteList(
+        userId: userId,
+        forceRefresh: forceRefresh,
+      );
 
       final courses = await repo.getCoursesList();
 
-      emit(FavoritesLoaded(favoritesList: favoritesList, courses: courses));
+      emit(FavoritesLoaded(favoritesList: local, courses: courses));
+
+      if (!forceRefresh) {
+        Future.microtask(() async {
+          final fresh = await repo.getFavoriteList(
+            userId: userId,
+            forceRefresh: true,
+          );
+
+          emit(FavoritesLoaded(favoritesList: fresh, courses: courses));
+        });
+      }
     } catch (e) {
       emit(FavoritesError(e.toString()));
     }

@@ -16,15 +16,34 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
   final LearningRepo learningRepo;
   final LearningWebservice webservice;
 
-Future<void> getAllEnrollments({required String userId}) async {
+Future<void> getAllEnrollments({
+    required String userId,
+    bool forceRefresh = false,
+  }) async {
     try {
       emit(EnrollmentsLoading());
 
-      final enrollments = await learningRepo.getEnrollmentList(userId: userId);
+      // 🔹 رجع local فورًا
+      final localEnrollments = await learningRepo.getEnrollmentList(
+        userId: userId,
+        forceRefresh: forceRefresh,
+      );
 
       final courses = await learningRepo.getCoursesList();
 
-      emit(EnrollmentsLoaded(enrollments: enrollments, courses: courses));
+      emit(EnrollmentsLoaded(enrollments: localEnrollments, courses: courses));
+
+      // 🔹 background refresh
+      if (!forceRefresh) {
+        Future.microtask(() async {
+          final fresh = await learningRepo.getEnrollmentList(
+            userId: userId,
+            forceRefresh: true,
+          );
+
+          emit(EnrollmentsLoaded(enrollments: fresh, courses: courses));
+        });
+      }
     } catch (e) {
       emit(EnrollmentsError(message: e.toString()));
     }

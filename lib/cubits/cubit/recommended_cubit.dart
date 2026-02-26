@@ -10,13 +10,30 @@ class RecommendedCubit extends Cubit<RecommendedState> {
   RecommendedCubit({required this.learningRepo}) : super(RecommendedInitial());
 
   final LearningRepo learningRepo;
-Future<List<RecommendModel>> getRecommendedList() async {
+Future<List<RecommendModel>> getRecommendedList({
+    bool forceRefresh = false,
+  }) async {
     emit(RecommendedLoading());
     try {
-      final recommends = await learningRepo.getRecommendedList();
+      final local = await learningRepo.getRecommendedList(
+        forceRefresh: forceRefresh,
+      );
+
       final courses = await learningRepo.getCoursesList();
-      emit(RecommendedLoaded(recommends: recommends, courses: courses));
-      return recommends;
+
+      emit(RecommendedLoaded(recommends: local, courses: courses));
+
+      if (!forceRefresh) {
+        Future.microtask(() async {
+          final fresh = await learningRepo.getRecommendedList(
+            forceRefresh: true,
+          );
+
+          emit(RecommendedLoaded(recommends: fresh, courses: courses));
+        });
+      }
+
+      return local;
     } catch (e) {
       emit(RecommendedError(message: e.toString()));
       return [];

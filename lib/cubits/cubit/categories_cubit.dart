@@ -13,16 +13,39 @@ class CategoriesCubit extends Cubit<CategoriesState> {
 
   int? get selectedCategoryId => _selectedCategoryId;
 
-  Future<void> getAllCategories() async {
+  Future<void> getAllCategories({bool forceRefresh = false}) async {
     emit(CategoriesLoading());
+
     try {
-      _categories = await learningRepo.getCategoryList();
+      // 🔹 1) رجع local فورًا
+      final local = await learningRepo.getCategoryList(
+        forceRefresh: forceRefresh,
+      );
+
+      _categories = local;
+
       emit(
         CategoriesLoaded(
           categories: _categories,
           selectedCategoryId: _selectedCategoryId,
         ),
       );
+
+      // 🔹 2) background refresh
+      if (!forceRefresh) {
+        Future.microtask(() async {
+          final fresh = await learningRepo.getCategoryList(forceRefresh: true);
+
+          _categories = fresh;
+
+          emit(
+            CategoriesLoaded(
+              categories: _categories,
+              selectedCategoryId: _selectedCategoryId,
+            ),
+          );
+        });
+      }
     } catch (e) {
       emit(CategoriesError(message: e.toString()));
     }
@@ -39,4 +62,3 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     );
   }
 }
-

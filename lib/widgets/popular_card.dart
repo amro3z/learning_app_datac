@@ -1,3 +1,4 @@
+// lib/widgets/popular_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
@@ -5,6 +6,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/services/network_service.dart';
 
 class PopularCard extends StatelessWidget {
   const PopularCard({
@@ -23,9 +25,9 @@ class PopularCard extends StatelessWidget {
   final String author;
   final String description;
   final int courseId;
+
   @override
   Widget build(BuildContext context) {
-
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -49,11 +51,13 @@ class PopularCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              imageUrl,
+            _NetworkOrPlaceholderImage(
+              imageUrl: imageUrl,
               height: 100,
               width: double.infinity,
-              fit: BoxFit.cover,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
             ),
             const SizedBox(height: 8),
             Padding(
@@ -99,12 +103,13 @@ class PopularCourses extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-        final langState = context.watch<LanguageCubit>().state;
+    final langState = context.watch<LanguageCubit>().state;
     final languageCode = langState is LanguageCubitLoaded
         ? langState.languageCode
         : 'en';
+
     return BlocBuilder<LanguageCubit, LanguageCubitState>(
-      builder: (context, langState) {
+      builder: (context, _) {
         return BlocBuilder<PopularCubit, PopularState>(
           builder: (context, state) {
             if (state is PopularLoading || state is PopularInitial) {
@@ -142,10 +147,14 @@ class PopularCourses extends StatelessWidget {
 
                   return PopularCard(
                     imageUrl: course.thumbnail,
-                    title: languageCode == 'ar' ? course.titleAr : course.titleEn,
+                    title: languageCode == 'ar'
+                        ? course.titleAr
+                        : course.titleEn,
                     rating: course.rating,
                     author: course.instructorName,
-                    description: languageCode == 'ar' ? course.descriptionAr : course.descriptionEn,
+                    description: languageCode == 'ar'
+                        ? course.descriptionAr
+                        : course.descriptionEn,
                     courseId: course.id,
                   );
                 },
@@ -156,6 +165,72 @@ class PopularCourses extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _NetworkOrPlaceholderImage extends StatelessWidget {
+  const _NetworkOrPlaceholderImage({
+    required this.imageUrl,
+    required this.height,
+    required this.width,
+    this.borderRadius,
+  });
+
+  final String imageUrl;
+  final double height;
+  final double width;
+  final BorderRadius? borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    final online = NetworkService.isConnected;
+
+    Widget placeholder() {
+      return Container(
+        height: height,
+        width: width,
+        color: Colors.white10,
+        child: const Center(
+          child: Icon(
+            Icons.image_not_supported_outlined,
+            color: Colors.white54,
+          ),
+        ),
+      );
+    }
+
+    if (!online) {
+      return ClipRRect(
+        borderRadius: borderRadius ?? BorderRadius.zero,
+        child: placeholder(),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: borderRadius ?? BorderRadius.zero,
+      child: Image.network(
+        imageUrl,
+        height: height,
+        width: width,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => placeholder(),
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Container(
+            height: height,
+            width: width,
+            color: Colors.white10,
+            child: const Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

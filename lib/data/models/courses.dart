@@ -14,6 +14,7 @@ class CoursesModel {
   late int categoryID;
   late String instructorName;
   late String level;
+
   CoursesModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     status = json['status'];
@@ -21,11 +22,15 @@ class CoursesModel {
     dateUpdated = json['date_updated'] != null
         ? DateTime.parse(json['date_updated'])
         : null;
-    titleAr = json['title']['ar'] ;
+
+    titleAr = json['title']['ar'];
     titleEn = json['title']['en'];
-    descriptionAr = json['description']['ar'] ;
+    descriptionAr = json['description']['ar'];
     descriptionEn = json['description']['en'];
-    thumbnail = '$fileUrl${json['thumbnail']}';
+
+    final thumb = json['thumbnail'].toString();
+    thumbnail = thumb.startsWith('http') ? thumb : '$fileUrl$thumb';
+
     rating = (json['rating'] ?? 0).toDouble();
     categoryID = json['category'];
     instructorName =

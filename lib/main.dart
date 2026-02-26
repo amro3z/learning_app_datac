@@ -12,11 +12,10 @@ import 'package:training/cubits/cubit/lessons_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
-
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/cubits/states/user_state.dart';
-
 import 'package:training/data/api/web_service.dart';
+import 'package:training/data/local/sqldb.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/firebase_options.dart';
 import 'package:training/route.dart';
@@ -30,7 +29,7 @@ void main() async {
   await AuthService().init();
 
   final webService = LearningWebservice();
-  final repo = LearningRepo(learningWebService: webService);
+  final repo = LearningRepo(learningWebService: webService, sqldb: Sqldb());
 
   final userCubit = UserCubit();
   await userCubit.restoreSession();

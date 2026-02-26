@@ -11,6 +11,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/categories_state.dart';
 import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
+import 'package:training/data/local/sqldb.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
@@ -30,26 +31,38 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int currentIndex = 0;
+  final Sqldb sqldb = Sqldb();
 
-  @override
+@override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadHomeData();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _loadHomeData();
+      await sqldb.debugPrintAllTables();
     });
   }
 
   Future<void> _loadHomeData() async {
+    if (!mounted) return;
+
     final userId = context.read<UserCubit>().userId;
     if (userId == null) return;
 
+    final coursesCubit = context.read<CoursesCubit>();
+    final enrollCubit = context.read<EnrollmentsCubit>();
+    final favCubit = context.read<FavoritesCubit>();
+    final recCubit = context.read<RecommendedCubit>();
+    final popCubit = context.read<PopularCubit>();
+    final catCubit = context.read<CategoriesCubit>();
+
     await Future.wait([
-      context.read<CoursesCubit>().getAllCourses(),
-      context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId),
-      context.read<FavoritesCubit>().getFavoritesList(userId: userId),
-      context.read<RecommendedCubit>().getRecommendedList(),
-      context.read<PopularCubit>().getPopularList(),
-      context.read<CategoriesCubit>().getAllCategories(),
+      coursesCubit.getAllCourses(),
+      enrollCubit.getAllEnrollments(userId: userId),
+      favCubit.getFavoritesList(userId: userId),
+      recCubit.getRecommendedList(),
+      popCubit.getPopularList(),
+      catCubit.getAllCategories(),
     ]);
   }
 
@@ -97,14 +110,15 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             SizedBox(height: kToolbarHeight),
 
-            /// HEADER
             defaultText(
               context: context,
               text: isArabic ? 'مرحبًا، متعلم 👋' : 'Hello, Learner 👋',
               size: 24,
               isCenter: false,
             ),
+
             const SizedBox(height: 6),
+
             defaultText(
               context: context,
               text: isArabic
@@ -117,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 20),
 
-            /// 🔥 مهم: السيرش برا أي BlocBuilder
             const CoursesSearchBar(),
 
             const SizedBox(height: 20),
@@ -230,9 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         const EnrollmentCourse(),
-
         const SizedBox(height: 24),
-
         defaultText(
           context: context,
           text: isArabic ? 'الدورات المقترحة' : 'Recommended Courses',
@@ -241,9 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 12),
         const RecommendedCourses(),
-
         const SizedBox(height: 24),
-
         defaultText(
           context: context,
           text: isArabic ? 'الأكثر شعبية هذا الأسبوع' : 'Popular This Week',

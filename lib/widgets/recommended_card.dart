@@ -8,6 +8,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/services/local_notifications.dart';
 import 'package:training/services/network_service.dart';
 
 class RecommendedCard extends StatefulWidget {
@@ -20,6 +21,8 @@ class RecommendedCard extends StatefulWidget {
     required this.rating,
     required this.imagePath,
     required this.isEnrolled,
+    required this.descriptionAr,
+    required this.descriptionEn,
   });
 
   final int courseId;
@@ -29,7 +32,8 @@ class RecommendedCard extends StatefulWidget {
   final double rating;
   final String imagePath;
   final bool isEnrolled;
-
+  final String descriptionAr;
+  final String descriptionEn;
   @override
   State<RecommendedCard> createState() => _RecommendedCardState();
 }
@@ -94,7 +98,14 @@ class _RecommendedCardState extends State<RecommendedCard> {
                 const SizedBox(height: 10),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  child: _buildButton(context, languageCode),
+                  child: _buildButton(
+                    context,
+                    languageCode,
+                    widget.titleAr,
+                    widget.titleEn,
+                    widget.descriptionAr,
+                    widget.descriptionEn,
+                  ),
                 ),
               ],
             ),
@@ -104,13 +115,27 @@ class _RecommendedCardState extends State<RecommendedCard> {
     );
   }
 
-  Widget _buildButton(BuildContext context, String languageCode) {
+  Widget _buildButton(
+    BuildContext context,
+    String languageCode,
+    String titleAR,
+    String titleEN,
+    String descriptionAr,
+    String descriptionEn,
+  ) {
+    final title = languageCode == 'ar' ? titleAR : titleEN;
+    final description = languageCode == 'ar' ? descriptionAr : descriptionEn;
     if (widget.isEnrolled) return _successButton(languageCode);
     if (_loading) return _loadingButton();
-    return _enrollButton(context, languageCode);
+    return _enrollButton(context, languageCode, title, description);
   }
 
-  Widget _enrollButton(BuildContext context, String languageCode) {
+  Widget _enrollButton(
+    BuildContext context,
+    String languageCode,
+    String title,
+    String description,
+  ) {
     return SizedBox(
       width: 100,
       height: 32,
@@ -125,12 +150,15 @@ class _RecommendedCardState extends State<RecommendedCard> {
             ? null
             : () async {
                 if (!NetworkService.isConnected) {
-                  final msg = languageCode == 'ar'
-                      ? 'مفيش نت'
-                      : 'No internet connection';
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text(msg)));
+                  LocalNotifications.showNotification(
+                    navigator: false,
+                    title: languageCode == 'ar'
+                        ? 'مفيش نت'
+                        : 'No internet connection',
+                    body: languageCode == 'ar'
+                        ? 'تأكد من اتصالك بالإنترنت وحاول مرة تانية'
+                        : 'Please check your internet connection and try again',
+                  );
                   return;
                 }
 
@@ -142,7 +170,18 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   courseId: widget.courseId,
                   userId: context.read<UserCubit>().userId!,
                 );
-
+                LocalNotifications.showNotification(
+                  navigator: true,
+                  title: 'Enrollment Successful',
+                  body: 'You enrolled in $title',
+                  arguments: {
+                    'imageURL': widget.imagePath,
+                    'title': title,
+                    'instructor': widget.author,
+                    'description': description,
+                    'courseId': widget.courseId,
+                  },
+                );
                 await context.read<EnrollmentsCubit>().getAllEnrollments(
                   userId: context.read<UserCubit>().userId!,
                 );
@@ -260,6 +299,8 @@ class RecommendedCourses extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: RecommendedCard(
+                      descriptionAr: course.descriptionAr,
+                      descriptionEn: course.descriptionEn,
                       courseId: course.id,
                       imagePath: course.thumbnail,
                       titleEn: course.titleEn,

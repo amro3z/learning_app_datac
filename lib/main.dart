@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:training/cubits/cubit/categories_cubit.dart';
@@ -20,17 +21,25 @@ import 'package:training/data/local/sqldb.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/firebase_options.dart';
 import 'package:training/route.dart';
+import 'package:training/services/local_notifications.dart';
 import 'package:training/services/network_service.dart';
 import 'package:training/services/tokens/auths_service.dart';
-import 'package:training/widgets/network_guard.dart';
-
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.requestNotificationsPermission();
   await AuthService().init();
 
+  await LocalNotifications.init(navigatorKey);
   NetworkService.startListening();
 
   final webService = LearningWebservice();
@@ -132,6 +141,7 @@ class MyApp extends StatelessWidget {
           final isArabic = languageCode == 'ar';
 
           return MaterialApp(
+              navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             locale: Locale(languageCode),
             supportedLocales: const [Locale('en'), Locale('ar')],

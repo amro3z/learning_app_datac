@@ -64,7 +64,7 @@ class CoursesCubit extends Cubit<LearnState> {
     final hasSort = sortBy != null && sortBy.trim().isNotEmpty;
 
     if (hasSearch) {
-      final query = search!.trim().toLowerCase();
+      final query = search.trim().toLowerCase();
 
       filtered = filtered.where((course) {
         return course.titleAr.toLowerCase().contains(query) ||
@@ -81,7 +81,7 @@ class CoursesCubit extends Cubit<LearnState> {
     }
 
     if (hasDifficulty) {
-      final levelQuery = difficulty!.trim().toLowerCase();
+      final levelQuery = difficulty.trim().toLowerCase();
       filtered = filtered
           .where((course) => course.level.trim().toLowerCase() == levelQuery)
           .toList();

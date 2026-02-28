@@ -48,8 +48,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
           if (state is UserLoaded) {
             return RefreshIndicator(
-              onRefresh: () => context.read<UserCubit>().refreshUser(),
+              onRefresh: () async {
+                await context.read<UserCubit>().refreshUser();
+              },
               child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

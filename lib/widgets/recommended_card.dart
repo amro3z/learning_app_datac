@@ -8,6 +8,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/services/local_notifications.dart';
 import 'package:training/services/network_service.dart';
 
@@ -138,17 +139,13 @@ class _RecommendedCardState extends State<RecommendedCard> {
   ) {
     return SizedBox(
       width: 100,
-      height: 32,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        onPressed: _loading
-            ? null
-            : () async {
+      child: _loading
+          ? _loadingButton()
+          : CustomGlowButton(
+              width: 100,
+              textSize: 12,
+              title: languageCode == 'ar' ? 'اشترك' : 'Enroll',
+              onPressed: () async {
                 if (!NetworkService.isConnected) {
                   LocalNotifications.showNotification(
                     navigator: false,
@@ -170,6 +167,9 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   courseId: widget.courseId,
                   userId: context.read<UserCubit>().userId!,
                 );
+
+                if (!mounted) return;
+
                 LocalNotifications.showNotification(
                   navigator: true,
                   title: 'Enrollment Successful',
@@ -182,22 +182,16 @@ class _RecommendedCardState extends State<RecommendedCard> {
                     'courseId': widget.courseId,
                   },
                 );
+
                 await context.read<EnrollmentsCubit>().getAllEnrollments(
                   userId: context.read<UserCubit>().userId!,
                 );
 
-                if (mounted) setState(() => _loading = false);
+                if (!mounted) return;
+
+                setState(() => _loading = false);
               },
-        child: Text(
-          languageCode == 'ar' ? 'اشترك' : 'Enroll',
-          style: TextStyle(
-            fontSize: 12,
-            fontFamily: languageCode == 'ar'
-                ? 'CustomArabicFont'
-                : 'CustomEnglishFont',
-          ),
-        ),
-      ),
+            ),
     );
   }
 
@@ -217,8 +211,8 @@ class _RecommendedCardState extends State<RecommendedCard> {
 
   Widget _successButton(String languageCode) {
     return Container(
+      height: getScreenHeight(context) * 0.053,
       width: 100,
-      height: 32,
       decoration: BoxDecoration(
         color: Colors.green,
         borderRadius: BorderRadius.circular(20),

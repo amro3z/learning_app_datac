@@ -23,6 +23,13 @@ class _EditNameCardState extends State<EditNameCard> {
   final lastNameController = TextEditingController();
 
   @override
+  void dispose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
     final isArabic =
@@ -105,6 +112,8 @@ class _EditNameCardState extends State<EditNameCard> {
                         firstName: first,
                         lastName: last,
                       );
+
+                      if (!mounted) return;
 
                       firstNameController.clear();
                       lastNameController.clear();

@@ -21,6 +21,7 @@ import 'package:training/screen/profile_page.dart';
 import 'package:training/widgets/categories_chips_section.dart';
 import 'package:training/widgets/course_card.dart';
 import 'package:training/widgets/floating_glass_bar.dart';
+import 'package:training/widgets/not_enrolled_courses_section.dart';
 import 'package:training/widgets/recommended_card.dart';
 import 'package:training/widgets/popular_card.dart';
 import 'package:training/widgets/searchbar.dart';
@@ -54,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (forceRefresh && !online) return;
 
-    final refresh = forceRefresh; 
+    final refresh = forceRefresh;
 
     final coursesCubit = context.read<CoursesCubit>();
     final enrollCubit = context.read<EnrollmentsCubit>();
@@ -266,6 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 12),
         const EnrollmentCourse(),
         const SizedBox(height: 24),
+        const NotEnrolledCoursesSection(),
         defaultText(
           context: context,
           text: isArabic ? 'الدورات المقترحة' : 'Recommended Courses',
@@ -275,14 +277,6 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 12),
         const RecommendedCourses(),
         const SizedBox(height: 24),
-        defaultText(
-          context: context,
-          text: isArabic ? 'الأكثر شعبية هذا الأسبوع' : 'Popular This Week',
-          size: 18,
-          isCenter: false,
-        ),
-        const SizedBox(height: 12),
-        const PopularCourses(),
       ],
     );
   }

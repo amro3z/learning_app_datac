@@ -11,9 +11,10 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/favorites.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/services/network_service.dart';
 
-class CourseCard extends StatelessWidget {
+class CourseCard extends StatefulWidget {
   final String title;
   final String author;
   final double rating;
@@ -24,7 +25,9 @@ class CourseCard extends StatelessWidget {
   final int courseId;
   final bool? isFiltering;
   final VoidCallback? onFavoriteToggle;
-
+  final bool? isEnrolled;
+  final double height;
+  final Function()? onEnrollPressed;
   const CourseCard({
     super.key,
     required this.title,
@@ -37,7 +40,47 @@ class CourseCard extends StatelessWidget {
     required this.description,
     required this.courseId,
     this.isFiltering = false,
+    this.isEnrolled = true,
+    this.height = 270,
+    this.onEnrollPressed,
   });
+
+  @override
+  State<CourseCard> createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<CourseCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fade;
+  late Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    if (widget.isEnrolled == false) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,21 +108,22 @@ class CourseCard extends StatelessWidget {
           );
           return;
         }
-
-        Navigator.pushNamed(
-          context,
-          '/course_details',
-          arguments: {
-            'imageURL': imagePath,
-            'title': title,
-            'instructor': author,
-            'description': description,
-            'courseId': courseId,
-          },
-        );
+        widget.isEnrolled == false
+            ? _controller.forward()
+            : Navigator.pushNamed(
+                context,
+                '/course_details',
+                arguments: {
+                  'imageURL': widget.imagePath,
+                  'title': widget.title,
+                  'instructor': widget.author,
+                  'description': widget.description,
+                  'courseId': widget.courseId,
+                },
+              );
       },
       child: Container(
-        height: isFiltering == true ? 245 : 265,
+        height: widget.isFiltering == true ? 270 : widget.height,
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(16),
@@ -94,7 +138,7 @@ class CourseCard extends StatelessWidget {
                     top: Radius.circular(16),
                   ),
                   child: Image.network(
-                    imagePath,
+                    widget.imagePath,
                     height: 140,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -102,37 +146,35 @@ class CourseCard extends StatelessWidget {
                       if (progress == null) return child;
                       return Container(
                         height: 140,
-                        width: double.infinity,
                         alignment: Alignment.center,
                         child: const CircularProgressIndicator(strokeWidth: 2),
                       );
                     },
-                    errorBuilder: (context, error, stack) {
-                      return Container(
-                        height: 140,
-                        width: double.infinity,
-                        color: Colors.white10,
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.image_not_supported,
-                          size: 40,
-                          color: Colors.white54,
-                        ),
-                      );
-                    },
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 140,
+                      color: Colors.white10,
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        size: 40,
+                        color: Colors.white54,
+                      ),
+                    ),
                   ),
                 ),
-                if (isFiltering != true)
+                if (widget.isFiltering != true)
                   Positioned(
                     top: 10,
                     right: 10,
                     child: IconButton(
-                      onPressed: onFavoriteToggle,
+                      onPressed: widget.onFavoriteToggle,
                       icon: Icon(
-                        isFavorite == true
+                        widget.isFavorite == true
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        color: isFavorite == true ? Colors.red : Colors.white,
+                        color: widget.isFavorite == true
+                            ? Colors.red
+                            : Colors.white,
                         size: 20,
                       ),
                     ),
@@ -146,7 +188,7 @@ class CourseCard extends StatelessWidget {
                 children: [
                   defaultText(
                     context: context,
-                    text: title,
+                    text: widget.title,
                     size: 16,
                     bold: true,
                     isCenter: false,
@@ -154,16 +196,33 @@ class CourseCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   defaultText(
                     context: context,
-                    text: author,
+                    text: widget.author,
                     size: 13,
                     color: Colors.white70,
                     isCenter: false,
                   ),
                   const SizedBox(height: 8),
-                  ratingWidget(value: rating, context: context),
+                  ratingWidget(value: widget.rating, context: context),
                   const SizedBox(height: 10),
-                  if (isFiltering != true && progress != null)
-                    progressBar(progress: progress!),
+                  if (widget.isFiltering != true && widget.progress != null)
+                    progressBar(progress: widget.progress!),
+
+                  if (widget.isEnrolled == false)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: FadeTransition(
+                        opacity: _fade,
+                        child: SlideTransition(
+                          position: _slide,
+                          child: CustomGlowButton(
+                            width: double.infinity,
+                            textSize: 13,
+                            title: isArabic ? "اشترك الآن" : "Enroll Now",
+                            onPressed: widget.onEnrollPressed ?? () {},
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

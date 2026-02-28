@@ -16,14 +16,14 @@ import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 
 import 'package:training/helper/base.dart';
+import 'package:training/logic/enrollment_cources.dart';
+import 'package:training/logic/recommended_cources.dart';
 import 'package:training/screen/favorite_screen.dart';
 import 'package:training/screen/profile_page.dart';
 import 'package:training/widgets/categories_chips_section.dart';
 import 'package:training/widgets/course_card.dart';
 import 'package:training/widgets/floating_glass_bar.dart';
-import 'package:training/widgets/not_enrolled_courses_section.dart';
-import 'package:training/widgets/recommended_card.dart';
-import 'package:training/widgets/popular_card.dart';
+import 'package:training/logic/not_enrolled_courses_section.dart';
 import 'package:training/widgets/searchbar.dart';
 import 'package:training/services/network_service.dart';
 
@@ -236,18 +236,28 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    final enrollState = context.watch<EnrollmentsCubit>().state;
+
+    final Set<int> enrolledIds = enrollState is EnrollmentsLoaded
+        ? enrollState.enrollments.map((e) => e.courseId).toSet()
+        : <int>{};
+
     return Column(
       children: courses.map((course) {
+        final bool isEnrolled = enrolledIds.contains(course.id);
+
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: CourseCard(
+            height: 310,
             imagePath: course.thumbnail,
             title: isArabic ? course.titleAr : course.titleEn,
             author: course.instructorName,
             rating: course.rating,
             description: isArabic ? course.descriptionAr : course.descriptionEn,
-            isFiltering: true,
             courseId: course.id,
+            isFiltering: true,
+            isEnrolled: isEnrolled,
           ),
         );
       }).toList(),

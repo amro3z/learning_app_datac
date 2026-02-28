@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
-import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/widgets/course_card.dart';
 import 'package:training/helper/base.dart';
-import 'package:training/services/local_notifications.dart';
-import 'package:training/services/network_service.dart';
 
 class NotEnrolledCoursesSection extends StatelessWidget {
   const NotEnrolledCoursesSection({super.key});
@@ -63,50 +60,6 @@ class NotEnrolledCoursesSection extends StatelessWidget {
                   : course.descriptionEn,
               courseId: course.id,
               isEnrolled: false,
-
-              /// 🔥 هنا نفس منطق Recommended
-              onEnrollPressed: () async {
-                if (!NetworkService.isConnected) {
-                  LocalNotifications.showNotification(
-                    navigator: false,
-                    title: isArabic ? 'مفيش نت' : 'No internet connection',
-                    body: isArabic
-                        ? 'تأكد من اتصالك بالإنترنت وحاول مرة تانية'
-                        : 'Please check your internet connection and try again',
-                  );
-                  return;
-                }
-
-                final userId = context.read<UserCubit>().userId!;
-
-                await context.read<EnrollmentsCubit>().enrollCourse(
-                  courseId: course.id,
-                  userId: userId,
-                );
-
-                LocalNotifications.showNotification(
-                  navigator: true,
-                  title: isArabic
-                      ? "تم الاشتراك بنجاح"
-                      : "Enrollment Successful",
-                  body: isArabic
-                      ? "تم الاشتراك في ${isArabic ? course.titleAr : course.titleEn}"
-                      : "You enrolled in ${isArabic ? course.titleAr : course.titleEn}",
-                  arguments: {
-                    'imageURL': course.thumbnail,
-                    'title': isArabic ? course.titleAr : course.titleEn,
-                    'instructor': course.instructorName,
-                    'description': isArabic
-                        ? course.descriptionAr
-                        : course.descriptionEn,
-                    'courseId': course.id,
-                  },
-                );
-
-                await context.read<EnrollmentsCubit>().getAllEnrollments(
-                  userId: userId,
-                );
-              },
             ),
           );
         }).toList(),

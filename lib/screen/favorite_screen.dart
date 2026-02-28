@@ -5,6 +5,7 @@ import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/logic/favorites_cources.dart';
 import 'package:training/widgets/course_card.dart';
 
 class FavoriteScreen extends StatefulWidget {

@@ -268,13 +268,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        defaultText(
-          context: context,
-          text: isArabic ? 'استكمل التعلم' : 'Continue Learning',
-          size: 18,
-          isCenter: false,
-        ),
-        const SizedBox(height: 12),
         const EnrollmentCourse(),
         const SizedBox(height: 24),
         const NotEnrolledCoursesSection(),

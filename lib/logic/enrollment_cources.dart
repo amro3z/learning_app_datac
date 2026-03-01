@@ -6,6 +6,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/favorites.dart';
+import 'package:training/helper/base.dart';
 import 'package:training/widgets/course_card.dart';
 
 class EnrollmentCourse extends StatelessWidget {
@@ -22,14 +23,19 @@ class EnrollmentCourse extends StatelessWidget {
     return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
       builder: (context, state) {
         if (state is EnrollmentsLoading || state is EnrollmentsInitial) {
-          return const Center(child: CircularProgressIndicator());
+          return const SizedBox.shrink();
         }
 
         if (state is EnrollmentsError) {
-          return Center(child: Text(state.message));
+          return const SizedBox.shrink();
         }
 
         if (state is EnrollmentsLoaded) {
+          /// 🔥 لو مفيش أي كورسات متسجل فيها
+          if (state.enrollments.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
           final favoritesState = context.watch<FavoritesCubit>().state;
 
           final favorites = favoritesState is FavoritesLoaded
@@ -43,40 +49,62 @@ class EnrollmentCourse extends StatelessWidget {
           };
 
           return Column(
-            children: uniqueEnrollments.values.map((e) {
-              final course = courseMap[e.courseId]!;
-              final fav = favorites
-                  .where((f) => f.courseId == course.id)
-                  .cast<FavoritesModel?>()
-                  .firstOrNull;
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              defaultText(
+                context: context,
+                text: languageCode == 'ar'
+                    ? 'استكمل التعلم'
+                    : 'Continue Learning',
+                size: 18,
+              ),
 
-              final isFavorite = fav != null;
+              const SizedBox(height: 12),
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: CourseCard(
-                  imagePath: course.thumbnail,
-                  title: languageCode == 'ar' ? course.titleAr : course.titleEn,
-                  author: course.instructorName,
-                  rating: course.rating,
-                  progress: e.progressPercent / 100,
-                  description: languageCode == 'ar'
-                      ? course.descriptionAr
-                      : course.descriptionEn,
-                  isFavorite: isFavorite,
-                  courseId: course.id,
-                  onFavoriteToggle: () {
-                    final cubit = context.read<FavoritesCubit>();
+              ...uniqueEnrollments.values.map((e) {
+                final course = courseMap[e.courseId]!;
 
-                    if (isFavorite) {
-                      cubit.deleteFavorite(favoriteID: fav.id, userId: userId);
-                    } else {
-                      cubit.addToFavorites(courseId: course.id, userId: userId);
-                    }
-                  },
-                ),
-              );
-            }).toList(),
+                final fav = favorites
+                    .where((f) => f.courseId == course.id)
+                    .cast<FavoritesModel?>()
+                    .firstOrNull;
+
+                final isFavorite = fav != null;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: CourseCard(
+                    imagePath: course.thumbnail,
+                    title: languageCode == 'ar'
+                        ? course.titleAr
+                        : course.titleEn,
+                    author: course.instructorName,
+                    rating: course.rating,
+                    progress: e.progressPercent / 100,
+                    description: languageCode == 'ar'
+                        ? course.descriptionAr
+                        : course.descriptionEn,
+                    isFavorite: isFavorite,
+                    courseId: course.id,
+                    onFavoriteToggle: () {
+                      final cubit = context.read<FavoritesCubit>();
+
+                      if (isFavorite) {
+                        cubit.deleteFavorite(
+                          favoriteID: fav.id,
+                          userId: userId,
+                        );
+                      } else {
+                        cubit.addToFavorites(
+                          courseId: course.id,
+                          userId: userId,
+                        );
+                      }
+                    },
+                  ),
+                );
+              }).toList(),
+            ],
           );
         }
 

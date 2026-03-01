@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/user_state.dart';
@@ -21,7 +22,25 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  bool notify = false;
+  bool notify = true; // مفعلة افتراضياً
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationPreference();
+  }
+
+  Future<void> _loadNotificationPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      notify = prefs.getBool('notifications_enabled') ?? true;
+    });
+  }
+
+  Future<void> _saveNotificationPreference(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notifications_enabled', value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +78,6 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     SizedBox(height: kToolbarHeight),
 
-                    /// Profile Title
                     defaultText(
                       context: context,
                       text: languageCode == 'ar' ? "الملف الشخصي" : "Profile",
@@ -75,7 +93,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     const SizedBox(height: 16),
 
-                    /// Settings
                     defaultText(
                       context: context,
                       text: languageCode == 'ar' ? "الإعدادات" : "Settings",
@@ -88,7 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     const SizedBox(height: 12),
 
-                    /// Notifications
+                    /// Notifications Toggle
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -109,10 +126,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           const Spacer(),
                           Switch(
                             value: notify,
-                            onChanged: (val) {
+                            onChanged: (val) async {
                               setState(() {
                                 notify = val;
                               });
+                              await _saveNotificationPreference(val);
                             },
                           ),
                         ],
@@ -121,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     const SizedBox(height: 12),
 
-                    /// Language Toggle
+                    /// Language
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -166,7 +184,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     const SizedBox(height: 12),
 
-                    /// Logout
                     CustomGlowButton(
                       title: languageCode == 'ar' ? "تسجيل الخروج" : "Log out",
                       onPressed: () {

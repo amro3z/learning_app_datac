@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalNotifications {
   static final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -15,7 +16,6 @@ class LocalNotifications {
     importance: Importance.max,
   );
 
-  /// Initialize notifications
   static Future<void> init(GlobalKey<NavigatorState> key) async {
     navigatorKey = key;
 
@@ -27,7 +27,7 @@ class LocalNotifications {
     );
 
     await flutterLocalNotificationsPlugin.initialize(
-    settings:  settings,
+   settings:   settings,
       onDidReceiveNotificationResponse: (response) {
         if (response.payload != null) {
           final data = jsonDecode(response.payload!);
@@ -47,13 +47,17 @@ class LocalNotifications {
         ?.createNotificationChannel(_channel);
   }
 
-  /// Show notification
   static Future<void> showNotification({
     required String title,
     required String body,
     required bool navigator,
     Map<String, dynamic>? arguments,
   }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('notifications_enabled') ?? true;
+
+    if (!enabled) return; 
+
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           'enroll_channel_id',
@@ -61,7 +65,7 @@ class LocalNotifications {
           channelDescription: 'Notifications for course enrollments',
           importance: Importance.max,
           priority: Priority.high,
-          icon: '@drawable/ic_notification'
+          icon: '@drawable/ic_notification',
         );
 
     const NotificationDetails notificationDetails = NotificationDetails(
@@ -78,7 +82,7 @@ class LocalNotifications {
       title: title,
       body: body,
       notificationDetails: notificationDetails,
-      payload: navigator ? payload : null, 
+      payload: navigator ? payload : null,
     );
   }
 }

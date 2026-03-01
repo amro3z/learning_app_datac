@@ -20,7 +20,7 @@ class LocalNotifications {
     navigatorKey = key;
 
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_notification');
 
     const InitializationSettings settings = InitializationSettings(
       android: androidSettings,
@@ -61,6 +61,7 @@ class LocalNotifications {
           channelDescription: 'Notifications for course enrollments',
           importance: Importance.max,
           priority: Priority.high,
+          icon: '@drawable/ic_notification'
         );
 
     const NotificationDetails notificationDetails = NotificationDetails(

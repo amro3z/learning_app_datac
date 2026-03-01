@@ -88,28 +88,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  void _reloadCubits(BuildContext context) {
-    if (!NetworkService.isConnected) return;
-
-    context.read<CoursesCubit>().getAllCourses();
-    context.read<CategoriesCubit>().getAllCategories();
-    context.read<RecommendedCubit>().getRecommendedList();
-    context.read<PopularCubit>().getPopularList();
-    context.read<LessonsCubit>().getLessons();
-
-    final userState = context.read<UserCubit>().state;
-
-    if (userState is UserLoaded) {
-      final userId = context.read<UserCubit>().userId;
-      if (userId != null) {
-        context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
-
-        context.read<FavoritesCubit>().getFavoritesList(userId: userId);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<UserCubit, UserState>(
@@ -158,7 +136,7 @@ class MyApp extends StatelessWidget {
             theme: ThemeData.dark().copyWith(
               scaffoldBackgroundColor: const Color(0xFF121212),
             ),
-            initialRoute: '/login',
+            initialRoute: '/splash',
             onGenerateRoute: AppRoute().generateRoute,
           );
         },

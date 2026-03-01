@@ -5,11 +5,14 @@ import 'package:training/screen/lesson_screen.dart';
 import 'package:training/screen/login.dart';
 import 'package:training/screen/profile_page.dart';
 import 'package:training/screen/register_screen.dart';
+import 'package:training/screen/splash_screen.dart';
 
 class AppRoute {
   AppRoute();
   Route generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case '/splash':
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       case '/login':
         return MaterialPageRoute(builder: (_) => LoginScreen());
       case '/register':

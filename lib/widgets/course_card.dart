@@ -9,7 +9,6 @@ import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/services/local_notifications.dart';
 import 'package:training/services/network_service.dart';
 
-
 class CourseCard extends StatefulWidget {
   final String title;
   final String author;
@@ -50,6 +49,9 @@ class _CourseCardState extends State<CourseCard>
   late Animation<double> _fade;
   late Animation<Offset> _slide;
 
+  bool _isLoading = false;
+  bool _notificationShown = false;
+
   @override
   void initState() {
     super.initState();
@@ -77,85 +79,92 @@ class _CourseCardState extends State<CourseCard>
     super.dispose();
   }
 
+  Future<void> _handleEnroll(bool isArabic) async {
+    if (!NetworkService.isConnected) {
+      LocalNotifications.showNotification(
+        navigator: false,
+        title: isArabic ? 'مفيش نت' : 'No internet connection',
+        body: isArabic
+            ? 'تأكد من اتصالك بالإنترنت'
+            : 'Please check your internet connection',
+      );
+      return;
+    }
+
+    final userId = context.read<UserCubit>().userId;
+    if (userId == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await context.read<EnrollmentsCubit>().enrollCourse(
+        courseId: widget.courseId,
+        userId: userId,
+      );
+
+      if (!_notificationShown) {
+        _notificationShown = true;
+
+        LocalNotifications.showNotification(
+          navigator: true,
+          title: isArabic ? "تم الاشتراك بنجاح" : "Enrollment Successful",
+          body: isArabic
+              ? "تم الاشتراك في ${widget.title}"
+              : "You enrolled in ${widget.title}",
+          arguments: {
+            'imageURL': widget.imagePath,
+            'title': widget.title,
+            'instructor': widget.author,
+            'description': widget.description,
+            'courseId': widget.courseId,
+          },
+        );
+      }
+
+      if (!mounted) return;
+
+      await context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
+    } catch (e) {
+      debugPrint("Enroll error: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
-    return GestureDetector(
-      onTap: () {
-        if (!NetworkService.isConnected) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.black,
-              showCloseIcon: true,
-              content: Text(
-                isArabic ? 'لا يوجد اتصال بالإنترنت' : 'No internet connection',
-              ),
-            ),
-          );
-          return;
-        }
-
-        if (widget.isEnrolled == true) {
-          Navigator.pushNamed(
-            context,
-            '/course_details',
-            arguments: {
-              'imageURL': widget.imagePath,
-              'title': widget.title,
-              'instructor': widget.author,
-              'description': widget.description,
-              'courseId': widget.courseId,
-            },
-          );
-        }
-      },
-      child: Container(
-        height: widget.isFiltering == true && widget.isEnrolled == true
-            ? 250
-            : widget.height,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C1C1E),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [_buildImage(), _buildBody(isArabic)],
-        ),
+    return Container(
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [_buildImage(), _buildBody(isArabic)],
       ),
     );
   }
 
   Widget _buildImage() {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          child: Image.network(
-            widget.imagePath,
-            height: 140,
-            width: double.infinity,
-            fit: BoxFit.cover,
-          ),
-        ),
-        if (widget.isFiltering != true)
-          Positioned(
-            top: 10,
-            right: 10,
-            child: IconButton(
-              onPressed: widget.onFavoriteToggle,
-              icon: Icon(
-                widget.isFavorite == true
-                    ? Icons.favorite
-                    : Icons.favorite_border,
-                color: widget.isFavorite == true ? Colors.red : Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-      ],
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Image.network(
+        widget.imagePath,
+        height: 140,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      ),
     );
   }
 
@@ -183,8 +192,6 @@ class _CourseCardState extends State<CourseCard>
           const SizedBox(height: 8),
           ratingWidget(value: widget.rating, context: context),
           const SizedBox(height: 10),
-          if (widget.isFiltering != true && widget.progress != null)
-            progressBar(progress: widget.progress!),
 
           if (widget.isEnrolled == false)
             Padding(
@@ -196,51 +203,14 @@ class _CourseCardState extends State<CourseCard>
                   child: CustomGlowButton(
                     width: double.infinity,
                     textSize: 13,
-                    title: isArabic ? "اشترك الآن" : "Enroll Now",
-                    onPressed: () async {
-                      if (!NetworkService.isConnected) {
-                        LocalNotifications.showNotification(
-                          navigator: false,
-                          title: isArabic
-                              ? 'مفيش نت'
-                              : 'No internet connection',
-                          body: isArabic
-                              ? 'تأكد من اتصالك بالإنترنت وحاول مرة تانية'
-                              : 'Please check your internet connection and try again',
-                        );
-                        return;
-                      }
-
-                      final userId = context.read<UserCubit>().userId!;
-
-                      await context.read<EnrollmentsCubit>().enrollCourse(
-                        courseId: widget.courseId,
-                        userId: userId,
-                      );
-
-                      if (!mounted) return;
-
-                      LocalNotifications.showNotification(
-                        navigator: true,
-                        title: isArabic
-                            ? "تم الاشتراك بنجاح"
-                            : "Enrollment Successful",
-                        body: isArabic
-                            ? "تم الاشتراك في ${widget.title}"
-                            : "You enrolled in ${widget.title}",
-                        arguments: {
-                          'imageURL': widget.imagePath,
-                          'title': widget.title,
-                          'instructor': widget.author,
-                          'description': widget.description,
-                          'courseId': widget.courseId,
-                        },
-                      );
-
-                      await context.read<EnrollmentsCubit>().getAllEnrollments(
-                        userId: userId,
-                      );
-                    },
+                    title: _isLoading
+                        ? (isArabic ? "جاري الاشتراك..." : "Enrolling...")
+                        : (isArabic ? "اشترك الآن" : "Enroll Now"),
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            _handleEnroll(isArabic);
+                          },
                   ),
                 ),
               ),
@@ -250,6 +220,3 @@ class _CourseCardState extends State<CourseCard>
     );
   }
 }
-
-
-

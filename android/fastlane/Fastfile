@@ -12,9 +12,10 @@ platform :android do
     firebase_app_distribution(
       app: "1:300047113775:android:cd68d6c9d7ee804a29b0da",
       android_artifact_type: "APK",
+
       android_artifact_path: "../build/app/outputs/flutter-apk/app-release.apk",
       testers: "mostafahany108889@gmail.com , amramohamed38@gmail.com",
-release_notes: "Added Arabic language support and improved UI translations."
+release_notes: "Added animated splash screen with session-based navigation, removed native splash, improved enrollment flow, enhanced Arabic localization, and optimized performance."
     )
 
     UI.success("🎉 Distribution Finished Successfully!")

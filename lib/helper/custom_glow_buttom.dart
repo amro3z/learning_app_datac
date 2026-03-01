@@ -3,7 +3,7 @@ import 'package:training/helper/base.dart';
 
 class CustomGlowButton extends StatelessWidget {
   final String title;
-  final VoidCallback onPressed;
+final VoidCallback? onPressed;
   final double? textSize;
   final double? width;
 

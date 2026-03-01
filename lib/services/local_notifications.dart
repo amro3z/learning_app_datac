@@ -8,17 +8,26 @@ class LocalNotifications {
 
   static late GlobalKey<NavigatorState> navigatorKey;
 
+  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+    'enroll_channel_id',
+    'Enrollment Notifications',
+    description: 'Notifications for course enrollments',
+    importance: Importance.max,
+  );
+
   /// Initialize notifications
   static Future<void> init(GlobalKey<NavigatorState> key) async {
     navigatorKey = key;
 
-    const InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-        );
+    const AndroidInitializationSettings androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const InitializationSettings settings = InitializationSettings(
+      android: androidSettings,
+    );
 
     await flutterLocalNotificationsPlugin.initialize(
-    settings: initializationSettings,
+    settings:  settings,
       onDidReceiveNotificationResponse: (response) {
         if (response.payload != null) {
           final data = jsonDecode(response.payload!);
@@ -30,9 +39,15 @@ class LocalNotifications {
         }
       },
     );
+
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(_channel);
   }
 
-  /// Show notification with full arguments
+  /// Show notification
   static Future<void> showNotification({
     required String title,
     required String body,
@@ -60,9 +75,9 @@ class LocalNotifications {
     await flutterLocalNotificationsPlugin.show(
       id: 0,
       title: title,
-      body: body  ,
-     notificationDetails: notificationDetails,
-      payload:navigator? payload : 'payload',
+      body: body,
+      notificationDetails: notificationDetails,
+      payload: navigator ? payload : null, 
     );
   }
 }

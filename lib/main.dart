@@ -46,8 +46,6 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
   final repo = LearningRepo(learningWebService: webService, sqldb: Sqldb());
 
   final userCubit = UserCubit();
-  await userCubit.restoreSession();
-
   final enrollmentsCubit = EnrollmentsCubit(
     learningRepo: repo,
     webservice: webService,

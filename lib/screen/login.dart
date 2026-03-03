@@ -57,16 +57,14 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   schoolSign(),
-                  const SizedBox(height: 20),
-
+                  SizedBox(height: getScreenHeight(context) * 0.022),
                   defaultText(
                     context: context,
                     text: isArabic ? 'مرحبًا بعودتك' : 'Welcome Back',
-                    size: 22,
+                    size: getScreenWidth(context) * 0.055,
                   ),
 
-                  const SizedBox(height: 30),
-
+                  SizedBox(height: getScreenHeight(context) * 0.033),
                   CustomFormTextField(
                     controller: _emailController,
                     labelText: isArabic ? 'البريد الإلكتروني' : 'Email address',
@@ -76,8 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     keyboardType: CustomTextFieldType.email,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                   ),
-
-                  const SizedBox(height: 16),
+                  SizedBox(height: getScreenHeight(context) * 0.018),
 
                   CustomFormTextField(
                     controller: _passwordController,
@@ -88,8 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                   ),
 
-                  const SizedBox(height: 24),
-
+                  SizedBox(height: getScreenHeight(context) * 0.027),
                   BlocBuilder<UserCubit, UserState>(
                     builder: (context, state) {
                       final isLoading = state is UserLoading;
@@ -111,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: getScreenHeight(context) * 0.022),
 
                   RichText(
                     text: TextSpan(
@@ -119,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? "ليس لديك حساب؟ "
                           : "Don't have an account? ",
                       style: TextStyle(
+                        fontSize: getScreenWidth(context) * 0.035,
                         color: Colors.grey,
                         fontFamily: isArabic
                             ? 'CustomArabicFont'

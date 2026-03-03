@@ -92,15 +92,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: [
                 schoolSign(),
-                const SizedBox(height: 20),
+                SizedBox(height: getScreenHeight(context) * 0.022),
 
                 defaultText(
                   context: context,
                   text: isArabic ? 'إنشاء حساب' : 'Create Account',
-                  size: 22,
+                  size: getScreenWidth(context) * 0.055,
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: getScreenHeight(context) * 0.025),
 
                 CustomFormTextField(
                   controller: _firstNameController,
@@ -109,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
                   controller: _lastNameController,
@@ -118,7 +118,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
                   controller: _emailController,
@@ -127,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
                   controller: _passwordController,
@@ -137,7 +137,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
                   controller: _confirmPasswordController,
@@ -149,7 +149,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: getScreenHeight(context) * 0.025),
 
                 CustomGlowButton(
                   title: _loading
@@ -159,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: _loading ? () {} : () => _register(isArabic),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: getScreenHeight(context) * 0.022),
 
                 RichText(
                   text: TextSpan(
@@ -168,6 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         : "Already have an account? ",
                     style: TextStyle(
                       color: Colors.grey,
+                      fontSize: getScreenWidth(context) * 0.035,
                       fontFamily: isArabic
                           ? 'CustomArabicFont'
                           : 'CustomEnglishFont',

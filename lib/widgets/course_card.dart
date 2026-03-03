@@ -21,7 +21,7 @@ class CourseCard extends StatefulWidget {
   final bool? isFiltering;
   final VoidCallback? onFavoriteToggle;
   final bool? isEnrolled;
-  final double height;
+  final double? height;
 
   const CourseCard({
     super.key,
@@ -36,7 +36,7 @@ class CourseCard extends StatefulWidget {
     required this.courseId,
     this.isFiltering = false,
     this.isEnrolled = true,
-    this.height = 270,
+    this.height,
   });
 
   @override
@@ -79,24 +79,45 @@ class _CourseCardState extends State<CourseCard>
     super.dispose();
   }
 
+  void _showNoInternetNotification(bool isArabic) {
+    LocalNotifications.showNotification(
+      navigator: false,
+      title: isArabic ? "مفيش نت" : "No Internet",
+      body: isArabic
+          ? "تأكد من اتصالك بالإنترنت"
+          : "Please check your internet connection",
+    );
+  }
+
+  void _openDetails(bool isArabic) {
+    if (!NetworkService.isConnected) {
+      _showNoInternetNotification(isArabic);
+      return;
+    }
+
+    Navigator.pushNamed(
+      context,
+      '/course_details',
+      arguments: {
+        'imageURL': widget.imagePath,
+        'title': widget.title,
+        'instructor': widget.author,
+        'description': widget.description,
+        'courseId': widget.courseId,
+      },
+    );
+  }
+
   Future<void> _handleEnroll(bool isArabic) async {
     if (!NetworkService.isConnected) {
-      LocalNotifications.showNotification(
-        navigator: false,
-        title: isArabic ? 'مفيش نت' : 'No internet connection',
-        body: isArabic
-            ? 'تأكد من اتصالك بالإنترنت'
-            : 'Please check your internet connection',
-      );
+      _showNoInternetNotification(isArabic);
       return;
     }
 
     final userId = context.read<UserCubit>().userId;
     if (userId == null) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await context.read<EnrollmentsCubit>().enrollCourse(
@@ -113,28 +134,34 @@ class _CourseCardState extends State<CourseCard>
           body: isArabic
               ? "تم الاشتراك في ${widget.title}"
               : "You enrolled in ${widget.title}",
-          arguments: {
-            'imageURL': widget.imagePath,
-            'title': widget.title,
-            'instructor': widget.author,
-            'description': widget.description,
-            'courseId': widget.courseId,
-          },
         );
       }
 
       if (!mounted) return;
 
       await context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
+
+      _openDetails(isArabic);
     } catch (e) {
       debugPrint("Enroll error: $e");
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
+  }
+
+  Widget _defaultImage() {
+    return Container(
+      height: 140,
+      width: double.infinity,
+      color: Colors.grey.shade900,
+      child: const Icon(
+        Icons.image_not_supported,
+        color: Colors.grey,
+        size: 40,
+      ),
+    );
   }
 
   @override
@@ -143,79 +170,76 @@ class _CourseCardState extends State<CourseCard>
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
-    return Container(
-      height: widget.height,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_buildImage(), _buildBody(isArabic)],
-      ),
-    );
-  }
-
-  Widget _buildImage() {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: Image.network(
-        widget.imagePath,
-        height: 140,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-
-  Widget _buildBody(bool isArabic) {
-    return Padding(
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          defaultText(
-            context: context,
-            text: widget.title,
-            size: 16,
-            bold: true,
-            isCenter: false,
-          ),
-          const SizedBox(height: 4),
-          defaultText(
-            context: context,
-            text: widget.author,
-            size: 13,
-            color: Colors.white70,
-            isCenter: false,
-          ),
-          const SizedBox(height: 8),
-          ratingWidget(value: widget.rating, context: context),
-          const SizedBox(height: 10),
-
-          if (widget.isEnrolled == false)
+    return GestureDetector(
+      onTap: widget.isEnrolled == true ? () => _openDetails(isArabic) : null,
+      child: Container(
+        height: widget.height ?? getScreenHeight(context) * 0.275,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C1C1E),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child: NetworkService.isConnected
+                  ? Image.network(
+                      widget.imagePath,
+                      height: 140,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _defaultImage(),
+                    )
+                  : _defaultImage(),
+            ),
             Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: FadeTransition(
-                opacity: _fade,
-                child: SlideTransition(
-                  position: _slide,
-                  child: CustomGlowButton(
-                    width: double.infinity,
-                    textSize: 13,
-                    title: _isLoading
-                        ? (isArabic ? "جاري الاشتراك..." : "Enrolling...")
-                        : (isArabic ? "اشترك الآن" : "Enroll Now"),
-                    onPressed: _isLoading
-                        ? null
-                        : () {
-                            _handleEnroll(isArabic);
-                          },
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  defaultText(
+                    context: context,
+                    text: widget.title,
+                    size: getScreenWidth(context) * 0.04,
+                    bold: true,
+                    isCenter: false,
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  defaultText(
+                    context: context,
+                    text: widget.author,
+                    size: getScreenWidth(context) * 0.033,
+                    color: Colors.white70,
+                    isCenter: false,
+                  ),
+                  const SizedBox(height: 8),
+                  ratingWidget(value: widget.rating, context: context),
+                  const SizedBox(height: 10),
+                  if (widget.isEnrolled == false)
+                    FadeTransition(
+                      opacity: _fade,
+                      child: SlideTransition(
+                        position: _slide,
+                        child: CustomGlowButton(
+                          width: double.infinity,
+                          textSize: getScreenWidth(context) * 0.035,
+                          title: _isLoading
+                              ? (isArabic ? "جاري الاشتراك..." : "Enrolling...")
+                              : (isArabic ? "اشترك الآن" : "Enroll Now"),
+                          onPressed: _isLoading
+                              ? null
+                              : () => _handleEnroll(isArabic),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

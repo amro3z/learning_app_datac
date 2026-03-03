@@ -49,7 +49,7 @@ class _EditNameCardState extends State<EditNameCard> {
               defaultText(
                 context: context,
                 text: isArabic ? "تعديل الاسم" : "Edit Name",
-                size: 16,
+                size: getScreenWidth(context) * 0.04,
                 isCenter: false,
               ),
               const Spacer(),

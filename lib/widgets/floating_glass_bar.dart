@@ -30,7 +30,7 @@ class FloatingGlassBar extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
-            height: 70,
+            height: getScreenHeight(context) * 0.08,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               gradient: LinearGradient(
@@ -109,7 +109,7 @@ class FloatingGlassBar extends StatelessWidget {
             defaultText(
               context: context,
               text: label,
-              size: 12,
+              size: getScreenWidth(context) * 0.035,
               color: isSelected ? Colors.white : Colors.grey,
             ),
           ],

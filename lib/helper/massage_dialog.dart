@@ -17,7 +17,7 @@ void customDialog({
         backgroundColor: Color(0xFF191919),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
-          width: 420,
+          width: getScreenWidth(context) * 0.8,
           padding: const EdgeInsets.all(18.0),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -40,12 +40,21 @@ void customDialog({
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  defaultText(text: title, size: 24, bold: true, color: Colors.white ,
+                  defaultText(
+                    text: title,
+                    size: getScreenWidth(context) * 0.05,
+                    bold: true,
+                    color: Colors.white,
                     context: context,
                   ),
-                  const SizedBox(height: 12),
-                  defaultText(text: message, size: 16 , color: Colors.white , context: context),
-                  const SizedBox(height: 24),
+                  SizedBox(height: getScreenHeight(context) * 0.02),
+                  defaultText(
+                    text: message,
+                    size: getScreenWidth(context) * 0.04,
+                    color: Colors.white,
+                    context: context,
+                  ),
+                  SizedBox(height: getScreenHeight(context) * 0.033),
                   CustomGlowButton(
                     title: 'ok',
                     onPressed: onClose ?? () => Navigator.of(context).pop(),

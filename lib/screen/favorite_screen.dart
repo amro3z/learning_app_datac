@@ -59,11 +59,11 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                 defaultText(
                   context: context,
                   text: isArabic ? "المفضلة" : "My Favorites",
-                  size: 24,
+                  size: getScreenWidth(context) * 0.053,
                   isCenter: false,
                 ),
 
-                const SizedBox(height: 10),
+                SizedBox(height: getScreenHeight(context) * 0.015),
 
                 /// COUNT
                 BlocBuilder<FavoritesCubit, FavoritesState>(
@@ -74,7 +74,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         text: isArabic
                             ? "${state.favoritesList.length} دورة محفوظة"
                             : "${state.favoritesList.length} courses saved",
-                        size: 12,
+                        size: getScreenWidth(context) * 0.035,
                         color: Colors.grey,
                       );
                     }
@@ -82,7 +82,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: getScreenHeight(context) * 0.022),
 
                 /// COURSES LIST
                 const FavoriteCourses(),

@@ -73,16 +73,16 @@ class ProfileCard extends StatelessWidget {
               GestureDetector(
                 onTap: state.isUploading ? null : () => pickImage(context),
                 child: SizedBox(
-                  width: 80,
-                  height: 80,
+                  width: getScreenWidth(context) * 0.2,
+                  height: getScreenWidth(context) * 0.2,
                   child: ClipOval(
                     child: state.avatarUrl == null
                         ? Container(
                             color: Colors.white10,
                             alignment: Alignment.center,
-                            child: const Icon(
+                            child: Icon(
                               Icons.person,
-                              size: 32,
+                              size: getScreenWidth(context) * 0.1,
                               color: Colors.white70,
                             ),
                           )
@@ -103,9 +103,9 @@ class ProfileCard extends StatelessWidget {
                               return Container(
                                 color: Colors.white10,
                                 alignment: Alignment.center,
-                                child: const Icon(
+                                child: Icon(
                                   Icons.person,
-                                  size: 32,
+                                  size: getScreenWidth(context) * 0.1,
                                   color: Colors.white70,
                                 ),
                               );
@@ -122,14 +122,14 @@ class ProfileCard extends StatelessWidget {
                     defaultText(
                       context: context,
                       text: state.name,
-                      size: 20,
+                      size: getScreenWidth(context) * 0.045,
                       isCenter: false,
                     ),
                     const SizedBox(height: 4),
                     defaultText(
                       context: context,
                       text: state.email,
-                      size: 14,
+                      size: getScreenWidth(context) * 0.035,
                       color: Colors.grey,
                       isCenter: false,
                     ),
@@ -177,12 +177,17 @@ class ProfileCard extends StatelessWidget {
   ) {
     return Column(
       children: [
-        defaultText(context: context, text: value, size: 16, color: color),
+        defaultText(
+          context: context,
+          text: value,
+          size: getScreenWidth(context) * 0.045,
+          color: color,
+        ),
         const SizedBox(height: 4),
         defaultText(
           context: context,
           text: label,
-          size: 14,
+          size: getScreenWidth(context) * 0.035,
           color: Colors.grey,
         ),
       ],

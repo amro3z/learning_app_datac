@@ -7,8 +7,8 @@ import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/logic/lessones.dart';
 import 'package:training/widgets/instrauctor_card.dart';
-import 'package:training/widgets/lesson_card.dart';
 
 class CourseDetails extends StatefulWidget {
   const CourseDetails({
@@ -51,11 +51,14 @@ class _CourseDetailsState extends State<CourseDetails> {
         title: defaultText(
           context: context,
           text: isArabic ? "تفاصيل الدورة" : "Course Details",
-          size: 18,
+          size: getScreenWidth(context) * 0.045,
           isCenter: false,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 24),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            size: getScreenWidth(context) * 0.065,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         elevation: 0,
@@ -70,16 +73,15 @@ class _CourseDetailsState extends State<CourseDetails> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// COURSE IMAGE
               Stack(
                 children: [
                   SizedBox(
                     width: double.infinity,
-                    height: 260,
+                    height: getScreenHeight(context) * 0.3,
                     child: Image.network(widget.imageURL, fit: BoxFit.cover),
                   ),
                   Container(
-                    height: 260,
+                    height: getScreenHeight(context) * 0.3,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -103,7 +105,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                     defaultText(
                       context: context,
                       text: widget.title,
-                      size: 18,
+                      size: getScreenWidth(context) * 0.045,
                       isCenter: false,
                     ),
 
@@ -119,7 +121,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                     defaultText(
                       context: context,
                       text: widget.description,
-                      size: 14,
+                      size: getScreenWidth(context) * 0.035,
                       isCenter: false,
                       align: TextAlign.start,
                       color: Colors.grey,
@@ -169,21 +171,24 @@ class _CourseDetailsState extends State<CourseDetails> {
                                     text: isArabic
                                         ? "تقدم الدورة"
                                         : "Course Progress",
-                                    size: 14,
+                                    size: getScreenWidth(context) * 0.035,
                                     isCenter: false,
                                   ),
                                   defaultText(
                                     context: context,
                                     text:
                                         "${(progress * 100).toStringAsFixed(0)}%",
-                                    size: 14,
+                                    size: getScreenWidth(context) * 0.035,
                                     isCenter: false,
                                     color: Colors.blue,
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 5),
-                              progressBar(progress: progress, height: 13),
+                              progressBar(
+                                progress: progress,
+                                height: getScreenHeight(context) * 0.015,
+                              ),
                             ],
                           ),
                         );

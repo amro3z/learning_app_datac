@@ -5,7 +5,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/courses.dart';
-import 'package:training/services/network_service.dart';
+import 'package:training/helper/base.dart';
 import 'package:training/widgets/recommended_card.dart';
 
 class RecommendedCourses extends StatelessWidget {
@@ -56,6 +56,7 @@ class RecommendedCourses extends StatelessWidget {
                         ? 'لا توجد كورسات مقترحة'
                         : 'No recommended courses',
                     style: TextStyle(
+                      fontSize: getScreenWidth(context) * 0.045,
                       color: Colors.white70,
                       fontFamily: languageCode == 'ar'
                           ? 'CustomArabicFont'

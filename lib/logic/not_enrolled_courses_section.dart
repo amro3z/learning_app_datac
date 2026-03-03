@@ -41,16 +41,16 @@ class NotEnrolledCoursesSection extends StatelessWidget {
         defaultText(
           context: context,
           text: isArabic ? "اكتشف دورات جديدة" : "Discover New Courses",
-          size: 18,
+          size: getScreenWidth(context) * 0.045,
           isCenter: false,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: getScreenHeight(context) * 0.015),
 
         ...notEnrolledCourses.map((course) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.only(bottom: getScreenHeight(context) * 0.02),
             child: CourseCard(
-              height: 310,
+              height: getScreenHeight(context) * 0.34,
               imagePath: course.thumbnail,
               title: isArabic ? course.titleAr : course.titleEn,
               author: course.instructorName,
@@ -64,7 +64,7 @@ class NotEnrolledCoursesSection extends StatelessWidget {
           );
         }).toList(),
 
-        const SizedBox(height: 24),
+        SizedBox(height: getScreenHeight(context) * 0.005),
       ],
     );
   }

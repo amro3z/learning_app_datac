@@ -55,7 +55,7 @@ Widget schoolSign() {
 }
 
 Widget progressBar({
-  required double progress, // من 0.0 لـ 1.0
+  required double progress, 
   double height = 10,
 }) {
   return ClipRRect(
@@ -89,7 +89,7 @@ Widget progressBar({
   );
 }
 
-Widget ratingWidget({required double value , required BuildContext context}) {
+Widget ratingWidget({required double value, required BuildContext context}) {
   return Row(
     children: [
       ...List.generate(
@@ -97,11 +97,15 @@ Widget ratingWidget({required double value , required BuildContext context}) {
         (index) => Icon(
           index < value.floor() ? Icons.star : Icons.star_border,
           color: Colors.amber,
-          size: 16,
+          size: getScreenWidth(context) * 0.035,
         ),
       ),
       const SizedBox(width: 6),
-      defaultText(text: value.toString(), bold: false, size: 12 ,                         context: context,
+      defaultText(
+        text: value.toString(),
+        bold: false,
+        size: getScreenWidth(context) * 0.035,
+        context: context,
       ),
     ],
   );

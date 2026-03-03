@@ -31,7 +31,6 @@ class EnrollmentCourse extends StatelessWidget {
         }
 
         if (state is EnrollmentsLoaded) {
-          /// 🔥 لو مفيش أي كورسات متسجل فيها
           if (state.enrollments.isEmpty) {
             return const SizedBox.shrink();
           }
@@ -56,10 +55,10 @@ class EnrollmentCourse extends StatelessWidget {
                 text: languageCode == 'ar'
                     ? 'استكمل التعلم'
                     : 'Continue Learning',
-                size: 18,
+                size: getScreenWidth(context) * 0.045,
               ),
 
-              const SizedBox(height: 12),
+              SizedBox(height: getScreenHeight(context) * 0.015),
 
               ...uniqueEnrollments.values.map((e) {
                 final course = courseMap[e.courseId]!;
@@ -72,7 +71,9 @@ class EnrollmentCourse extends StatelessWidget {
                 final isFavorite = fav != null;
 
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: EdgeInsets.only(
+                    bottom: getScreenHeight(context) * 0.02,
+                  ),
                   child: CourseCard(
                     imagePath: course.thumbnail,
                     title: languageCode == 'ar'

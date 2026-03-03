@@ -41,7 +41,7 @@ class CategoryChip extends StatelessWidget {
         child: defaultText(
           context: context,
           text: title,
-          size: 14,
+          size: getScreenWidth(context) * 0.035,
           isCenter: false,
           color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
         ),

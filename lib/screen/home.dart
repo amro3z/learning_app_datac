@@ -1,5 +1,3 @@
-// lib/screen/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -26,6 +24,7 @@ import 'package:training/widgets/floating_glass_bar.dart';
 import 'package:training/logic/not_enrolled_courses_section.dart';
 import 'package:training/widgets/searchbar.dart';
 import 'package:training/services/network_service.dart';
+import 'package:training/widgets/offline_overlay.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +35,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int currentIndex = 0;
+  bool _showOfflineOverlay = false;
 
   @override
   void initState() {
@@ -52,26 +52,30 @@ class _HomeScreenState extends State<HomeScreen> {
     if (userId == null) return;
 
     final online = NetworkService.isConnected;
-
     if (forceRefresh && !online) return;
 
     final refresh = forceRefresh;
 
-    final coursesCubit = context.read<CoursesCubit>();
-    final enrollCubit = context.read<EnrollmentsCubit>();
-    final favCubit = context.read<FavoritesCubit>();
-    final recCubit = context.read<RecommendedCubit>();
-    final popCubit = context.read<PopularCubit>();
-    final catCubit = context.read<CategoriesCubit>();
-
     await Future.wait([
-      coursesCubit.getAllCourses(forceRefresh: refresh),
-      enrollCubit.getAllEnrollments(userId: userId, forceRefresh: refresh),
-      favCubit.getFavoritesList(userId: userId, forceRefresh: refresh),
-      recCubit.getRecommendedList(forceRefresh: refresh),
-      popCubit.getPopularList(forceRefresh: refresh),
-      catCubit.getAllCategories(forceRefresh: refresh),
+      context.read<CoursesCubit>().getAllCourses(forceRefresh: refresh),
+      context.read<EnrollmentsCubit>().getAllEnrollments(
+        userId: userId,
+        forceRefresh: refresh,
+      ),
+      context.read<FavoritesCubit>().getFavoritesList(
+        userId: userId,
+        forceRefresh: refresh,
+      ),
+      context.read<RecommendedCubit>().getRecommendedList(
+        forceRefresh: refresh,
+      ),
+      context.read<PopularCubit>().getPopularList(forceRefresh: refresh),
+      context.read<CategoriesCubit>().getAllCategories(forceRefresh: refresh),
     ]);
+  }
+
+  void _handleNoInternet() {
+    setState(() => _showOfflineOverlay = true);
   }
 
   @override
@@ -91,12 +95,20 @@ class _HomeScreenState extends State<HomeScreen> {
               const ProfilePage(),
             ],
           ),
+
           FloatingGlassBar(
             currentIndex: currentIndex,
             onItemSelected: (index) {
               setState(() => currentIndex = index);
             },
           ),
+
+          if (_showOfflineOverlay)
+            OfflineOverlay(
+              onRetry: () {
+                setState(() => _showOfflineOverlay = false);
+              },
+            ),
         ],
       ),
     );
@@ -106,26 +118,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return RefreshIndicator(
       onRefresh: () async {
         if (!NetworkService.isConnected) {
-          if (!mounted) return;
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.black,
-              showCloseIcon: true,
-              content: Text(
-                isArabic ? 'لا يوجد اتصال بالإنترنت' : 'No internet connection',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: isArabic
-                      ? 'CustomArabicFont'
-                      : 'CustomEnglishFont',
-                ),
-              ),
-            ),
-          );
+          _handleNoInternet();
           return;
         }
-
         await _loadHomeData(forceRefresh: true);
       },
       child: SingleChildScrollView(
@@ -143,22 +138,22 @@ class _HomeScreenState extends State<HomeScreen> {
             defaultText(
               context: context,
               text: isArabic ? 'مرحبًا، متعلم 👋' : 'Hello, Learner 👋',
-              size: 24,
+              size: getScreenWidth(context) * 0.06,
               isCenter: false,
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: getScreenHeight(context) * 0.01),
             defaultText(
               context: context,
               text: isArabic
                   ? 'ماذا تحب أن تتعلم اليوم؟'
                   : 'What would you like to learn today?',
-              size: 14,
+              size: getScreenWidth(context) * 0.035,
               color: Colors.white70,
               isCenter: false,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: getScreenHeight(context) * 0.022),
             const CoursesSearchBar(),
-            const SizedBox(height: 20),
+            SizedBox(height: getScreenHeight(context) * 0.022),
             BlocBuilder<CoursesCubit, LearnState>(
               builder: (context, state) {
                 final coursesCubit = context.watch<CoursesCubit>();
@@ -184,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: defaultText(
                         context: context,
                         text: state.message,
-                        size: 16,
+                        size: getScreenWidth(context) * 0.04,
                         color: Colors.redAccent,
                       ),
                     ),
@@ -201,12 +196,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     defaultText(
                       context: context,
                       text: isArabic ? 'التصنيفات' : 'Categories',
-                      size: 18,
+                      size: getScreenWidth(context) * 0.045,
                       isCenter: false,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.015),
                     const CategoriesChipsSection(),
-                    const SizedBox(height: 24),
+                    SizedBox(height: getScreenHeight(context) * 0.025),
                     if (coursesCubit.isFiltering || isCategorySelected)
                       _filteredCoursesSection(state.filteredCourses, isArabic)
                     else
@@ -222,20 +217,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _filteredCoursesSection(List courses, bool isArabic) {
-    if (courses.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 40),
-        child: Center(
-          child: defaultText(
-            context: context,
-            text: isArabic ? "لا توجد دورات" : "No courses found",
-            size: 20,
-            color: Colors.white70,
-          ),
-        ),
-      );
-    }
-
     final enrollState = context.watch<EnrollmentsCubit>().state;
 
     final Set<int> enrolledIds = enrollState is EnrollmentsLoaded
@@ -249,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: CourseCard(
-            height: 310,
+            height: getScreenHeight(context) * 0.25,
             imagePath: course.thumbnail,
             title: isArabic ? course.titleAr : course.titleEn,
             author: course.instructorName,
@@ -269,17 +250,17 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const EnrollmentCourse(),
-        const SizedBox(height: 24),
+        SizedBox(height: getScreenHeight(context) * 0.025),
         const NotEnrolledCoursesSection(),
         defaultText(
           context: context,
           text: isArabic ? 'الدورات المقترحة' : 'Recommended Courses',
-          size: 18,
+          size: getScreenWidth(context) * 0.045,
           isCenter: false,
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: getScreenHeight(context) * 0.015),
         const RecommendedCourses(),
-        const SizedBox(height: 24),
+        SizedBox(height: getScreenHeight(context) * 0.024),
       ],
     );
   }

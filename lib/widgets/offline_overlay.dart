@@ -47,7 +47,7 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
               duration: const Duration(milliseconds: 120),
               curve: Curves.easeOut,
               child: Container(
-                width: 300,
+                width: getScreenWidth(context) * 0.8,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
@@ -58,16 +58,16 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                     Icon(
                       Icons.wifi_off,
                       color: Colors.redAccent,
-                      size: 48,
+                      size: getScreenWidth(context) * 0.12,
                     ),
                     const SizedBox(height: 12),
                     defaultText(
                       context: context,
                       text: 'No Internet Connection',
-                      size: 18,
+                      size: getScreenWidth(context) * 0.05,
                       color: Colors.white,
                       bold: true,
                     ),
@@ -75,23 +75,21 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
                     defaultText(
                       context: context,
                       text: 'Please check your connection',
-                      size: 22,
+                      size: getScreenWidth(context) * 0.04,
                       color: Colors.grey,
                       bold: false,
                     ),
                     const SizedBox(height: 16),
 
-                    // سيبنا الزرار زي ما هو، بس غلفناه عشان نعمل bounce للـ card
                     GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       onTap: _tapRetry,
                       child: AbsorbPointer(
-                        // يمنع تنفيذ onPressed مرتين (من GestureDetector ومن الزرار)
                         absorbing: true,
                         child: CustomGlowButton(
                           title: 'Retry',
                           onPressed:
-                              widget.onRetry, // مش هيتنادى بسبب AbsorbPointer
+                              widget.onRetry, 
                           width: 120,
                           textSize: 16,
                         ),

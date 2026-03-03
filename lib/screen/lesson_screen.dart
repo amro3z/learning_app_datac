@@ -31,11 +31,14 @@ class _LessonScreenState extends State<LessonScreen> {
       appBar: AppBar(
         title: defaultText(
           text: widget.courseTitle,
-          size: 20,
+          size: getScreenWidth(context) * 0.045,
           context: context,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 24),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            size: getScreenWidth(context) * 0.07,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -50,7 +53,7 @@ class _LessonScreenState extends State<LessonScreen> {
           children: [
             SizedBox(
               width: double.infinity,
-              height: 200,
+              height: getScreenHeight(context) * 0.23,
               child: YoutubePlayerWidget(
                 courseId: widget.courseID,
                 lessonId: widget.lessonID,
@@ -74,14 +77,14 @@ class _LessonScreenState extends State<LessonScreen> {
                 children: [
                   defaultText(
                     text: widget.lessonTitle,
-                    size: 16,
+                    size: getScreenWidth(context) * 0.04,
                     context: context,
                   ),
                   SizedBox(height: 5),
                   defaultText(
                     context: context,
                     text: widget.lessonDescription,
-                    size: 14,
+                    size: getScreenWidth(context) * 0.035,
                     color: Colors.grey,
                     align: TextAlign.start,
                   ),

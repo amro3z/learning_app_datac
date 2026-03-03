@@ -22,7 +22,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  bool notify = true; // مفعلة افتراضياً
+  bool notify = true;
 
   @override
   void initState() {
@@ -81,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     defaultText(
                       context: context,
                       text: languageCode == 'ar' ? "الملف الشخصي" : "Profile",
-                      size: 24,
+                      size: getScreenWidth(context) * 0.065,
                     ),
 
                     const SizedBox(height: 14),
@@ -91,19 +91,19 @@ class _ProfilePageState extends State<ProfilePage> {
                       state: state,
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: getScreenHeight(context) * 0.025),
 
                     defaultText(
                       context: context,
                       text: languageCode == 'ar' ? "الإعدادات" : "Settings",
-                      size: 16,
+                      size: getScreenWidth(context) * 0.045,
                     ),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.015),
 
                     const EditNameCard(),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.015),
 
                     /// Notifications Toggle
                     Container(
@@ -125,6 +125,9 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           const Spacer(),
                           Switch(
+                            activeThumbColor: Colors.lightBlueAccent,
+                            activeTrackColor: Colors.lightBlue.withOpacity(0.5),
+
                             value: notify,
                             onChanged: (val) async {
                               setState(() {
@@ -137,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.015),
 
                     /// Language
                     Container(
@@ -161,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 text: languageCode == 'ar'
                                     ? "تغيير اللغة"
                                     : "Change Language",
-                                size: 16,
+                                size: getScreenWidth(context) * 0.045,
                                 isCenter: false,
                               ),
                             ),
@@ -170,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               text: languageCode == 'ar'
                                   ? "العربية"
                                   : "English",
-                              size: 13,
+                              size: getScreenWidth(context) * 0.035,
                               color: Colors.lightBlue,
                             ),
                           ],
@@ -178,11 +181,11 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.015),
 
                     const DeleteAccountCard(),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.015),
 
                     CustomGlowButton(
                       title: languageCode == 'ar' ? "تسجيل الخروج" : "Log out",

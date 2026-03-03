@@ -59,7 +59,7 @@ class DeleteAccountCard extends StatelessWidget {
         child: defaultText(
           context: context,
           text: isArabic ? "حذف الحساب" : "Delete Account",
-          size: 16,
+          size: getScreenWidth(context) * 0.045,
           color: Colors.red,
           isCenter: false,
         ),

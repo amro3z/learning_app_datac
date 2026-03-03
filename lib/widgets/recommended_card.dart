@@ -1,12 +1,9 @@
-// lib/widgets/recommended_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
-import 'package:training/cubits/cubit/recommended_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
-import 'package:training/data/models/courses.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/services/local_notifications.dart';
@@ -77,26 +74,26 @@ class _RecommendedCardState extends State<RecommendedCard> {
                 defaultText(
                   context: context,
                   text: title,
-                  size: 14,
+                  size: getScreenWidth(context) * 0.035,
                   color: Colors.white,
                   bold: true,
-                  isCenter: false,
+                  align: TextAlign.start,
                 ),
                 const SizedBox(height: 4),
                 defaultText(
                   context: context,
                   text: widget.author,
-                  size: 12,
+                  size: getScreenWidth(context) * 0.03,
                   color: Colors.white.withOpacity(0.6),
                   isCenter: false,
                 ),
                 const SizedBox(height: 8),
                 defaultText(
                   text: "⭐ ${widget.rating}",
-                  size: 12,
+                  size: getScreenWidth(context) * 0.03,
                   context: context,
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: getScreenHeight(context) * 0.015),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: _buildButton(
@@ -138,12 +135,12 @@ class _RecommendedCardState extends State<RecommendedCard> {
     String description,
   ) {
     return SizedBox(
-      width: 100,
+      width: getScreenWidth(context) * 0.25,
       child: _loading
           ? _loadingButton()
           : CustomGlowButton(
-              width: 100,
-              textSize: 12,
+              width: getScreenWidth(context) * 0.25,
+              textSize: getScreenWidth(context) * 0.035,
               title: languageCode == 'ar' ? 'اشترك' : 'Enroll',
               onPressed: () async {
                 if (!NetworkService.isConnected) {
@@ -219,9 +216,12 @@ class _RecommendedCardState extends State<RecommendedCard> {
       ),
       child: Center(
         child: languageCode == 'ar'
-            ? const Text(
+            ? Text(
                 'مشترك',
-                style: TextStyle(color: Colors.white, fontSize: 12),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: getScreenWidth(context) * 0.035,
+                ),
               )
             : const Icon(Icons.check, color: Colors.white, size: 18),
       ),

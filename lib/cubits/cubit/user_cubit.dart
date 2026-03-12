@@ -22,7 +22,7 @@ class UserCubit extends Cubit<UserState> {
   static const _kUserCacheKey = 'cached_user';
 
   // ================= LOGIN =================
-  Future<void> login({required String email, required String password}) async {
+Future<void> login({required String email, required String password}) async {
     emit(UserLoading());
 
     try {
@@ -32,20 +32,30 @@ class UserCubit extends Cubit<UserState> {
         body: jsonEncode({"email": email, "password": password}),
       );
 
+      final body = jsonDecode(res.body);
+
       if (res.statusCode != 200) {
-        emit(UserError("Login failed"));
+        String message = body["errors"]?[0]?["message"] ?? "Login failed";
+
+        if (message.contains("Invalid user credentials")) {
+          emit(UserError("INVALID_CREDENTIALS"));
+        } else if (message.contains("User not found")) {
+          emit(UserError("EMAIL_NOT_FOUND"));
+        } else {
+          emit(UserError("LOGIN_FAILED"));
+        }
+
         return;
       }
 
-      final body = jsonDecode(res.body);
       await _api.auth.saveTokens(
         body["data"]["access_token"],
         body["data"]["refresh_token"],
       );
 
-      await _loadCurrentUser(); // هيجيب user ويحفظه لوكال
+      await _loadCurrentUser();
     } catch (_) {
-      emit(UserError("Login failed"));
+      emit(UserError("NETWORK_ERROR"));
     }
   }
 

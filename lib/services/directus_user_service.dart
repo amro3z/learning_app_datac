@@ -6,32 +6,6 @@ import 'package:training/data/api/api_constant.dart';
 import 'package:training/screen/debug_console.dart';
 
 class ApiService {
-  // ================= LOGIN =================
-Future<Map<String, dynamic>> login({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse(loginUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
-      );
-
-      final body = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        return {"success": true, "access_token": body["data"]["access_token"]};
-      }
-
-      final message =
-          body["errors"]?[0]?["message"] ?? "Invalid email or password";
-
-      return {"success": false, "message": message};
-    } catch (e) {
-      return {"success": false, "message": "Network error"};
-    }
-  }
 
 Future<Map<String, dynamic>> getCurrentUser({
     required String accessToken,

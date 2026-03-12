@@ -28,16 +28,38 @@ class _LoginScreenState extends State<LoginScreen> {
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
     return BlocListener<UserCubit, UserState>(
+      listenWhen: (previous, current) =>
+          current is UserError || current is UserLoaded,
       listener: (context, state) {
         if (state is UserLoaded) {
           Navigator.pushReplacementNamed(context, '/home');
         }
 
-        if (state is UserError) {
+      if (state is UserError) {
+          String message;
+
+          if (state.message == "INVALID_CREDENTIALS") {
+            message = isArabic
+                ? "البريد الإلكتروني أو كلمة المرور غير صحيحة"
+                : "Email or password is incorrect";
+          } else if (state.message == "EMAIL_NOT_FOUND") {
+            message = isArabic
+                ? "البريد الإلكتروني غير موجود"
+                : "Email not found";
+          } else if (state.message == "NETWORK_ERROR") {
+            message = isArabic ? "مشكلة في الاتصال بالإنترنت" : "Network error";
+          } else {
+            message = isArabic ? "فشل تسجيل الدخول" : "Login failed";
+          }
+
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
           customDialog(
             context: context,
             title: isArabic ? 'خطأ' : 'Error',
-            message: state.message,
+            message: message,
           );
         }
       },
@@ -58,6 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   schoolSign(),
                   SizedBox(height: getScreenHeight(context) * 0.022),
+
                   defaultText(
                     context: context,
                     text: isArabic ? 'مرحبًا بعودتك' : 'Welcome Back',
@@ -65,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   SizedBox(height: getScreenHeight(context) * 0.033),
+
                   CustomFormTextField(
                     controller: _emailController,
                     labelText: isArabic ? 'البريد الإلكتروني' : 'Email address',
@@ -74,6 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     keyboardType: CustomTextFieldType.email,
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                   ),
+
                   SizedBox(height: getScreenHeight(context) * 0.018),
 
                   CustomFormTextField(
@@ -86,6 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   SizedBox(height: getScreenHeight(context) * 0.027),
+
                   BlocBuilder<UserCubit, UserState>(
                     builder: (context, state) {
                       final isLoading = state is UserLoading;

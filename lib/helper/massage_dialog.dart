@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 
@@ -12,6 +15,9 @@ void customDialog({
     context: context,
     barrierDismissible: true,
     builder: (context) {
+          final langState = context.read<LanguageCubit>().state;
+      final isArabic =
+          langState is LanguageCubitLoaded && langState.languageCode == 'ar';
       return Dialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
         backgroundColor: Color(0xFF191919),
@@ -34,8 +40,11 @@ void customDialog({
                 alignment: Alignment.topRight,
                 child: IconButton(
                   icon: const Icon(Icons.close, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    if (onClose != null) onClose();
+                  },
+                )
               ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -55,9 +64,12 @@ void customDialog({
                     context: context,
                   ),
                   SizedBox(height: getScreenHeight(context) * 0.033),
-                  CustomGlowButton(
-                    title: 'ok',
-                    onPressed: onClose ?? () => Navigator.of(context).pop(),
+CustomGlowButton(
+                    title: isArabic ? 'حسنا' : 'OK',
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      if (onClose != null) onClose();
+                    },
                   ),
                 ],
               ),

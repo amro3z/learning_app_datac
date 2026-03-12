@@ -105,7 +105,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                     SizedBox(height: getScreenHeight(context) * 0.015),
 
-                    /// Notifications Toggle
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -127,22 +126,16 @@ class _ProfilePageState extends State<ProfilePage> {
                           Switch(
                             activeThumbColor: Colors.lightBlueAccent,
                             activeTrackColor: Colors.lightBlue.withOpacity(0.5),
-
                             value: notify,
                             onChanged: (val) async {
-                              setState(() {
-                                notify = val;
-                              });
+                              setState(() => notify = val);
                               await _saveNotificationPreference(val);
                             },
                           ),
                         ],
                       ),
                     ),
-
                     SizedBox(height: getScreenHeight(context) * 0.015),
-
-                    /// Language
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(

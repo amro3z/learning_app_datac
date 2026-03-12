@@ -44,7 +44,6 @@ Future<void> login({required String email, required String password}) async {
         } else {
           emit(UserError("LOGIN_FAILED"));
         }
-
         return;
       }
 
@@ -54,6 +53,8 @@ Future<void> login({required String email, required String password}) async {
       );
 
       await _loadCurrentUser();
+
+      emit(UserLoginSuccess());
     } catch (_) {
       emit(UserError("NETWORK_ERROR"));
     }

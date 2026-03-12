@@ -25,13 +25,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
-
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
     return BlocListener<UserCubit, UserState>(
-      listenWhen: (previous, current) =>
-          current is UserError || current is UserLoaded,
+      listenWhen: (previous, current) {
+        if (previous is UserLoading && current is UserLoaded) return true;
+        if (current is UserError) return true;
+        return false;
+      },
       listener: (context, state) {
         if (state is UserLoaded) {
           Navigator.pushReplacementNamed(context, '/home');
@@ -52,10 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
             message = isArabic ? "مشكلة في الاتصال بالإنترنت" : "Network error";
           } else {
             message = isArabic ? "فشل تسجيل الدخول" : "Login failed";
-          }
-
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
           }
 
           customDialog(
@@ -81,7 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   schoolSign(),
-
                   SizedBox(height: getScreenHeight(context) * 0.022),
 
                   defaultText(
@@ -127,7 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: isLoading
                             ? () {}
                             : () {
-                                /// التحقق من الإنترنت
                                 if (!NetworkService.isConnected) {
                                   customDialog(
                                     context: context,

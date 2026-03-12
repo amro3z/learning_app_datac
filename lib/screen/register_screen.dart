@@ -26,7 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final ApiService _api = ApiService();
   bool _loading = false;
 
-  void _register(bool isArabic) async {
+ void _register(bool isArabic) async {
     if (_passwordController.text != _confirmPasswordController.text) {
       customDialog(
         context: context,
@@ -49,11 +49,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _loading = false);
 
-    if (!result["success"]) {
+    if (result["success"] != true) {
+      String message;
+
+      if (result["emailExists"] == true) {
+        message = isArabic
+            ? 'هذا البريد الإلكتروني مستخدم بالفعل'
+            : 'This email is already registered';
+      }
+      else if (result["message"] != null &&
+          result["message"].toString().isNotEmpty) {
+        message = result["message"];
+      }
+      else {
+        message = isArabic
+            ? 'حدث خطأ أثناء إنشاء الحساب'
+            : 'Failed to create account';
+      }
+
       customDialog(
         context: context,
         title: isArabic ? 'خطأ' : 'Error',
-        message: result["message"],
+        message: message,
       );
       return;
     }

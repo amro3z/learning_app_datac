@@ -57,7 +57,7 @@ Future<Map<String, dynamic>> getCurrentUser({
 
 
   // ================= REGISTER =================
-  Future<Map<String, dynamic>> register({
+Future<Map<String, dynamic>> register({
     required String firstName,
     required String lastName,
     required String email,
@@ -77,15 +77,30 @@ Future<Map<String, dynamic>> getCurrentUser({
         }),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return {"success": true};
+      final body = jsonDecode(response.body);
+
+      if (body["data"] != null) {
+        return {"success": true, "user": body["data"]};
       }
 
-      final error = jsonDecode(response.body);
-      return {
-        "success": false,
-        "message": error["errors"]?[0]?["message"] ?? "Register failed",
-      };
+      if (body["errors"] != null) {
+        final error = body["errors"][0];
+
+        if (error["extensions"]?["code"] == "RECORD_NOT_UNIQUE") {
+          return {
+            "success": false,
+            "emailExists": true,
+            "message": "Email already exists",
+          };
+        }
+
+        return {
+          "success": false,
+          "message": error["message"] ?? "Register failed",
+        };
+      }
+
+      return {"success": false, "message": "Register failed"};
     } catch (e) {
       AppLogger.log("REGISTER ERROR → $e");
       return {"success": false, "message": "Network error"};

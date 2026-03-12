@@ -9,6 +9,7 @@ import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_form_textfield.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/helper/massage_dialog.dart';
+import 'package:training/services/network_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
+
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
@@ -35,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacementNamed(context, '/home');
         }
 
-      if (state is UserError) {
+        if (state is UserError) {
           String message;
 
           if (state.message == "INVALID_CREDENTIALS") {
@@ -79,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   schoolSign(),
+
                   SizedBox(height: getScreenHeight(context) * 0.022),
 
                   defaultText(
@@ -124,6 +127,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: isLoading
                             ? () {}
                             : () {
+                                /// التحقق من الإنترنت
+                                if (!NetworkService.isConnected) {
+                                  customDialog(
+                                    context: context,
+                                    title: isArabic
+                                        ? 'لا يوجد اتصال'
+                                        : 'No Internet',
+                                    message: isArabic
+                                        ? 'تحقق من اتصال الإنترنت ثم حاول مرة أخرى'
+                                        : 'Please check your internet connection and try again',
+                                  );
+                                  return;
+                                }
+
                                 context.read<UserCubit>().login(
                                   email: _emailController.text.trim(),
                                   password: _passwordController.text.trim(),

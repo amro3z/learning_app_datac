@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
+import 'package:training/data/models/favorites.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/services/local_notifications.dart';
@@ -19,7 +21,6 @@ class CourseCard extends StatefulWidget {
   final String description;
   final int courseId;
   final bool? isFiltering;
-  final VoidCallback? onFavoriteToggle;
   final bool? isEnrolled;
   final double? height;
 
@@ -31,7 +32,6 @@ class CourseCard extends StatefulWidget {
     this.progress,
     required this.imagePath,
     this.isFavorite,
-    this.onFavoriteToggle,
     required this.description,
     required this.courseId,
     this.isFiltering = false,
@@ -164,6 +164,33 @@ class _CourseCardState extends State<CourseCard>
     );
   }
 
+  void _toggleFavorite() {
+    final favoritesCubit = context.read<FavoritesCubit>();
+    final userId = context.read<UserCubit>().userId;
+
+    if (userId == null) return;
+
+    final state = favoritesCubit.state;
+
+    if (state is FavoritesLoaded) {
+      final fav = state.favoritesList
+          .where((f) => f.courseId == widget.courseId)
+          .cast<FavoritesModel?>()
+          .firstOrNull;
+
+      final isFavorite = fav != null;
+
+      if (isFavorite) {
+        favoritesCubit.deleteFavorite(favoriteID: fav!.id, userId: userId);
+      } else {
+        favoritesCubit.addToFavorites(
+          courseId: widget.courseId,
+          userId: userId,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
@@ -181,19 +208,57 @@ class _CourseCardState extends State<CourseCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: NetworkService.isConnected
-                  ? Image.network(
-                      widget.imagePath,
-                      height: 140,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _defaultImage(),
-                    )
-                  : _defaultImage(),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: NetworkService.isConnected
+                      ? Image.network(
+                          widget.imagePath,
+                          height: 140,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _defaultImage(),
+                        )
+                      : _defaultImage(),
+                ),
+
+                if (widget.isFiltering != true)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: BlocBuilder<FavoritesCubit, FavoritesState>(
+                      builder: (context, state) {
+                        bool isFavorite = false;
+
+                        if (state is FavoritesLoaded) {
+                          isFavorite = state.favoritesList.any(
+                            (f) => f.courseId == widget.courseId,
+                          );
+                        }
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            onPressed: _toggleFavorite,
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite ? Colors.red : Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(12),

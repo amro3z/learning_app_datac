@@ -227,10 +227,14 @@ class _HomeScreenState extends State<HomeScreen> {
       children: courses.map((course) {
         final bool isEnrolled = enrolledIds.contains(course.id);
 
+        final double cardHeight = isEnrolled
+            ? getScreenHeight(context) * 0.28
+            : getScreenHeight(context) * 0.33;
+
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: CourseCard(
-            height: getScreenHeight(context) * 0.25,
+            height: cardHeight,
             imagePath: course.thumbnail,
             title: isArabic ? course.titleAr : course.titleEn,
             author: course.instructorName,

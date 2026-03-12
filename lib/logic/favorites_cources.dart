@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
-import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/widgets/course_card.dart';
 
@@ -78,12 +77,6 @@ class FavoriteCourses extends StatelessWidget {
                     : course.descriptionEn,
                 progress: progress,
                 isFavorite: true,
-                onFavoriteToggle: () {
-                  context.read<FavoritesCubit>().deleteFavorite(
-                    userId: context.read<UserCubit>().userId!,
-                    favoriteID: fav.id,
-                  );
-                },
               ),
             );
           }).toList(),

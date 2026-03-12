@@ -15,7 +15,7 @@ platform :android do
 
       android_artifact_path: "../build/app/outputs/flutter-apk/app-release.apk",
       testers: "mostafahany108889@gmail.com , amramohamed38@gmail.com",
-release_notes: "Added animated splash screen with session-based navigation, removed native splash, improved enrollment flow, enhanced Arabic localization, and optimized performance."
+release_notes: "Finalized the app and ready for testing!"
     )
 
     UI.success("🎉 Distribution Finished Successfully!")

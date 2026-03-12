@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
-import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/favorites.dart';
 import 'package:training/helper/base.dart';
@@ -14,7 +13,6 @@ class EnrollmentCourse extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final userId = context.read<UserCubit>().userId!;
     final langState = context.watch<LanguageCubit>().state;
     final languageCode = langState is LanguageCubitLoaded
         ? langState.languageCode
@@ -87,21 +85,6 @@ class EnrollmentCourse extends StatelessWidget {
                         : course.descriptionEn,
                     isFavorite: isFavorite,
                     courseId: course.id,
-                    onFavoriteToggle: () {
-                      final cubit = context.read<FavoritesCubit>();
-
-                      if (isFavorite) {
-                        cubit.deleteFavorite(
-                          favoriteID: fav.id,
-                          userId: userId,
-                        );
-                      } else {
-                        cubit.addToFavorites(
-                          courseId: course.id,
-                          userId: userId,
-                        );
-                      }
-                    },
                   ),
                 );
               }).toList(),

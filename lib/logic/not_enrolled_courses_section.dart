@@ -50,7 +50,7 @@ class NotEnrolledCoursesSection extends StatelessWidget {
           return Padding(
             padding: EdgeInsets.only(bottom: getScreenHeight(context) * 0.02),
             child: CourseCard(
-              height: getScreenHeight(context) * 0.34,
+            
               imagePath: course.thumbnail,
               title: isArabic ? course.titleAr : course.titleEn,
               author: course.instructorName,

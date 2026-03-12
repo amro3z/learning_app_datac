@@ -4,6 +4,7 @@ import 'package:training/cubits/cubit/enrollments_cubit.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
+import 'package:training/helper/base.dart';
 import 'package:training/widgets/course_card.dart';
 
 class FavoriteCourses extends StatelessWidget {
@@ -57,6 +58,10 @@ class FavoriteCourses extends StatelessWidget {
               }
             : {};
 
+        final enrolledIds = enrollmentsState is EnrollmentsLoaded
+            ? enrollmentsState.enrollments.map((e) => e.courseId).toSet()
+            : <int>{};
+
         return Column(
           children: uniqueFavorites.values.map((fav) {
             final course = courseMap[fav.courseId];
@@ -67,6 +72,7 @@ class FavoriteCourses extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: CourseCard(
+                height: getScreenHeight(context) * 0.34,
                 imagePath: course.thumbnail,
                 title: languageCode == 'ar' ? course.titleAr : course.titleEn,
                 author: course.instructorName,
@@ -77,6 +83,7 @@ class FavoriteCourses extends StatelessWidget {
                     : course.descriptionEn,
                 progress: progress,
                 isFavorite: true,
+                isEnrolled: enrolledIds.contains(course.id),
               ),
             );
           }).toList(),

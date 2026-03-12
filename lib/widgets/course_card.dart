@@ -21,7 +21,7 @@ class CourseCard extends StatefulWidget {
   final String description;
   final int courseId;
   final bool? isFiltering;
-  final bool? isEnrolled;
+  final bool isEnrolled;
   final double? height;
 
   const CourseCard({
@@ -181,7 +181,10 @@ class _CourseCardState extends State<CourseCard>
       final isFavorite = fav != null;
 
       if (isFavorite) {
-        favoritesCubit.deleteFavorite(favoriteID: fav!.id, userId: userId);
+        favoritesCubit.deleteFavorite(
+          favoriteID: fav.id,
+          userId: userId,
+        );
       } else {
         favoritesCubit.addToFavorites(
           courseId: widget.courseId,
@@ -200,7 +203,7 @@ class _CourseCardState extends State<CourseCard>
     return GestureDetector(
       onTap: widget.isEnrolled == true ? () => _openDetails(isArabic) : null,
       child: Container(
-        height: widget.height ?? getScreenHeight(context) * 0.275,
+        height: widget.isEnrolled ? getScreenHeight(context) * 0.275 : getScreenHeight(context) * 0.34,
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(16),
@@ -234,9 +237,8 @@ class _CourseCardState extends State<CourseCard>
                         bool isFavorite = false;
 
                         if (state is FavoritesLoaded) {
-                          isFavorite = state.favoritesList.any(
-                            (f) => f.courseId == widget.courseId,
-                          );
+                          isFavorite = state.favoritesList
+                              .any((f) => f.courseId == widget.courseId);
                         }
 
                         return Container(
@@ -250,7 +252,8 @@ class _CourseCardState extends State<CourseCard>
                               isFavorite
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color: isFavorite ? Colors.red : Colors.white,
+                              color:
+                                  isFavorite ? Colors.red : Colors.white,
                               size: 20,
                             ),
                           ),
@@ -292,14 +295,19 @@ class _CourseCardState extends State<CourseCard>
                           width: double.infinity,
                           textSize: getScreenWidth(context) * 0.035,
                           title: _isLoading
-                              ? (isArabic ? "جاري الاشتراك..." : "Enrolling...")
-                              : (isArabic ? "اشترك الآن" : "Enroll Now"),
+                              ? (isArabic
+                                  ? "جاري الاشتراك..."
+                                  : "Enrolling...")
+                              : (isArabic
+                                  ? "اشترك الآن"
+                                  : "Enroll Now"),
                           onPressed: _isLoading
                               ? null
                               : () => _handleEnroll(isArabic),
                         ),
                       ),
                     ),
+                    
                 ],
               ),
             ),

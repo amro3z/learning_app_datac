@@ -8,6 +8,7 @@ import 'package:training/helper/custom_form_textfield.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/helper/massage_dialog.dart';
 import 'package:training/services/directus_user_service.dart';
+import 'package:training/services/network_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -26,7 +27,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final ApiService _api = ApiService();
   bool _loading = false;
 
- void _register(bool isArabic) async {
+  void _register(bool isArabic) async {
+    /// التحقق من الإنترنت
+    if (!NetworkService.isConnected) {
+      customDialog(
+        context: context,
+        title: isArabic ? 'لا يوجد اتصال' : 'No Internet',
+        message: isArabic
+            ? 'تحقق من اتصال الإنترنت ثم حاول مرة أخرى'
+            : 'Please check your internet connection and try again',
+      );
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       customDialog(
         context: context,
@@ -56,12 +69,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         message = isArabic
             ? 'هذا البريد الإلكتروني مستخدم بالفعل'
             : 'This email is already registered';
-      }
-      else if (result["message"] != null &&
+      } else if (result["message"] != null &&
           result["message"].toString().isNotEmpty) {
         message = result["message"];
-      }
-      else {
+      } else {
         message = isArabic
             ? 'حدث خطأ أثناء إنشاء الحساب'
             : 'Failed to create account';

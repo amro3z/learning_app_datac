@@ -56,6 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
             message = isArabic ? "فشل تسجيل الدخول" : "Login failed";
           }
 
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+
           customDialog(
             context: context,
             title: isArabic ? 'خطأ' : 'Error',

@@ -54,7 +54,7 @@ Future<void> login({required String email, required String password}) async {
 
       await _loadCurrentUser();
 
-      emit(UserLoginSuccess());
+  
     } catch (_) {
       emit(UserError("NETWORK_ERROR"));
     }
@@ -64,7 +64,6 @@ Future<void> login({required String email, required String password}) async {
   Future<void> restoreSession() async {
     if (!_api.auth.hasToken) return;
 
-    // ✅ لو مفيش نت: رجّع من اللوكال ومترجعش للوجن
     if (!NetworkService.isConnected) {
       final cached = await _readCachedUser();
       if (cached != null) {
@@ -73,8 +72,8 @@ Future<void> login({required String email, required String password}) async {
         return;
       }
 
-      // لو مفيش كاش أصلاً، ساعتها بس رجّع لوجن
       emit(UserInitial());
+        await _loadCurrentUser();
       return;
     }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
@@ -110,7 +109,6 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
           ? 'هذا الحقل لا يمكن أن يكون فارغًا'
           : 'This field cannot be empty';
     }
-
     switch (widget.keyboardType) {
       case CustomTextFieldType.email:
         final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -120,19 +118,9 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
               : 'The email format is incorrect';
         }
         break;
-
-      case CustomTextFieldType.password:
-        if (value.length < 6) {
-          return isArabic
-              ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'
-              : 'Password must be at least 6 characters long';
-        }
-        break;
-
       default:
         break;
     }
-
     return null;
   }
 }

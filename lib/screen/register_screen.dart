@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +11,7 @@ import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/helper/massage_dialog.dart';
 import 'package:training/services/directus_user_service.dart';
 import 'package:training/services/network_service.dart';
+import 'package:training/widgets/password_instructions.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -24,11 +27,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  // StreamController للـ password instructions
+  final _passwordStreamController =
+      StreamController<Map<String, bool>>.broadcast();
+
   final ApiService _api = ApiService();
   bool _loading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(_onPasswordChanged);
+  }
+
+  void _onPasswordChanged() {
+    _checkPassword(_passwordController.text);
+  }
+
+  void _checkPassword(String v) {
+    _passwordStreamController.add({
+      "length": v.length >= 8,
+      "noSpace": !v.contains(" "),
+      "upperLower":
+          v.contains(RegExp(r'[A-Z]')) && v.contains(RegExp(r'[a-z]')),
+      "special": v.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')),
+    });
+  }
+
   void _register(bool isArabic) async {
-    /// التحقق من الإنترنت
     if (!NetworkService.isConnected) {
       customDialog(
         context: context,
@@ -64,7 +90,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (result["success"] != true) {
       String message;
-
       if (result["emailExists"] == true) {
         message = isArabic
             ? 'هذا البريد الإلكتروني مستخدم بالفعل'
@@ -77,7 +102,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ? 'حدث خطأ أثناء إنشاء الحساب'
             : 'Failed to create account';
       }
-
       customDialog(
         context: context,
         title: isArabic ? 'خطأ' : 'Error',
@@ -96,6 +120,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushReplacementNamed(context, '/login');
       },
     );
+  }
+
+  @override
+  void dispose() {
+    _passwordController.removeListener(_onPasswordChanged);
+    _passwordStreamController.close();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -121,13 +157,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 schoolSign(),
                 SizedBox(height: getScreenHeight(context) * 0.022),
-
                 defaultText(
                   context: context,
                   text: isArabic ? 'إنشاء حساب' : 'Create Account',
                   size: getScreenWidth(context) * 0.055,
                 ),
-
                 SizedBox(height: getScreenHeight(context) * 0.025),
 
                 CustomFormTextField(
@@ -136,7 +170,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: CustomTextFieldType.name,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
-
                 SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
@@ -145,7 +178,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: CustomTextFieldType.name,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
-
                 SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
@@ -154,7 +186,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: CustomTextFieldType.email,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                 ),
-
                 SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
@@ -163,8 +194,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: CustomTextFieldType.password,
                   obscureText: true,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                  onChanged: (v) => _checkPassword(v), // للتحديث الفوري
                 ),
-
                 SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
@@ -175,6 +206,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: CustomTextFieldType.password,
                   obscureText: true,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
+                ),
+
+                // ← Password Instructions Widget
+                SizedBox(height: getScreenHeight(context) * 0.015),
+                PasswordInstructions(
+                  passwordStream: _passwordStreamController.stream,
                 ),
 
                 SizedBox(height: getScreenHeight(context) * 0.025),

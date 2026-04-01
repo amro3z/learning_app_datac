@@ -22,7 +22,6 @@ class LearningRepo {
 
   LearningRepo({required this.learningWebService, required this.sqldb});
 
-  // TTL لكل جدول (غيرهم زي ما تحب)
   static const Duration _ttlCourses = Duration(hours: 6);
   static const Duration _ttlCategories = Duration(days: 2);
   static const Duration _ttlLessons = Duration(hours: 12);
@@ -697,5 +696,30 @@ class LearningRepo {
       }
       rethrow;
     }
+  }
+
+  // ================= Notification =================
+
+Future<Map<String, String>> getNotificationList({
+    required String userId,
+  }) async {
+    final response = await learningWebService.getNotificationList(
+      userId: userId,
+    );
+
+    log("Fetched notifications for user $userId: $response");
+
+    final List data = response['data'] ?? [];
+
+    if (data.isEmpty) {
+      return {"subject": "", "message": ""};
+    }
+
+    final first = data.first as Map<String, dynamic>;
+
+    return {
+      "subject": first["subject"] ?? "",
+      "message": first["message"] ?? "",
+    };
   }
 }

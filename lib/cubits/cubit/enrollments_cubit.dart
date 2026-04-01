@@ -10,20 +10,22 @@ import 'package:training/data/repo/learning_repo.dart';
 part '../states/enrollments_state.dart';
 
 class EnrollmentsCubit extends Cubit<EnrollmentsState> {
-  EnrollmentsCubit({required this.learningRepo, required this.webservice})
-    : super(EnrollmentsInitial());
+  EnrollmentsCubit({
+    required this.learningRepo,
+    required this.webservice,
+  }) : super(EnrollmentsInitial());
 
   final LearningRepo learningRepo;
   final LearningWebservice webservice;
 
-Future<void> getAllEnrollments({
+  // ================= GET ALL =================
+  Future<void> getAllEnrollments({
     required String userId,
     bool forceRefresh = false,
   }) async {
     try {
       emit(EnrollmentsLoading());
 
-      // 🔹 رجع local فورًا
       final localEnrollments = await learningRepo.getEnrollmentList(
         userId: userId,
         forceRefresh: forceRefresh,
@@ -33,7 +35,6 @@ Future<void> getAllEnrollments({
 
       emit(EnrollmentsLoaded(enrollments: localEnrollments, courses: courses));
 
-      // 🔹 background refresh
       if (!forceRefresh) {
         Future.microtask(() async {
           final fresh = await learningRepo.getEnrollmentList(
@@ -48,10 +49,12 @@ Future<void> getAllEnrollments({
       emit(EnrollmentsError(message: e.toString()));
     }
   }
+
   void clear() {
     emit(EnrollmentsInitial());
   }
 
+  // ================= ENROLL =================
   Future<void> enrollCourse({
     required int courseId,
     required String userId,
@@ -67,6 +70,7 @@ Future<void> getAllEnrollments({
     }
   }
 
+  // ================= PROGRESS =================
   double calculateCourseProgress({
     required List<LessonModel> lessons,
     required List<LessonProgressModel> progressList,
@@ -83,7 +87,7 @@ Future<void> getAllEnrollments({
     int totalWatched = 0;
 
     for (var lesson in courseLessons) {
-      totalDuration += lesson.duration * 60; 
+      totalDuration += lesson.duration * 60;
       totalWatched += watchedMap[lesson.id] ?? 0;
     }
 

@@ -6,6 +6,7 @@ class LearningWebservice {
   final ApiClient _api = ApiClient();
 
   // ================= COURSES =================
+
   Future<Map<String, dynamic>> getCoursesList() async {
     final res = await _api.get(
       '$apiUrl/courses?fields=*,instructor.name,instructor.last_name',
@@ -14,12 +15,14 @@ class LearningWebservice {
   }
 
   // ================= CATEGORIES =================
+
   Future<Map<String, dynamic>> getCategoryList() async {
     final res = await _api.get('$apiUrl/categories');
     return jsonDecode(res.body);
   }
 
   // ================= LESSONS =================
+
   Future<Map<String, dynamic>> getLessonList() async {
     final res = await _api.get('$apiUrl/lessons');
     return jsonDecode(res.body);
@@ -37,6 +40,7 @@ class LearningWebservice {
   }
 
   // ================= ENROLLMENTS =================
+
 Future<Map<String, dynamic>> getEnrollmentList({
     required String userId,
   }) async {
@@ -56,6 +60,7 @@ Future<Map<String, dynamic>> getEnrollmentList({
   }
 
   // ================= FAVORITES =================
+
  Future<Map<String, dynamic>> getFavoriteList({required String userId}) async {
     final res = await _api.get('$apiUrl/favorites?filter[user][_eq]=$userId');
 
@@ -77,16 +82,20 @@ Future<Map<String, dynamic>> getEnrollmentList({
   }
 
   // ================= RECOMMENDED =================
+
   Future<Map<String, dynamic>> getRecommendedList() async {
     final res = await _api.get('$apiUrl/recommended');
     return jsonDecode(res.body);
   }
 
   // ================= POPULAR =================
+
   Future<Map<String, dynamic>> getPopularList() async {
     final res = await _api.get('$apiUrl/popular');
     return jsonDecode(res.body);
   }
+
+  // ================= Enrollment =================
 
 Future<void> updateEnrollmentProgress({
     required int enrollmentId,
@@ -97,6 +106,8 @@ Future<void> updateEnrollmentProgress({
       body: {"progress_percent": progressPercent},
     );
   }
+
+  // ================= Lesson Progress  =================
 
 Future<void> updateLessonProgress({
     required int lessonProgressId,
@@ -109,7 +120,10 @@ Future<void> updateLessonProgress({
     );
   }
 
+  // ================= Notification =================
 
-
-
+  Future<Map<String, dynamic>> getNotificationList({required String userId}) async {
+    final res = await _api.get('$baseUrl/notifications?filter[recipient][_eq]=$userId&sort=-timestamp&limit=1');
+    return jsonDecode(res.body);
+  }
 }

@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -24,18 +23,21 @@ import 'package:training/route.dart';
 import 'package:training/services/local_notifications.dart';
 import 'package:training/services/network_service.dart';
 import 'package:training/services/tokens/auths_service.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-await LocalNotifications.flutterLocalNotificationsPlugin
+
+  await LocalNotifications.flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin
       >()
       ?.requestNotificationsPermission();
-  await AuthService().init();
 
+  await AuthService().init();
   await LocalNotifications.init(navigatorKey);
   NetworkService.startListening();
 
@@ -47,44 +49,47 @@ await LocalNotifications.flutterLocalNotificationsPlugin
     learningRepo: repo,
     webservice: webService,
   );
-
   final favoritesCubit = FavoritesCubit(repo: repo, webservice: webService);
 
   runApp(
+    RepositoryProvider.value(
+      value: repo, 
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => LanguageCubit()),
+          BlocProvider(create: (_) => userCubit..restoreSession()),
+          BlocProvider(create: (_) => enrollmentsCubit),
+          BlocProvider(create: (_) => favoritesCubit),
 
-    MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => LanguageCubit()),
-        BlocProvider(create: (_) => userCubit..restoreSession()),
-        BlocProvider(create: (_) => enrollmentsCubit),
-        BlocProvider(create: (_) => favoritesCubit),
-        BlocProvider(
-          create: (_) => CoursesCubit(learningRepo: repo)..getAllCourses(),
-        ),
-        BlocProvider(
-          create: (_) =>
-              CategoriesCubit(learningRepo: repo)..getAllCategories(),
-        ),
-        BlocProvider(
-          create: (_) =>
-              RecommendedCubit(learningRepo: repo)..getRecommendedList(),
-        ),
-        BlocProvider(
-          create: (_) => PopularCubit(learningRepo: repo)..getPopularList(),
-        ),
-        BlocProvider(
-          create: (_) =>
-              LessonsCubit(repo: repo, enrollmentsCubit: enrollmentsCubit)
-                ..getLessons(),
-        ),
-      ],
-      child: const MyApp(),
+          BlocProvider(
+            create: (_) => CoursesCubit(learningRepo: repo)..getAllCourses(),
+          ),
+          BlocProvider(
+            create: (_) =>
+                CategoriesCubit(learningRepo: repo)..getAllCategories(),
+          ),
+          BlocProvider(
+            create: (_) =>
+                RecommendedCubit(learningRepo: repo)..getRecommendedList(),
+          ),
+          BlocProvider(
+            create: (_) => PopularCubit(learningRepo: repo)..getPopularList(),
+          ),
+          BlocProvider(
+            create: (_) =>
+                LessonsCubit(repo: repo, enrollmentsCubit: enrollmentsCubit)
+                  ..getLessons(),
+          ),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<UserCubit, UserState>(
@@ -96,6 +101,7 @@ class MyApp extends StatelessWidget {
 
         if (state is UserLoaded) {
           final userId = context.read<UserCubit>().userId;
+
           if (userId != null) {
             context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
 
@@ -114,7 +120,7 @@ class MyApp extends StatelessWidget {
           final isArabic = languageCode == 'ar';
 
           return MaterialApp(
-              navigatorKey: navigatorKey,
+            navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             locale: Locale(languageCode),
             supportedLocales: const [Locale('en'), Locale('ar')],

@@ -87,7 +87,7 @@ class EnrollmentCourse extends StatelessWidget {
                     courseId: course.id,
                   ),
                 );
-              }).toList(),
+              }),
             ],
           );
         }

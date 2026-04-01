@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
@@ -6,6 +8,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/data/models/favorites.dart';
+import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/services/local_notifications.dart';
@@ -23,7 +26,6 @@ class CourseCard extends StatefulWidget {
   final bool? isFiltering;
   final bool isEnrolled;
   final double? height;
-
   const CourseCard({
     super.key,
     required this.title,
@@ -108,38 +110,51 @@ class _CourseCardState extends State<CourseCard>
     );
   }
 
-  Future<void> _handleEnroll(bool isArabic) async {
+Future<void> _handleEnroll(bool isArabic) async {
     if (!NetworkService.isConnected) {
       _showNoInternetNotification(isArabic);
       return;
     }
 
-    final userId = context.read<UserCubit>().userId;
+
+    final userCubit = context.read<UserCubit>();
+    final enrollCubit = context.read<EnrollmentsCubit>();
+    final repo = context.read<LearningRepo>();
+
+    final userId = userCubit.userId;
     if (userId == null) return;
 
-    setState(() => _isLoading = true);
+    if (mounted) setState(() => _isLoading = true);
 
     try {
-      await context.read<EnrollmentsCubit>().enrollCourse(
-        courseId: widget.courseId,
-        userId: userId,
-      );
+      await enrollCubit.enrollCourse(courseId: widget.courseId, userId: userId);
+      await Future.delayed(const Duration(milliseconds: 60000));
+      final notification = await repo.getNotificationList(userId: userId);
 
       if (!_notificationShown) {
         _notificationShown = true;
 
+        log(
+          "New notification: ${notification["subject"]} - ${notification["message"]}",
+        );
+
         LocalNotifications.showNotification(
           navigator: true,
-          title: isArabic ? "تم الاشتراك بنجاح" : "Enrollment Successful",
-          body: isArabic
-              ? "تم الاشتراك في ${widget.title}"
-              : "You enrolled in ${widget.title}",
+          title: notification["subject"] ?? "Notification",
+          body: notification["message"] ?? "",
+          arguments: {
+            'imageURL': widget.imagePath,
+            'title': widget.title,
+            'instructor': widget.author,
+            'description': widget.description,
+            'courseId': widget.courseId,
+          },
         );
       }
 
-      if (!mounted) return;
+      await enrollCubit.getAllEnrollments(userId: userId);
 
-      await context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
+      if (!mounted) return;
 
       _openDetails(isArabic);
     } catch (e) {
@@ -181,10 +196,7 @@ class _CourseCardState extends State<CourseCard>
       final isFavorite = fav != null;
 
       if (isFavorite) {
-        favoritesCubit.deleteFavorite(
-          favoriteID: fav.id,
-          userId: userId,
-        );
+        favoritesCubit.deleteFavorite(favoriteID: fav.id, userId: userId);
       } else {
         favoritesCubit.addToFavorites(
           courseId: widget.courseId,
@@ -203,7 +215,9 @@ class _CourseCardState extends State<CourseCard>
     return GestureDetector(
       onTap: widget.isEnrolled == true ? () => _openDetails(isArabic) : null,
       child: Container(
-        height: widget.isEnrolled ? getScreenHeight(context) * 0.275 : getScreenHeight(context) * 0.34,
+        height: widget.isEnrolled
+            ? getScreenHeight(context) * 0.275
+            : getScreenHeight(context) * 0.34,
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(16),
@@ -237,8 +251,9 @@ class _CourseCardState extends State<CourseCard>
                         bool isFavorite = false;
 
                         if (state is FavoritesLoaded) {
-                          isFavorite = state.favoritesList
-                              .any((f) => f.courseId == widget.courseId);
+                          isFavorite = state.favoritesList.any(
+                            (f) => f.courseId == widget.courseId,
+                          );
                         }
 
                         return Container(
@@ -252,8 +267,7 @@ class _CourseCardState extends State<CourseCard>
                               isFavorite
                                   ? Icons.favorite
                                   : Icons.favorite_border,
-                              color:
-                                  isFavorite ? Colors.red : Colors.white,
+                              color: isFavorite ? Colors.red : Colors.white,
                               size: 20,
                             ),
                           ),
@@ -295,19 +309,14 @@ class _CourseCardState extends State<CourseCard>
                           width: double.infinity,
                           textSize: getScreenWidth(context) * 0.035,
                           title: _isLoading
-                              ? (isArabic
-                                  ? "جاري الاشتراك..."
-                                  : "Enrolling...")
-                              : (isArabic
-                                  ? "اشترك الآن"
-                                  : "Enroll Now"),
+                              ? (isArabic ? "جاري الاشتراك..." : "Enrolling...")
+                              : (isArabic ? "اشترك الآن" : "Enroll Now"),
                           onPressed: _isLoading
                               ? null
                               : () => _handleEnroll(isArabic),
                         ),
                       ),
                     ),
-                    
                 ],
               ),
             ),

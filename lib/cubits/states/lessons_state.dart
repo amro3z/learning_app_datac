@@ -6,7 +6,11 @@ sealed class LessonsState {}
 final class LessonsInitial extends LessonsState {}
 
 final class LessonsLoading extends LessonsState {}
-
+final class FileLoading extends LessonsState {}
+final class FileLoaded extends LessonsState {
+  final String fileUrl;
+  FileLoaded({required this.fileUrl});
+}
 final class LessonsLoaded extends LessonsState {
   final List<LessonModel> lessons;
 final List<LessonProgressModel> progress;

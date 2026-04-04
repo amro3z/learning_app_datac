@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/states/language_cubit_state.dart';
+import 'package:training/data/api/api_constant.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/helper/custom_glow_buttom.dart';
+import 'package:training/screen/pdf_screen.dart';
 import 'package:training/services/video_player.dart';
 
 class LessonScreen extends StatefulWidget {
@@ -12,7 +18,9 @@ class LessonScreen extends StatefulWidget {
     required this.courseID,
     required this.courseTitle,
     required this.lessonDurationInSeconds,
+    this.pdf,
   });
+
   final String videoURl;
   final String lessonTitle;
   final String lessonDescription;
@@ -20,6 +28,8 @@ class LessonScreen extends StatefulWidget {
   final int courseID;
   final String courseTitle;
   final int lessonDurationInSeconds;
+  final String? pdf;
+
   @override
   State<LessonScreen> createState() => _LessonScreenState();
 }
@@ -27,6 +37,9 @@ class LessonScreen extends StatefulWidget {
 class _LessonScreenState extends State<LessonScreen> {
   @override
   Widget build(BuildContext context) {
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
     return Scaffold(
       appBar: AppBar(
         title: defaultText(
@@ -61,7 +74,8 @@ class _LessonScreenState extends State<LessonScreen> {
                 youtubeUrl: widget.videoURl,
               ),
             ),
-            SizedBox(height: 20),
+
+            const SizedBox(height: 20),
 
             Container(
               padding: const EdgeInsets.all(12),
@@ -73,14 +87,13 @@ class _LessonScreenState extends State<LessonScreen> {
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   defaultText(
                     text: widget.lessonTitle,
                     size: getScreenWidth(context) * 0.04,
                     context: context,
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   defaultText(
                     context: context,
                     text: widget.lessonDescription,
@@ -90,6 +103,22 @@ class _LessonScreenState extends State<LessonScreen> {
                   ),
                 ],
               ),
+            ),
+
+            const SizedBox(height: 20),
+
+            CustomGlowButton(
+              title: isArabic ? "عرض PDF" : "View PDF",
+              onPressed: widget.pdf != null && widget.pdf!.isNotEmpty
+                  ? (() {
+                      final url = "$baseUrl/assets/${widget.pdf}";
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => PdfScreen(url: url)),
+                      );
+                    })
+                  : null,
+              width: getScreenWidth(context) * 0.5,
             ),
           ],
         ),

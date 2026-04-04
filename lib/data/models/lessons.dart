@@ -7,6 +7,7 @@ class LessonModel {
   late int courseId;
   late String descriptionAr;
   late String descriptionEn;
+  String? pdf;
   LessonModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     titleAr = json['title']['ar'];
@@ -16,5 +17,6 @@ class LessonModel {
     videoUrl = json['video_url'];
     duration = json['duration'];
     courseId = json['course'];
+    pdf = json['pdf']; 
   }
 }

@@ -42,6 +42,7 @@ class AppRoute {
           videoURl: args['videoURl'],
           courseTitle: args['courseTitle'],
           lessonDurationInSeconds: args['lessonDurationInSeconds'] as int,
+            pdf: args['pdf'],
         ));
       default:
         return MaterialPageRoute(builder: (_) => LoginScreen());

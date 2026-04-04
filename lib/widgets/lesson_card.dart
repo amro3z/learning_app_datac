@@ -32,6 +32,7 @@ class LessonCard extends StatelessWidget {
     required this.lessonDescriptionAr,
     required this.videoURl,
     required this.courseTitle,
+     this.pdf,
   });
 
   final String titleEn;
@@ -45,6 +46,8 @@ class LessonCard extends StatelessWidget {
   final String lessonDescriptionAr;
   final String videoURl;
   final String courseTitle;
+  final String? pdf;
+
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +77,7 @@ class LessonCard extends StatelessWidget {
                   'videoURl': videoURl,
                   'courseTitle': courseTitle,
                   'lessonDurationInSeconds': lessonDurationInSeconds,
+                     'pdf': pdf,
                 },
               );
             },

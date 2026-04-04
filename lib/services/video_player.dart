@@ -34,7 +34,6 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
   void initState() {
     super.initState();
 
-
     final videoId = YoutubePlayer.convertUrlToId(widget.youtubeUrl)!;
 
     _controller = YoutubePlayerController(
@@ -49,17 +48,16 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
     });
   }
 
+  // ✅ restore مع retry لحد ما الداتا توصل
   void _restorePosition() {
-
-    if (_positionRestored) {
-      return;
-    }
+    if (_positionRestored) return;
 
     final lessonsState = context.read<LessonsCubit>().state;
     final userId = context.read<UserCubit>().userId;
 
-
     if (lessonsState is! LessonsLoaded || userId == null) {
+      // 🔥 retry بعد نص ثانية
+      Future.delayed(const Duration(milliseconds: 500), _restorePosition);
       return;
     }
 
@@ -68,32 +66,26 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
           p.lesson == widget.lessonId &&
           p.courseId == widget.courseId &&
           p.userId == userId,
-      orElse: () {
-        return LessonProgressModel.empty();
-      },
+      orElse: () => LessonProgressModel.empty(),
     );
 
     if (progress.watchedSeconds > 0) {
       _controller.seekTo(Duration(seconds: progress.watchedSeconds));
-    } else {
+      debugPrint("🔁 RESTORED TO ${progress.watchedSeconds}");
     }
 
     _positionRestored = true;
   }
 
   void _saveProgress() {
-    if (!_controller.value.isReady) {
-      return;
-    }
+    if (!_controller.value.isReady) return;
 
     final position = _controller.value.position.inSeconds;
 
     if (position <= 0) return;
 
     final userId = context.read<UserCubit>().userId;
-    if (userId == null) {
-      return;
-    }
+    if (userId == null) return;
 
     context.read<LessonsCubit>().updateLessonProgress(
       lessonId: widget.lessonId,
@@ -105,16 +97,13 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
 
   @override
   void dispose() {
-
     _progressTimer?.cancel();
     _controller.dispose();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return YoutubePlayer(
       controller: _controller,
       showVideoProgressIndicator: true,
@@ -123,11 +112,9 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
         handleColor: Colors.blueAccent,
       ),
       progressIndicatorColor: Colors.blueAccent,
-      
+
       onReady: () {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          _restorePosition();
-        });
+        _restorePosition(); 
       },
     );
   }

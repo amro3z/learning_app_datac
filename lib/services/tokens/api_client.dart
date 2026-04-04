@@ -43,7 +43,7 @@ class ApiClient {
     }
   }
 
-  Future<http.Response> post(
+Future<http.Response> post(
     String url, {
     Map<String, String>? headers,
     Object? body,
@@ -57,7 +57,7 @@ class ApiClient {
               "Content-Type": "application/json",
               ...?headers,
             },
-            body: body,
+            body: body != null ? jsonEncode(body) : null, // 👈 الحل هنا
           )
           .timeout(_timeout);
 
@@ -73,7 +73,7 @@ class ApiClient {
                 "Content-Type": "application/json",
                 ...?headers,
               },
-              body: body,
+              body: body != null ? jsonEncode(body) : null, // 👈 برضو هنا
             )
             .timeout(_timeout);
       }

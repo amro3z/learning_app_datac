@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
@@ -110,10 +112,11 @@ class Lessons extends StatelessWidget {
                       titleEn: lesson.titleEn,
                       titleAr: lesson.titleAr,
                       duration: lesson.duration,
+                      pdf: lesson.pdf,
                       state: status,
                     ),
                   );
-                }).toList(),
+                }),
               ],
             );
           },

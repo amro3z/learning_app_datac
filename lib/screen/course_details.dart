@@ -34,7 +34,6 @@ class _CourseDetailsState extends State<CourseDetails> {
   Future<void> _refreshData() async {
     final userId = context.read<UserCubit>().userId;
     if (userId == null) return;
-
     await context.read<LessonsCubit>().getLessons();
     await context.read<EnrollmentsCubit>().getAllEnrollments(userId: userId);
   }

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:training/data/api/api_constant.dart';
 import 'package:training/data/api/web_service.dart';
 import 'package:training/data/local/sqldb.dart';
 import 'package:training/data/models/Recommend.dart';
@@ -15,11 +16,12 @@ import 'package:training/data/models/instructor.dart';
 import 'package:training/data/models/lesson_progress.dart';
 import 'package:training/data/models/lessons.dart';
 import 'package:training/data/models/popular.dart';
+import 'package:training/services/tokens/api_client.dart';
 
 class LearningRepo {
   final LearningWebservice learningWebService;
   final Sqldb sqldb;
-
+  final ApiClient _api = ApiClient();
   LearningRepo({required this.learningWebService, required this.sqldb});
 
   static const Duration _ttlCourses = Duration(hours: 6);
@@ -277,68 +279,76 @@ class LearningRepo {
   }
 
   // ================= LESSONS =================
-
-  Future<List<LessonModel>> getLessonList({bool forceRefresh = false}) async {
-    final local = await sqldb.readData(sql: "SELECT * FROM lessons");
-    if (local.isNotEmpty) {
-      final mapped = _mapLocalLessons(local);
-
-      final needRefresh =
-          forceRefresh || await _shouldRefresh('lessons', _ttlLessons);
-      if (needRefresh) unawaited(_refreshLessonsSafely());
-
-      return mapped;
-    }
-
-    return _refreshLessonsSafely();
-  }
-
-  Future<List<LessonModel>> _refreshLessonsSafely() async {
-    try {
-      return await _refreshLessons();
-    } on SocketException {
-      final local = await sqldb.readData(sql: "SELECT * FROM lessons");
-      return _mapLocalLessons(local);
-    } catch (e) {
-      final local = await sqldb.readData(sql: "SELECT * FROM lessons");
-      if (local.isNotEmpty) return _mapLocalLessons(local);
-      rethrow;
-    }
-  }
-
-  Future<List<LessonModel>> _refreshLessons() async {
+Future<List<LessonModel>> getLessonList() async {
     final response = await learningWebService.getLessonList();
+
     final List data = response['data'] ?? [];
 
-    final lessons = data.map((lesson) => LessonModel.fromJson(lesson)).toList();
+    final lessons = data.map((e) => LessonModel.fromJson(e)).toList();
 
-    await sqldb.runBatch((b) async {
-      for (var l in lessons) {
-        b.rawInsert(
-          '''
-          INSERT OR REPLACE INTO lessons (
-            id, title_ar, title_en,
-            description_ar, description_en,
-            video_url, duration, course_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-          ''',
-          [
-            l.id,
-            l.titleAr,
-            l.titleEn,
-            l.descriptionAr,
-            l.descriptionEn,
-            l.videoUrl,
-            l.duration,
-            l.courseId,
-          ],
-        );
-      }
-    });
-
-    await _markSynced('lessons');
     return lessons;
   }
+  // Future<List<LessonModel>> getLessonList({bool forceRefresh = false}) async {
+  //   final local = await sqldb.readData(sql: "SELECT * FROM lessons");
+  //   if (local.isNotEmpty) {
+  //     final mapped = _mapLocalLessons(local);
+
+  //     final needRefresh =
+  //         forceRefresh || await _shouldRefresh('lessons', _ttlLessons);
+  //     if (needRefresh) unawaited(_refreshLessonsSafely());
+
+  //     return mapped;
+  //   }
+
+  //   return _refreshLessonsSafely();
+  // }
+
+  // Future<List<LessonModel>> _refreshLessonsSafely() async {
+  //   try {
+  //     return await _refreshLessons();
+  //   } on SocketException {
+  //     final local = await sqldb.readData(sql: "SELECT * FROM lessons");
+  //     return _mapLocalLessons(local);
+  //   } catch (e) {
+  //     final local = await sqldb.readData(sql: "SELECT * FROM lessons");
+  //     if (local.isNotEmpty) return _mapLocalLessons(local);
+  //     rethrow;
+  //   }
+  // }
+
+  // Future<List<LessonModel>> _refreshLessons() async {
+  //   final response = await learningWebService.getLessonList();
+  //   final List data = response['data'] ?? [];
+
+  //   final lessons = data.map((lesson) => LessonModel.fromJson(lesson)).toList();
+
+  //   await sqldb.runBatch((b) async {
+  //     for (var l in lessons) {
+  //       b.rawInsert(
+  //         '''
+  //         INSERT OR REPLACE INTO lessons (
+  //           id, title_ar, title_en,
+  //           description_ar, description_en,
+  //           video_url, duration, course_id
+  //         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  //         ''',
+  //         [
+  //           l.id,
+  //           l.titleAr,
+  //           l.titleEn,
+  //           l.descriptionAr,
+  //           l.descriptionEn,
+  //           l.videoUrl,
+  //           l.duration,
+  //           l.courseId,
+  //         ],
+  //       );
+  //     }
+  //   });
+
+  //   await _markSynced('lessons');
+  //   return lessons;
+  // }
 
   // ================= INSTRUCTORS =================
 
@@ -621,25 +631,14 @@ class LearningRepo {
     );
   }
 
-  Future<void> updateLessonProgress({
+Future<void> updateLessonProgress({
     required int lessonProgressId,
     required int watchedSeconds,
     required String status,
   }) async {
-    await learningWebService.updateLessonProgress(
-      lessonProgressId: lessonProgressId,
-      watchedSeconds: watchedSeconds,
-      status: status,
-    );
-
-    await sqldb.updateData(
-      sql: '''
-        UPDATE lesson_progress
-        SET watched_seconds = ?,
-            status = ?
-        WHERE id = ?
-      ''',
-      args: [watchedSeconds, status, lessonProgressId],
+    await _api.patch(
+      'https://e-learning-directus.csiwm3.easypanel.host/items/lesson_progress/$lessonProgressId',
+      body: {"watched_seconds": watchedSeconds, "status": status},
     );
   }
 
@@ -698,6 +697,47 @@ class LearningRepo {
     }
   }
 
+Future<Map<String, dynamic>> createLessonProgress({
+    required int lessonId,
+    required int courseId,
+    required String userId,
+    required int watchedSeconds,
+    required String status,
+  }) async {
+    final res = await _api.post(
+      'https://e-learning-directus.csiwm3.easypanel.host/items/lesson_progress',
+      body: {
+        "lesson": lessonId,
+        "course": courseId,
+        "user": userId,
+        "watched_seconds": watchedSeconds,
+        "status": status,
+      },
+    );
+
+    return jsonDecode(res.body);
+  }
+Future<Map<String, dynamic>?> getUserLessonProgress({
+    required int lessonId,
+    required int courseId,
+    required String userId,
+  }) async {
+    final res = await _api.get(
+      'https://e-learning-directus.csiwm3.easypanel.host/items/lesson_progress'
+      '?filter[lesson][_eq]=$lessonId'
+      '&filter[course][_eq]=$courseId'
+      '&filter[user][_eq]=$userId'
+      '&limit=1',
+    );
+
+    final data = jsonDecode(res.body);
+
+    if (data['data'] == null || data['data'].isEmpty) {
+      return null;
+    }
+
+    return data['data'][0];
+  }
   // ================= Notification =================
 
 Future<Map<String, String>> getNotificationList({

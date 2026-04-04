@@ -28,7 +28,7 @@ class LearningWebservice {
     return jsonDecode(res.body);
   }
 
-      Future<Map<String, dynamic>> getLessonProgressList() async {
+  Future<Map<String, dynamic>> getLessonProgressList() async {
     final res = await _api.get('$apiUrl/lesson_progress');
     return jsonDecode(res.body);
   }
@@ -41,7 +41,7 @@ class LearningWebservice {
 
   // ================= ENROLLMENTS =================
 
-Future<Map<String, dynamic>> getEnrollmentList({
+  Future<Map<String, dynamic>> getEnrollmentList({
     required String userId,
   }) async {
     final res = await _api.get('$apiUrl/enrollments?filter[user][_eq]=$userId');
@@ -61,7 +61,7 @@ Future<Map<String, dynamic>> getEnrollmentList({
 
   // ================= FAVORITES =================
 
- Future<Map<String, dynamic>> getFavoriteList({required String userId}) async {
+  Future<Map<String, dynamic>> getFavoriteList({required String userId}) async {
     final res = await _api.get('$apiUrl/favorites?filter[user][_eq]=$userId');
 
     return jsonDecode(res.body);
@@ -97,7 +97,7 @@ Future<Map<String, dynamic>> getEnrollmentList({
 
   // ================= Enrollment =================
 
-Future<void> updateEnrollmentProgress({
+  Future<void> updateEnrollmentProgress({
     required int enrollmentId,
     required double progressPercent,
   }) async {
@@ -109,7 +109,7 @@ Future<void> updateEnrollmentProgress({
 
   // ================= Lesson Progress  =================
 
-Future<void> updateLessonProgress({
+  Future<void> updateLessonProgress({
     required int lessonProgressId,
     required int watchedSeconds,
     required String status,
@@ -122,8 +122,13 @@ Future<void> updateLessonProgress({
 
   // ================= Notification =================
 
-  Future<Map<String, dynamic>> getNotificationList({required String userId}) async {
-    final res = await _api.get('$baseUrl/notifications?filter[recipient][_eq]=$userId&sort=-timestamp&limit=1');
+  Future<Map<String, dynamic>> getNotificationList({
+    required String userId,
+  }) async {
+    final res = await _api.get(
+      '$baseUrl/notifications?filter[recipient][_eq]=$userId&sort=-timestamp&limit=1',
+    );
     return jsonDecode(res.body);
   }
+
 }

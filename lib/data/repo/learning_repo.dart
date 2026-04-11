@@ -279,7 +279,7 @@ class LearningRepo {
   }
 
   // ================= LESSONS =================
-Future<List<LessonModel>> getLessonList() async {
+  Future<List<LessonModel>> getLessonList() async {
     final response = await learningWebService.getLessonList();
 
     final List data = response['data'] ?? [];
@@ -631,18 +631,21 @@ Future<List<LessonModel>> getLessonList() async {
     );
   }
 
-Future<void> updateLessonProgress({
+  // ================= Lesson Progress =================
+
+  Future<void> updateLessonProgress({
     required int lessonProgressId,
     required int watchedSeconds,
     required String status,
   }) async {
-    await _api.patch(
+    final res = await _api.patch(
       'https://e-learning-directus.csiwm3.easypanel.host/items/lesson_progress/$lessonProgressId',
-      body: {"watched_seconds": watchedSeconds, "status": status},
+      body: jsonEncode({"watched_seconds": watchedSeconds, "status": status}),
     );
-  }
 
-  // ================= Lesson Progress =================
+    print("📡 UPDATE STATUS for update: ${res.statusCode}");
+    print("📡 UPDATE BODY for update: ${res.body}");
+  }
 
   Future<List<LessonProgressModel>> getLessonProgressList() async {
     final local = await sqldb.readData(sql: "SELECT * FROM lesson_progress");
@@ -697,7 +700,7 @@ Future<void> updateLessonProgress({
     }
   }
 
-Future<Map<String, dynamic>> createLessonProgress({
+  Future<Map<String, dynamic>> createLessonProgress({
     required int lessonId,
     required int courseId,
     required String userId,
@@ -705,19 +708,23 @@ Future<Map<String, dynamic>> createLessonProgress({
     required String status,
   }) async {
     final res = await _api.post(
-      'https://e-learning-directus.csiwm3.easypanel.host/items/lesson_progress',
-      body: {
+      '${apiUrl}lesson_progress',
+      body: jsonEncode({
         "lesson": lessonId,
         "course": courseId,
         "user": userId,
         "watched_seconds": watchedSeconds,
         "status": status,
-      },
+      }),
     );
+
+    print("📡 CREATE STATUS for create: ${res.statusCode}");
+    print("📡 CREATE BODY for create: ${res.body}");
 
     return jsonDecode(res.body);
   }
-Future<Map<String, dynamic>?> getUserLessonProgress({
+
+  Future<Map<String, dynamic>?> getUserLessonProgress({
     required int lessonId,
     required int courseId,
     required String userId,
@@ -730,6 +737,9 @@ Future<Map<String, dynamic>?> getUserLessonProgress({
       '&limit=1',
     );
 
+    print("📡 GET STATUS for get: ${res.statusCode}");
+    print("📡 GET BODY  for get: ${res.body}");
+
     final data = jsonDecode(res.body);
 
     if (data['data'] == null || data['data'].isEmpty) {
@@ -740,7 +750,7 @@ Future<Map<String, dynamic>?> getUserLessonProgress({
   }
   // ================= Notification =================
 
-Future<Map<String, String>> getNotificationList({
+  Future<Map<String, String>> getNotificationList({
     required String userId,
   }) async {
     final response = await learningWebService.getNotificationList(

@@ -114,7 +114,7 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
       progressIndicatorColor: Colors.blueAccent,
 
       onReady: () {
-        _restorePosition(); 
+        _restorePosition();
       },
     );
   }

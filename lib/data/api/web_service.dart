@@ -97,14 +97,17 @@ class LearningWebservice {
 
   // ================= Enrollment =================
 
-  Future<void> updateEnrollmentProgress({
+ Future<void> updateEnrollmentProgress({
     required int enrollmentId,
     required double progressPercent,
   }) async {
-    await _api.patch(
-      '$apiUrl/enrollments/$enrollmentId',
-      body: {"progress_percent": progressPercent},
+    final res = await _api.patch(
+      '${apiUrl}enrollments/$enrollmentId',
+      body: jsonEncode({"progress_percent": progressPercent}),
     );
+
+    print("📡 ENROLLMENT STATUS: ${res.statusCode}");
+    print("📡 ENROLLMENT BODY: ${res.body}");
   }
 
   // ================= Lesson Progress  =================

@@ -72,7 +72,7 @@ Future<void> updateLessonProgress({
       final cachedId = _progressCache[key];
 
       if (cachedId == null) {
-        // 🟢 CREATE مرة واحدة بس
+        // 🟢 CREATE
         final res = await repo.createLessonProgress(
           lessonId: lessonId,
           courseId: courseId,
@@ -91,6 +91,15 @@ Future<void> updateLessonProgress({
           status: status,
         );
       }
+
+      // 🔥 مهم جدًا: نجيب أحدث داتا
+      await getLessons(forceRefresh: true);
+
+      // 🔥 حساب الكورس
+      await calculateAndUpdateCourseProgress(
+        courseId: courseId,
+        userId: userId,
+      );
     } catch (e) {
       print("❌ ERROR: $e");
     } finally {
@@ -98,23 +107,21 @@ Future<void> updateLessonProgress({
     }
   }
 
-  Future<void> calculateAndUpdateCourseProgress({
+Future<void> calculateAndUpdateCourseProgress({
     required int courseId,
     required String userId,
   }) async {
-    final currentState = state;
-    if (currentState is! LessonsLoaded) return;
+    final lessons = await repo.getLessonList();
+    final progressList = await repo.getLessonProgressList();
 
-    final courseLessons = currentState.lessons
-        .where((l) => l.courseId == courseId)
-        .toList();
+    final courseLessons = lessons.where((l) => l.courseId == courseId).toList();
 
     if (courseLessons.isEmpty) return;
 
     int completedCount = 0;
 
     for (final lesson in courseLessons) {
-      final progress = currentState.progress.firstWhere(
+      final progress = progressList.firstWhere(
         (p) =>
             p.lesson == lesson.id &&
             p.courseId == courseId &&
@@ -124,21 +131,20 @@ Future<void> updateLessonProgress({
 
       final lessonDurationInSeconds = lesson.duration * 60;
 
-      final bool isCompleted =
+      final isCompleted =
           progress.watchedSeconds >= (lessonDurationInSeconds - 60);
 
-      if (isCompleted) {
-        completedCount++;
-      }
+      if (isCompleted) completedCount++;
     }
 
-    final double percent = completedCount / courseLessons.length;
+    final percent = completedCount / courseLessons.length;
 
     final enrollmentsState = enrollmentsCubit.state;
 
     if (enrollmentsState is EnrollmentsLoaded) {
       final enrollment = enrollmentsState.enrollments.firstWhere(
         (e) => e.courseId == courseId,
+        orElse: () => throw Exception("No enrollment"),
       );
 
       await enrollmentsCubit.updateCourseProgress(

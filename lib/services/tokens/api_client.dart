@@ -1,4 +1,3 @@
-// lib/services/tokens/api_client.dart
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -12,6 +11,9 @@ class ApiClient {
 
   static const Duration _timeout = Duration(seconds: 15);
 
+  // ===========================
+  // 🔵 GET
+  // ===========================
   Future<http.Response> get(String url) async {
     try {
       final res = await http
@@ -22,15 +24,14 @@ class ApiClient {
           .timeout(_timeout);
 
       if (_isExpired(res)) {
-        final ok = await _auth.refreshTokenIfNeeded();
-        if (!ok) throw Exception("Session expired");
+        final retry = await _handleRefresh(() async {
+          return await http.get(
+            Uri.parse(url),
+            headers: {"Authorization": "Bearer ${_auth.token}"},
+          );
+        });
 
-        return await http
-            .get(
-              Uri.parse(url),
-              headers: {"Authorization": "Bearer ${_auth.token}"},
-            )
-            .timeout(_timeout);
+        return retry;
       }
 
       return res;
@@ -43,7 +44,10 @@ class ApiClient {
     }
   }
 
-Future<http.Response> post(
+  // ===========================
+  // 🟢 POST
+  // ===========================
+  Future<http.Response> post(
     String url, {
     Map<String, String>? headers,
     Object? body,
@@ -57,25 +61,24 @@ Future<http.Response> post(
               "Content-Type": "application/json",
               ...?headers,
             },
-            body: body != null ? jsonEncode(body) : null, // 👈 الحل هنا
+            body: body,
           )
           .timeout(_timeout);
 
       if (_isExpired(res)) {
-        final ok = await _auth.refreshTokenIfNeeded();
-        if (!ok) throw Exception("Session expired");
+        final retry = await _handleRefresh(() async {
+          return await http.post(
+            Uri.parse(url),
+            headers: {
+              "Authorization": "Bearer ${_auth.token}",
+              "Content-Type": "application/json",
+              ...?headers,
+            },
+            body: body,
+          );
+        });
 
-        return await http
-            .post(
-              Uri.parse(url),
-              headers: {
-                "Authorization": "Bearer ${_auth.token}",
-                "Content-Type": "application/json",
-                ...?headers,
-              },
-              body: body != null ? jsonEncode(body) : null, // 👈 برضو هنا
-            )
-            .timeout(_timeout);
+        return retry;
       }
 
       return res;
@@ -88,6 +91,50 @@ Future<http.Response> post(
     }
   }
 
+  // ===========================
+  // 🟡 PATCH
+  // ===========================
+  Future<http.Response> patch(String url, {required Object body}) async {
+    try {
+      final res = await http
+          .patch(
+            Uri.parse(url),
+            headers: {
+              "Authorization": "Bearer ${_auth.token}",
+              "Content-Type": "application/json",
+            },
+            body: body,
+          )
+          .timeout(_timeout);
+
+      if (_isExpired(res)) {
+        final retry = await _handleRefresh(() async {
+          return await http.patch(
+            Uri.parse(url),
+            headers: {
+              "Authorization": "Bearer ${_auth.token}",
+              "Content-Type": "application/json",
+            },
+            body: body,
+          );
+        });
+
+        return retry;
+      }
+
+      return res;
+    } on SocketException {
+      throw const SocketException('NO_INTERNET');
+    } on http.ClientException {
+      throw const SocketException('NO_INTERNET');
+    } on TimeoutException {
+      throw const SocketException('NO_INTERNET');
+    }
+  }
+
+  // ===========================
+  // 🔴 DELETE
+  // ===========================
   Future<http.Response> delete(
     String url, {
     Map<String, String>? headers,
@@ -107,62 +154,19 @@ Future<http.Response> post(
           .timeout(_timeout);
 
       if (_isExpired(res)) {
-        final ok = await _auth.refreshTokenIfNeeded();
-        if (!ok) throw Exception("Session expired");
-
-        return await http
-            .delete(
-              Uri.parse(url),
-              headers: {
-                "Authorization": "Bearer ${_auth.token}",
-                "Content-Type": "application/json",
-                ...?headers,
-              },
-              body: body,
-            )
-            .timeout(_timeout);
-      }
-
-      return res;
-    } on SocketException {
-      throw const SocketException('NO_INTERNET');
-    } on http.ClientException {
-      throw const SocketException('NO_INTERNET');
-    } on TimeoutException {
-      throw const SocketException('NO_INTERNET');
-    }
-  }
-
-  Future<http.Response> patch(
-    String url, {
-    required Map<String, dynamic> body,
-  }) async {
-    try {
-      final res = await http
-          .patch(
+        final retry = await _handleRefresh(() async {
+          return await http.delete(
             Uri.parse(url),
             headers: {
               "Authorization": "Bearer ${_auth.token}",
               "Content-Type": "application/json",
+              ...?headers,
             },
-            body: jsonEncode(body),
-          )
-          .timeout(_timeout);
+            body: body,
+          );
+        });
 
-      if (_isExpired(res)) {
-        final ok = await _auth.refreshTokenIfNeeded();
-        if (!ok) throw Exception("Session expired");
-
-        return await http
-            .patch(
-              Uri.parse(url),
-              headers: {
-                "Authorization": "Bearer ${_auth.token}",
-                "Content-Type": "application/json",
-              },
-              body: jsonEncode(body),
-            )
-            .timeout(_timeout);
+        return retry;
       }
 
       return res;
@@ -175,8 +179,34 @@ Future<http.Response> post(
     }
   }
 
+  // ===========================
+  // 🔁 HANDLE REFRESH
+  // ===========================
+  Future<http.Response> _handleRefresh(
+    Future<http.Response> Function() retryRequest,
+  ) async {
+    final ok = await _auth.refreshTokenIfNeeded();
+
+    print("🔁 REFRESH RESULT: $ok");
+
+    if (!ok) {
+      print("❌ SESSION EXPIRED - LOGOUT");
+
+      _auth.logout(); // 👈 مهم
+
+      throw Exception("Session expired");
+    }
+
+    // ✅ retry request بعد refresh
+    return await retryRequest().timeout(_timeout);
+  }
+
+  // ===========================
+  // 🔍 TOKEN CHECK
+  // ===========================
   bool _isExpired(http.Response res) {
     if (res.statusCode == 401) return true;
+
     try {
       final body = jsonDecode(res.body);
       return body['errors']?[0]?['extensions']?['code'] == 'TOKEN_EXPIRED';

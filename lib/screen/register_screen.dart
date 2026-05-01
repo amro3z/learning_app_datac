@@ -33,11 +33,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final ApiService _api = ApiService();
   bool _loading = false;
-
+  final _passwordFocusNode = FocusNode();
+  bool _showPasswordInstructions = false;
   @override
   void initState() {
     super.initState();
     _passwordController.addListener(_onPasswordChanged);
+    _passwordFocusNode.addListener(() {
+      setState(() {
+        _showPasswordInstructions = _passwordFocusNode.hasFocus;
+      });
+    });
   }
 
   void _onPasswordChanged() {
@@ -189,12 +195,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(height: getScreenHeight(context) * 0.018),
 
                 CustomFormTextField(
+                  focusNode: _passwordFocusNode,
                   controller: _passwordController,
                   labelText: isArabic ? 'كلمة المرور' : 'Password',
                   keyboardType: CustomTextFieldType.password,
                   obscureText: true,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   onChanged: (v) => _checkPassword(v), // للتحديث الفوري
+                ),
+                SizedBox(height: getScreenHeight(context) * 0.015),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) =>
+                      FadeTransition(opacity: animation, child: child),
+                  child: _showPasswordInstructions
+                      ? PasswordInstructions(
+                          key: const ValueKey(1),
+                          passwordStream: _passwordStreamController.stream,
+                        )
+                      : const SizedBox(key: ValueKey(2)),
                 ),
                 SizedBox(height: getScreenHeight(context) * 0.018),
 
@@ -209,11 +228,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
 
                 // ← Password Instructions Widget
-                SizedBox(height: getScreenHeight(context) * 0.015),
-                PasswordInstructions(
-                  passwordStream: _passwordStreamController.stream,
-                ),
-
                 SizedBox(height: getScreenHeight(context) * 0.025),
 
                 CustomGlowButton(

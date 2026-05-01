@@ -11,9 +11,6 @@ class ApiClient {
 
   static const Duration _timeout = Duration(seconds: 15);
 
-  // ===========================
-  // 🔵 GET
-  // ===========================
   Future<http.Response> get(String url) async {
     try {
       final res = await http
@@ -44,9 +41,6 @@ class ApiClient {
     }
   }
 
-  // ===========================
-  // 🟢 POST
-  // ===========================
   Future<http.Response> post(
     String url, {
     Map<String, String>? headers,
@@ -91,9 +85,6 @@ class ApiClient {
     }
   }
 
-  // ===========================
-  // 🟡 PATCH
-  // ===========================
   Future<http.Response> patch(String url, {required Object body}) async {
     try {
       final res = await http
@@ -131,10 +122,6 @@ class ApiClient {
       throw const SocketException('NO_INTERNET');
     }
   }
-
-  // ===========================
-  // 🔴 DELETE
-  // ===========================
   Future<http.Response> delete(
     String url, {
     Map<String, String>? headers,
@@ -179,9 +166,6 @@ class ApiClient {
     }
   }
 
-  // ===========================
-  // 🔁 HANDLE REFRESH
-  // ===========================
   Future<http.Response> _handleRefresh(
     Future<http.Response> Function() retryRequest,
   ) async {
@@ -192,18 +176,13 @@ class ApiClient {
     if (!ok) {
       print("❌ SESSION EXPIRED - LOGOUT");
 
-      _auth.logout(); // 👈 مهم
+      _auth.logout();
 
       throw Exception("Session expired");
     }
-
-    // ✅ retry request بعد refresh
     return await retryRequest().timeout(_timeout);
   }
 
-  // ===========================
-  // 🔍 TOKEN CHECK
-  // ===========================
   bool _isExpired(http.Response res) {
     if (res.statusCode == 401) return true;
 

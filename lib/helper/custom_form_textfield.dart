@@ -14,7 +14,7 @@ class CustomFormTextField extends StatefulWidget {
   final TextEditingController? controller;
   final Widget? suffixWidget;
   final Function(String)? onChanged;
-
+final FocusNode? focusNode;
   const CustomFormTextField({
     super.key,
     required this.labelText,
@@ -25,6 +25,7 @@ class CustomFormTextField extends StatefulWidget {
     this.controller,
     this.suffixWidget,
     this.onChanged,
+    this.focusNode,
   });
 
   @override
@@ -47,6 +48,7 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
     return TextFormField(
+      focusNode: widget.focusNode ,
       keyboardType: _mapKeyboardType(widget.keyboardType),
       controller: widget.controller,
       obscureText: _obscureText,

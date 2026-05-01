@@ -48,7 +48,6 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
     });
   }
 
-  // ✅ restore مع retry لحد ما الداتا توصل
   void _restorePosition() {
     if (_positionRestored) return;
 
@@ -56,7 +55,6 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
     final userId = context.read<UserCubit>().userId;
 
     if (lessonsState is! LessonsLoaded || userId == null) {
-      // 🔥 retry بعد نص ثانية
       Future.delayed(const Duration(milliseconds: 500), _restorePosition);
       return;
     }
@@ -105,6 +103,7 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return YoutubePlayer(
+      
       controller: _controller,
       showVideoProgressIndicator: true,
       progressColors: const ProgressBarColors(

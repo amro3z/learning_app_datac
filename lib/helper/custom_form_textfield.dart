@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
@@ -14,7 +15,8 @@ class CustomFormTextField extends StatefulWidget {
   final TextEditingController? controller;
   final Widget? suffixWidget;
   final Function(String)? onChanged;
-final FocusNode? focusNode;
+  final FocusNode? focusNode;
+
   const CustomFormTextField({
     super.key,
     required this.labelText,
@@ -48,10 +50,14 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
     return TextFormField(
-      focusNode: widget.focusNode ,
+      focusNode: widget.focusNode,
       keyboardType: _mapKeyboardType(widget.keyboardType),
       controller: widget.controller,
       obscureText: _obscureText,
+
+      // 🔥 يمنع أي whitespace
+      inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'\s'))],
+
       validator: (v) => _validate(v, isArabic),
       autovalidateMode: widget.autovalidateMode,
       textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
@@ -84,7 +90,18 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
       ),
-      onChanged: widget.onChanged,
+
+      // 🔥 تنظيف تلقائي لو فيه مسافات
+      onChanged: (value) {
+        final cleaned = value.replaceAll(' ', '');
+        if (cleaned != value) {
+          widget.controller?.text = cleaned;
+          widget.controller?.selection = TextSelection.fromPosition(
+            TextPosition(offset: cleaned.length),
+          );
+        }
+        widget.onChanged?.call(cleaned);
+      },
     );
   }
 
@@ -111,6 +128,11 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
           ? 'هذا الحقل لا يمكن أن يكون فارغًا'
           : 'This field cannot be empty';
     }
+
+    if (value.contains(' ')) {
+      return isArabic ? 'غير مسموح بمسافات' : 'Whitespace is not allowed';
+    }
+
     switch (widget.keyboardType) {
       case CustomTextFieldType.email:
         final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');

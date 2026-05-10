@@ -27,7 +27,7 @@ class LocalNotifications {
     );
 
     await flutterLocalNotificationsPlugin.initialize(
-   settings:   settings,
+      settings: settings,
       onDidReceiveNotificationResponse: (response) {
         if (response.payload != null) {
           final data = jsonDecode(response.payload!);
@@ -56,7 +56,7 @@ class LocalNotifications {
     final prefs = await SharedPreferences.getInstance();
     final enabled = prefs.getBool('notifications_enabled') ?? true;
 
-    if (!enabled) return; 
+    if (!enabled) return;
 
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(

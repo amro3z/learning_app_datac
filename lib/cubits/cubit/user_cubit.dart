@@ -226,7 +226,8 @@ Future<void> login({required String email, required String password}) async {
     }
 
     return UserLoaded(
-      name: '${user["first_name"] ?? ""} ${user["last_name"] ?? ""}'.trim(),
+      Fname: '${user["first_name"] ?? ""} '.trim(),
+      Lname: '${user["last_name"] ?? ""}'.trim(),
       email: user["email"] ?? "",
       avatarUrl: avatarId == null ? null : '$fileUrl$avatarId',
       isUploading: false,

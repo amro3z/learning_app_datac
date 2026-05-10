@@ -127,9 +127,25 @@ Future<void> _handleEnroll(bool isArabic) async {
     if (mounted) setState(() => _isLoading = true);
 
     try {
-      await enrollCubit.enrollCourse(courseId: widget.courseId, userId: userId);
-      await Future.delayed(const Duration(milliseconds: 60000));
-      final notification = await repo.getNotificationList(userId: userId);
+     final enrollmentId = await enrollCubit.enrollCourse(
+        courseId: widget.courseId,
+        userId: userId,
+      );
+
+      Map<String, String> notification = {"subject": "", "message": ""};
+
+      for (int i = 0; i < 10; i++) {
+        notification = await repo.getNotificationList(
+          userId: userId,
+          enrollmentId: enrollmentId,
+        );
+
+        if (notification["subject"]!.isNotEmpty) {
+          break;
+        }
+
+        await Future.delayed(const Duration(seconds: 1));
+      }
 
       if (!_notificationShown) {
         _notificationShown = true;

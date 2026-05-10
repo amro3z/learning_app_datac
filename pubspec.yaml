@@ -40,6 +40,7 @@ dependencies:
   flutter_localization: ^0.3.3
   http: ^1.6.0
   image_picker: ^1.2.1
+  no_screenshot: ^1.1.0
   path: ^1.9.1
   shared_preferences: ^2.5.4
   sqflite: ^2.4.2

@@ -5,15 +5,18 @@ class UserInitial extends UserState {}
 class UserLoading extends UserState {}
 
 class UserLoginSuccess extends UserState {}
+
 class UserLoaded extends UserState {
-  final String name;
+  final String Fname;
+  final String Lname;
   final String email;
   final String? avatarUrl;
-  final bool isUploading; 
-  final String? message; 
+  final bool isUploading;
+  final String? message;
 
   UserLoaded({
-    required this.name,
+    required this.Fname,
+    required this.Lname,
     required this.email,
     this.avatarUrl,
     this.isUploading = false,
@@ -21,14 +24,16 @@ class UserLoaded extends UserState {
   });
 
   UserLoaded copyWith({
-    String? name,
+    String? Fname,
+    String? Lname,
     String? email,
     String? avatarUrl,
     bool? isUploading,
     String? message,
   }) {
     return UserLoaded(
-      name: name ?? this.name,
+      Fname: Fname ?? this.Fname,
+      Lname: Lname ?? this.Lname,
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isUploading: isUploading ?? this.isUploading,

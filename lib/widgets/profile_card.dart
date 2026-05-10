@@ -121,7 +121,7 @@ class ProfileCard extends StatelessWidget {
                   children: [
                     defaultText(
                       context: context,
-                      text: state.name,
+                      text: '${state.Fname} ${state.Lname}'.trim(),
                       size: getScreenWidth(context) * 0.045,
                       isCenter: false,
                     ),

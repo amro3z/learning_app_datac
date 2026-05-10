@@ -49,14 +49,16 @@ class LearningWebservice {
     return jsonDecode(res.body);
   }
 
-  Future<void> enrollCourse({
+Future<Map<String, dynamic>> enrollCourse({
     required int courseId,
     required String userId,
   }) async {
-    await _api.post(
+    final response = await _api.post(
       '$apiUrl/enrollments',
       body: jsonEncode({"course": courseId, "user": userId}),
     );
+
+    return jsonDecode(response.body);
   }
 
   // ================= FAVORITES =================
@@ -127,9 +129,10 @@ class LearningWebservice {
 
   Future<Map<String, dynamic>> getNotificationList({
     required String userId,
+    required int enrollmentId,
   }) async {
     final res = await _api.get(
-      '$baseUrl/notifications?filter[recipient][_eq]=$userId&sort=-timestamp&limit=1',
+      '$baseUrl/notifications?filter[recipient][_eq]=$userId&filter[item][_eq]=$enrollmentId',
     );
     return jsonDecode(res.body);
   }

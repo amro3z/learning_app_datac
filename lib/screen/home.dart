@@ -12,6 +12,7 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/categories_state.dart';
 import 'package:training/cubits/states/courses_state.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
+import 'package:training/cubits/states/user_state.dart';
 
 import 'package:training/helper/base.dart';
 import 'package:training/logic/enrollment_cources.dart';
@@ -115,6 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _homePage(bool isArabic) {
+    final UserLoaded state = context.read<UserCubit>().state as UserLoaded;
     return RefreshIndicator(
       onRefresh: () async {
         if (!NetworkService.isConnected) {
@@ -137,7 +139,9 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(height: kToolbarHeight),
             defaultText(
               context: context,
-              text: isArabic ? 'مرحبًا، متعلم 👋' : 'Hello, Learner 👋',
+              text: isArabic
+                  ? 'مرحبًا، ${state.Fname} 👋'
+                  : 'Hello, ${state.Fname} 👋',
               size: getScreenWidth(context) * 0.06,
               isCenter: false,
             ),

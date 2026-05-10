@@ -752,9 +752,11 @@ class LearningRepo {
 
   Future<Map<String, String>> getNotificationList({
     required String userId,
+    required int enrollmentId,
   }) async {
     final response = await learningWebService.getNotificationList(
       userId: userId,
+      enrollmentId: enrollmentId,
     );
 
     log("Fetched notifications for user $userId: $response");

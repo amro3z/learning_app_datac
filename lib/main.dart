@@ -1,3 +1,5 @@
+import 'dart:ui'; // مهم علشان PlatformDispatcher
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,73 +22,99 @@ import 'package:training/data/local/sqldb.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/firebase_options.dart';
 import 'package:training/route.dart';
+import 'package:training/services/err.dart';
 import 'package:training/services/local_notifications.dart';
 import 'package:training/services/network_service.dart';
 import 'package:training/services/tokens/auths_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+// ================= MAIN =================
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // placeholder علشان نقدر نغير runApp بعدين
+  runApp(const SizedBox());
 
-  await LocalNotifications.flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin
-      >()
-      ?.requestNotificationsPermission();
+  // 🔥 Flutter errors
+  FlutterError.onError = (FlutterErrorDetails details) {
+    final errorText = details.exceptionAsString();
+    runApp(ErrorScreen(error: errorText));
+  };
 
-  await AuthService().init();
-  await LocalNotifications.init(navigatorKey);
-  NetworkService.startListening();
+  // 🔥 async / platform errors
+  PlatformDispatcher.instance.onError = (error, stack) {
+    runApp(ErrorScreen(error: error.toString()));
+    return true;
+  };
 
-  final webService = LearningWebservice();
-  final repo = LearningRepo(learningWebService: webService, sqldb: Sqldb());
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  final userCubit = UserCubit();
-  final enrollmentsCubit = EnrollmentsCubit(
-    learningRepo: repo,
-    webservice: webService,
-  );
-  final favoritesCubit = FavoritesCubit(repo: repo, webservice: webService);
+    await AuthService().init();
+    await LocalNotifications.init(navigatorKey);
+    NetworkService.startListening();
 
-  runApp(
-    RepositoryProvider.value(
-      value: repo, 
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => LanguageCubit()),
-          BlocProvider(create: (_) => userCubit..restoreSession()),
-          BlocProvider(create: (_) => enrollmentsCubit),
-          BlocProvider(create: (_) => favoritesCubit),
+    final webService = LearningWebservice();
+    final repo = LearningRepo(learningWebService: webService, sqldb: Sqldb());
 
-          BlocProvider(
-            create: (_) => CoursesCubit(learningRepo: repo)..getAllCourses(),
-          ),
-          BlocProvider(
-            create: (_) =>
-                CategoriesCubit(learningRepo: repo)..getAllCategories(),
-          ),
-          BlocProvider(
-            create: (_) =>
-                RecommendedCubit(learningRepo: repo)..getRecommendedList(),
-          ),
-          BlocProvider(
-            create: (_) => PopularCubit(learningRepo: repo)..getPopularList(),
-          ),
-          BlocProvider(
-            create: (_) =>
-                LessonsCubit(repo: repo, enrollmentsCubit: enrollmentsCubit)
-                  ..getLessons(),
-          ),
-        ],
-        child: const MyApp(),
+    final userCubit = UserCubit();
+    final enrollmentsCubit = EnrollmentsCubit(
+      learningRepo: repo,
+      webservice: webService,
+    );
+    final favoritesCubit = FavoritesCubit(repo: repo, webservice: webService);
+
+    runApp(
+      RepositoryProvider.value(
+        value: repo,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => LanguageCubit()),
+            BlocProvider(create: (_) => userCubit..restoreSession()),
+            BlocProvider(create: (_) => enrollmentsCubit),
+            BlocProvider(create: (_) => favoritesCubit),
+            BlocProvider(
+              create: (_) => CoursesCubit(learningRepo: repo)..getAllCourses(),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  CategoriesCubit(learningRepo: repo)..getAllCategories(),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  RecommendedCubit(learningRepo: repo)..getRecommendedList(),
+            ),
+            BlocProvider(
+              create: (_) => PopularCubit(learningRepo: repo)..getPopularList(),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  LessonsCubit(repo: repo, enrollmentsCubit: enrollmentsCubit)
+                    ..getLessons(),
+            ),
+          ],
+          child: const MyApp(),
+        ),
       ),
-    ),
-  );
+    );
+
+    // 🔥 notification permission بعد ما UI يشتغل
+    Future.delayed(Duration.zero, () async {
+      await LocalNotifications.flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.requestNotificationsPermission();
+    });
+  } catch (e) {
+    runApp(ErrorScreen(error: e.toString()));
+  }
 }
 
+// ================= APP =================
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

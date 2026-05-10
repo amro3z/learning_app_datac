@@ -10,10 +10,8 @@ import 'package:training/data/repo/learning_repo.dart';
 part '../states/enrollments_state.dart';
 
 class EnrollmentsCubit extends Cubit<EnrollmentsState> {
-  EnrollmentsCubit({
-    required this.learningRepo,
-    required this.webservice,
-  }) : super(EnrollmentsInitial());
+  EnrollmentsCubit({required this.learningRepo, required this.webservice})
+    : super(EnrollmentsInitial());
 
   final LearningRepo learningRepo;
   final LearningWebservice webservice;
@@ -55,18 +53,24 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
   }
 
   // ================= ENROLL =================
-  Future<void> enrollCourse({
+  Future<int> enrollCourse({
     required int courseId,
     required String userId,
   }) async {
     emit(EnrollmentsSubmitting());
 
     try {
-      await webservice.enrollCourse(courseId: courseId, userId: userId);
+      final response = await webservice.enrollCourse(
+        courseId: courseId,
+        userId: userId,
+      );
 
       await getAllEnrollments(userId: userId);
+
+      return response['data']['id'];
     } catch (e) {
       emit(EnrollmentsError(message: 'Failed to enroll: $e'));
+      rethrow;
     }
   }
 

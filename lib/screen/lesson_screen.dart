@@ -55,72 +55,71 @@ class _LessonScreenState extends State<LessonScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(
-          left: 12,
-          right: 12,
-          top: 24,
-          bottom: 90,
-        ),
-        child: Column(
-          children: [
-            SizedBox(
-              width: double.infinity,
-              height: getScreenHeight(context) * 0.23,
-              child: YoutubePlayerWidget(
-                courseId: widget.courseID,
-                lessonId: widget.lessonID,
-                lessonDurationInSeconds: widget.lessonDurationInSeconds,
-                youtubeUrl: widget.videoURl,
+     body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(12, 24, 12, 24),
+          child: Column(
+            children: [
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: YoutubePlayerWidget(
+                  courseId: widget.courseID,
+                  lessonId: widget.lessonID,
+                  lessonDurationInSeconds: widget.lessonDurationInSeconds,
+                  youtubeUrl: widget.videoURl,
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            Container(
-              padding: const EdgeInsets.all(12),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                border: Border.all(color: Colors.white12),
-                borderRadius: BorderRadius.circular(8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  border: Border.all(color: Colors.white12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    defaultText(
+                      text: widget.lessonTitle,
+                      size: getScreenWidth(context) * 0.04,
+                      context: context,
+                    ),
+                    const SizedBox(height: 5),
+                    defaultText(
+                      context: context,
+                      text: widget.lessonDescription,
+                      size: getScreenWidth(context) * 0.035,
+                      color: Colors.grey,
+                      align: TextAlign.start,
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  defaultText(
-                    text: widget.lessonTitle,
-                    size: getScreenWidth(context) * 0.04,
-                    context: context,
-                  ),
-                  const SizedBox(height: 5),
-                  defaultText(
-                    context: context,
-                    text: widget.lessonDescription,
-                    size: getScreenWidth(context) * 0.035,
-                    color: Colors.grey,
-                    align: TextAlign.start,
-                  ),
-                ],
+
+              const SizedBox(height: 20),
+
+              CustomGlowButton(
+                title: isArabic ? "عرض PDF" : "View PDF",
+                onPressed: widget.pdf != null && widget.pdf!.isNotEmpty
+                    ? () {
+                        final url = "$baseUrl/assets/${widget.pdf}";
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PdfScreen(url: url),
+                          ),
+                        );
+                      }
+                    : null,
+                width: getScreenWidth(context) * 0.5,
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            CustomGlowButton(
-              title: isArabic ? "عرض PDF" : "View PDF",
-              onPressed: widget.pdf != null && widget.pdf!.isNotEmpty
-                  ? (() {
-                      final url = "$baseUrl/assets/${widget.pdf}";
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => PdfScreen(url: url)),
-                      );
-                    })
-                  : null,
-              width: getScreenWidth(context) * 0.5,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

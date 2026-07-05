@@ -84,7 +84,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
                 SizedBox(height: getScreenHeight(context) * 0.022),
 
-                /// COURSES LIST
                 const FavoriteCourses(),
               ],
             ),

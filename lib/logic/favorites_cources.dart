@@ -72,7 +72,7 @@ class FavoriteCourses extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: CourseCard(
-                height: getScreenHeight(context) * 0.34,
+                height: getScreenHeight(context) * 0.275,
                 imagePath: course.thumbnail,
                 title: languageCode == 'ar' ? course.titleAr : course.titleEn,
                 author: course.instructorName,

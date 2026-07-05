@@ -40,8 +40,6 @@ class _SecureWrapperState extends State<SecureWrapper>
     return Stack(
       children: [
         widget.child,
-
-        // 🔒 overlay
         if (_isHidden) Container(color: Colors.black),
       ],
     );

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -13,42 +14,77 @@ class PdfScreen extends StatefulWidget {
   State<PdfScreen> createState() => _PdfScreenState();
 }
 
-class _PdfScreenState extends State<PdfScreen> {
-  final _noScreenshot = NoScreenshot.instance;
+class _PdfScreenState extends State<PdfScreen> with WidgetsBindingObserver {
+  static const MethodChannel _secureChannel = MethodChannel('secure_screen');
+
+  final NoScreenshot _noScreenshot = NoScreenshot.instance;
+
+  bool _isAppHidden = false;
 
   @override
   void initState() {
     super.initState();
-    disableScreenshot();
+    WidgetsBinding.instance.addObserver(this);
+    _enableSecureMode();
   }
 
-  Future<void> disableScreenshot() async {
-    final result = await _noScreenshot.screenshotOff();
-    log('screenshotOff: $result');
+  Future<void> _enableSecureMode() async {
+    try {
+      await _secureChannel.invokeMethod('enable');
+
+      final result = await _noScreenshot.screenshotOff();
+
+      log('Secure mode enabled');
+      log('screenshotOff: $result');
+    } catch (e) {
+      log('Enable secure mode error: $e');
+    }
+  }
+
+  Future<void> _disableSecureMode() async {
+    try {
+      await _secureChannel.invokeMethod('disable');
+
+      final result = await _noScreenshot.screenshotOn();
+
+      log('Secure mode disabled');
+      log('screenshotOn: $result');
+    } catch (e) {
+      log('Disable secure mode error: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      setState(() => _isAppHidden = true);
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      setState(() => _isAppHidden = false);
+      _enableSecureMode();
+    }
   }
 
   @override
   void dispose() {
-    _noScreenshot.screenshotOn(); // رجوع للوضع الطبيعي
+    WidgetsBinding.instance.removeObserver(this);
+    _disableSecureMode();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(title: const Text("Lesson PDF")),
       body: Stack(
         children: [
           SfPdfViewer.network(widget.url),
 
-          // 🔒 Overlay للحماية الإضافية
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Container(color: Colors.black.withOpacity(0.02)),
-            ),
-          ),
-
-          // 🔥 Watermark (اختياري لكن مهم)
           Positioned.fill(
             child: IgnorePointer(
               child: Center(
@@ -58,7 +94,7 @@ class _PdfScreenState extends State<PdfScreen> {
                     "PROTECTED",
                     style: TextStyle(
                       fontSize: 40,
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withOpacity(0.10),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -66,6 +102,9 @@ class _PdfScreenState extends State<PdfScreen> {
               ),
             ),
           ),
+
+          if (_isAppHidden)
+            const Positioned.fill(child: ColoredBox(color: Colors.black)),
         ],
       ),
     );

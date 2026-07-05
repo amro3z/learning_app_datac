@@ -26,6 +26,7 @@ class CourseCard extends StatefulWidget {
   final bool? isFiltering;
   final bool isEnrolled;
   final double? height;
+
   const CourseCard({
     super.key,
     required this.title,
@@ -47,12 +48,34 @@ class CourseCard extends StatefulWidget {
 
 class _CourseCardState extends State<CourseCard>
     with SingleTickerProviderStateMixin {
+  static final Map<int, DateTime> _pendingEnrollments = <int, DateTime>{};
+  static final Set<int> _runningEnrollRequests = <int>{};
+
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<Offset> _slide;
 
   bool _isLoading = false;
   bool _notificationShown = false;
+
+  bool get _isEnrollLocked {
+    final DateTime? lockedUntil = _pendingEnrollments[widget.courseId];
+
+    if (lockedUntil == null) return false;
+
+    if (DateTime.now().isAfter(lockedUntil)) {
+      _pendingEnrollments.remove(widget.courseId);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool get _canPressEnroll {
+    return !_isLoading &&
+        !_isEnrollLocked &&
+        !_runningEnrollRequests.contains(widget.courseId);
+  }
 
   @override
   void initState() {
@@ -110,12 +133,13 @@ class _CourseCardState extends State<CourseCard>
     );
   }
 
-Future<void> _handleEnroll(bool isArabic) async {
+  Future<void> _handleEnroll(bool isArabic) async {
+    if (!_canPressEnroll) return;
+
     if (!NetworkService.isConnected) {
       _showNoInternetNotification(isArabic);
       return;
     }
-
 
     final userCubit = context.read<UserCubit>();
     final enrollCubit = context.read<EnrollmentsCubit>();
@@ -124,10 +148,14 @@ Future<void> _handleEnroll(bool isArabic) async {
     final userId = userCubit.userId;
     if (userId == null) return;
 
+    _runningEnrollRequests.add(widget.courseId);
+    _pendingEnrollments[widget.courseId] =
+        DateTime.now().add(const Duration(minutes: 5));
+
     if (mounted) setState(() => _isLoading = true);
 
     try {
-     final enrollmentId = await enrollCubit.enrollCourse(
+      final enrollmentId = await enrollCubit.enrollCourse(
         courseId: widget.courseId,
         userId: userId,
       );
@@ -140,7 +168,7 @@ Future<void> _handleEnroll(bool isArabic) async {
           enrollmentId: enrollmentId,
         );
 
-        if (notification["subject"]!.isNotEmpty) {
+        if (notification["subject"]?.isNotEmpty == true) {
           break;
         }
 
@@ -156,7 +184,9 @@ Future<void> _handleEnroll(bool isArabic) async {
 
         LocalNotifications.showNotification(
           navigator: true,
-          title: notification["subject"] ?? "Notification",
+          title: notification["subject"]?.isNotEmpty == true
+              ? notification["subject"]!
+              : (isArabic ? "تم إرسال طلب الاشتراك" : "Enrollment request sent"),
           body: notification["message"] ?? "",
           arguments: {
             'imageURL': widget.imagePath,
@@ -168,14 +198,20 @@ Future<void> _handleEnroll(bool isArabic) async {
         );
       }
 
-      await enrollCubit.getAllEnrollments(userId: userId);
+      await enrollCubit.getAllEnrollments(
+        userId: userId,
+        forceRefresh: true,
+      );
 
       if (!mounted) return;
 
       _openDetails(isArabic);
     } catch (e) {
+      _pendingEnrollments.remove(widget.courseId);
       debugPrint("Enroll error: $e");
     } finally {
+      _runningEnrollRequests.remove(widget.courseId);
+
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -222,6 +258,18 @@ Future<void> _handleEnroll(bool isArabic) async {
     }
   }
 
+  String _enrollButtonTitle(bool isArabic) {
+    if (_isLoading) {
+      return isArabic ? "جاري الاشتراك..." : "Enrolling...";
+    }
+
+    if (_isEnrollLocked || _runningEnrollRequests.contains(widget.courseId)) {
+      return isArabic ? "تم إرسال الطلب" : "Request Sent";
+    }
+
+    return isArabic ? "اشترك الآن" : "Enroll Now";
+  }
+
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
@@ -231,9 +279,10 @@ Future<void> _handleEnroll(bool isArabic) async {
     return GestureDetector(
       onTap: widget.isEnrolled == true ? () => _openDetails(isArabic) : null,
       child: Container(
-        height: widget.isEnrolled
-            ? getScreenHeight(context) * 0.275
-            : getScreenHeight(context) * 0.34,
+        height: widget.height ??
+            (widget.isEnrolled
+                ? getScreenHeight(context) * 0.275
+                : getScreenHeight(context) * 0.34),
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(16),
@@ -257,7 +306,6 @@ Future<void> _handleEnroll(bool isArabic) async {
                         )
                       : _defaultImage(),
                 ),
-
                 if (widget.isFiltering != true)
                   Positioned(
                     top: 10,
@@ -324,12 +372,10 @@ Future<void> _handleEnroll(bool isArabic) async {
                         child: CustomGlowButton(
                           width: double.infinity,
                           textSize: getScreenWidth(context) * 0.035,
-                          title: _isLoading
-                              ? (isArabic ? "جاري الاشتراك..." : "Enrolling...")
-                              : (isArabic ? "اشترك الآن" : "Enroll Now"),
-                          onPressed: _isLoading
-                              ? null
-                              : () => _handleEnroll(isArabic),
+                          title: _enrollButtonTitle(isArabic),
+                          onPressed: _canPressEnroll
+                              ? () => _handleEnroll(isArabic)
+                              : null,
                         ),
                       ),
                     ),

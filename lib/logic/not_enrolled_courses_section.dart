@@ -62,7 +62,7 @@ class NotEnrolledCoursesSection extends StatelessWidget {
               isEnrolled: false,
             ),
           );
-        }).toList(),
+        }),
 
         SizedBox(height: getScreenHeight(context) * 0.005),
       ],

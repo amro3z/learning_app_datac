@@ -68,11 +68,13 @@ class FavoriteCourses extends StatelessWidget {
             if (course == null) return const SizedBox.shrink();
 
             final progress = progressMap[fav.courseId] ?? 0.0;
-
+            bool isEnrolled = enrolledIds.contains(fav.courseId);
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: CourseCard(
-                height: getScreenHeight(context) * 0.275,
+                height: isEnrolled
+                    ? getScreenHeight(context) * 0.275
+                    : getScreenHeight(context) * 0.34,
                 imagePath: course.thumbnail,
                 title: languageCode == 'ar' ? course.titleAr : course.titleEn,
                 author: course.instructorName,
@@ -83,7 +85,7 @@ class FavoriteCourses extends StatelessWidget {
                     : course.descriptionEn,
                 progress: progress,
                 isFavorite: true,
-                isEnrolled: enrolledIds.contains(course.id),
+                isEnrolled: isEnrolled,
               ),
             );
           }).toList(),

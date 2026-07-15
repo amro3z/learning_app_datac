@@ -82,7 +82,7 @@ class LessonCard extends StatelessWidget {
               );
             },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
         decoration: BoxDecoration(
           color: Colors.grey.withOpacity(0.1),
           border: Border.all(color: Colors.white12),
@@ -95,7 +95,7 @@ class LessonCard extends StatelessWidget {
               color: _colors[state],
               size: getScreenWidth(context) * 0.08,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: getScreenWidth(context) * 0.03077),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,15 +106,15 @@ class LessonCard extends StatelessWidget {
                     isCenter: false,
                     context: context,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: getScreenHeight(context) * 0.00500),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.access_time_sharp,
-                        size: 16,
+                        size: getScreenWidth(context) * 0.04103,
                         color: Colors.grey,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: getScreenWidth(context) * 0.01026),
                       defaultText(
                         context: context,
                         text: languageCode == 'ar'

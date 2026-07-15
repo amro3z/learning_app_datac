@@ -248,7 +248,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       builder: (context, _) {
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(getScreenWidth(context) * 0.06154),
           decoration: BoxDecoration(
             color: const Color(0xFF1A1D2E).withOpacity(0.65),
             borderRadius: BorderRadius.circular(28),
@@ -282,7 +282,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   Widget _roleSelector(bool isArabic) {
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(getScreenWidth(context) * 0.01538),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.25),
         borderRadius: BorderRadius.circular(20),
@@ -304,7 +304,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                 alignment: alignment,
                 child: Container(
                   width: width - 4,
-                  height: 48,
+                  height: getScreenHeight(context) * 0.06000,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF4FACFE), Color(0xFF00F2FE)],
@@ -334,7 +334,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           setState(() => _selectedRole = AccountRole.student),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: getScreenWidth(context) * 0.01538),
                   Expanded(
                     child: _roleItem(
                       isArabic: isArabic,
@@ -366,7 +366,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        padding: EdgeInsets.symmetric(vertical: getScreenHeight(context) * 0.01750, horizontal: getScreenWidth(context) * 0.02051),
         color: Colors.transparent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -374,15 +374,15 @@ class _RegisterScreenState extends State<RegisterScreen>
             Icon(
               icon,
               color: selected ? Colors.white : Colors.white.withOpacity(0.5),
-              size: 20,
+              size: getScreenWidth(context) * 0.05128,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: getScreenWidth(context) * 0.02051),
             Text(
               title,
               style: TextStyle(
                 color: selected ? Colors.white : Colors.white.withOpacity(0.6),
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                fontSize: 14,
+                fontSize: getScreenWidth(context) * 0.03590,
                 fontFamily: isArabic ? 'CustomArabicFont' : 'CustomEnglishFont',
               ),
             ),
@@ -452,19 +452,19 @@ class _RegisterScreenState extends State<RegisterScreen>
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: EdgeInsets.symmetric(horizontal: getScreenWidth(context) * 0.06154, vertical: getScreenHeight(context) * 0.02000),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 500),
+                constraints: BoxConstraints(maxWidth: 500),
                 child: Column(
                   children: [
-                    schoolSign(),
+                    schoolSign(context),
                     SizedBox(height: getScreenHeight(context) * 0.02),
                     defaultText(
                       context: context,
                       text: isArabic ? 'إنشاء حساب جديد' : 'Create New Account',
                       size: getScreenWidth(context) * 0.056,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: getScreenHeight(context) * 0.01000),
                     Text(
                       isArabic
                           ? 'اختر نوع الحساب وأكمل البيانات'
@@ -472,7 +472,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.45),
-                        fontSize: 13.5,
+                        fontSize: getScreenWidth(context) * 0.03462,
                         fontFamily: isArabic
                             ? 'CustomArabicFont'
                             : 'CustomEnglishFont',
@@ -535,7 +535,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                     passwordStream:
                                         _passwordStreamController.stream,
                                   )
-                                : const SizedBox(key: ValueKey(2)),
+                                : SizedBox(key: ValueKey(2)),
                           ),
                           SizedBox(height: getScreenHeight(context) * 0.016),
                           CustomFormTextField(
@@ -605,7 +605,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         children: [
                           TextSpan(
                             text: isArabic ? 'تسجيل الدخول' : 'Login',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Color(0xFF4FACFE),
                               fontWeight: FontWeight.bold,
                             ),

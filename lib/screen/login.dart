@@ -95,10 +95,10 @@ class _LoginScreenState extends State<LoginScreen> {
         body: AnimatedBackground(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(getScreenWidth(context) * 0.06154),
               child: Column(
                 children: [
-                  schoolSign(),
+                  schoolSign(context),
                   SizedBox(height: getScreenHeight(context) * 0.022),
 
                   defaultText(
@@ -183,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextSpan(
                           text: isArabic ? 'إنشاء حساب' : 'Sign Up',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Color(0xFF4FACFE),
                             fontWeight: FontWeight.w600,
                           ),

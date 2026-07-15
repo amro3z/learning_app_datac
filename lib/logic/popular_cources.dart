@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:training/helper/base.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/cubit/popular_cubit.dart';
@@ -21,7 +22,7 @@ class PopularCourses extends StatelessWidget {
         return BlocBuilder<PopularCubit, PopularState>(
           builder: (context, state) {
             if (state is PopularLoading || state is PopularInitial) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
 
             if (state is PopularError) {
@@ -69,7 +70,7 @@ class PopularCourses extends StatelessWidget {
               );
             }
 
-            return const SizedBox.shrink();
+            return SizedBox.shrink();
           },
         );
       },

@@ -58,7 +58,7 @@ class _LessonScreenState extends State<LessonScreen> {
      body: SafeArea(
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(12, 24, 12, 24),
+          padding: EdgeInsets.fromLTRB(12, 24, 12, 24),
           child: Column(
             children: [
               AspectRatio(
@@ -71,10 +71,10 @@ class _LessonScreenState extends State<LessonScreen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: getScreenHeight(context) * 0.02500),
 
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.grey.withOpacity(0.1),
@@ -89,7 +89,7 @@ class _LessonScreenState extends State<LessonScreen> {
                       size: getScreenWidth(context) * 0.04,
                       context: context,
                     ),
-                    const SizedBox(height: 5),
+                    SizedBox(height: getScreenHeight(context) * 0.00625),
                     defaultText(
                       context: context,
                       text: widget.lessonDescription,
@@ -101,7 +101,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: getScreenHeight(context) * 0.02500),
 
               CustomGlowButton(
                 title: isArabic ? "عرض PDF" : "View PDF",

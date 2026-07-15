@@ -127,7 +127,7 @@ class _StudentHomeState extends State<StudentHome> {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(
+        padding: EdgeInsets.only(
           left: 12,
           right: 12,
           top: 24,
@@ -168,7 +168,7 @@ class _StudentHomeState extends State<StudentHome> {
                     categoriesState.selectedCategoryId != null;
 
                 if (state is CoursesLoading) {
-                  return const Center(
+                  return Center(
                     child: Padding(
                       padding: EdgeInsets.only(top: 40),
                       child: CircularProgressIndicator(),
@@ -178,7 +178,7 @@ class _StudentHomeState extends State<StudentHome> {
 
                 if (state is CoursesError) {
                   return Padding(
-                    padding: const EdgeInsets.only(top: 40),
+                    padding: EdgeInsets.only(top: getScreenHeight(context) * 0.05000),
                     child: Center(
                       child: defaultText(
                         context: context,
@@ -191,7 +191,7 @@ class _StudentHomeState extends State<StudentHome> {
                 }
 
                 if (state is! CoursesLoaded) {
-                  return const SizedBox();
+                  return SizedBox();
                 }
 
                 return Column(
@@ -236,7 +236,7 @@ class _StudentHomeState extends State<StudentHome> {
             : getScreenHeight(context) * 0.33;
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.symmetric(vertical: 8),
           child: CourseCard(
             height: cardHeight,
             imagePath: course.thumbnail,

@@ -97,7 +97,7 @@ class _CourseDetailsState extends State<CourseDetails> {
               ),
 
               Padding(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -108,14 +108,14 @@ class _CourseDetailsState extends State<CourseDetails> {
                       isCenter: false,
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: getScreenHeight(context) * 0.01000),
 
                     instructorCard(
                       instructor: widget.instructor,
                       context: context,
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: getScreenHeight(context) * 0.01000),
 
                     defaultText(
                       context: context,
@@ -126,7 +126,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                       color: Colors.grey,
                     ),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.01500),
 
                     /// =========================
                     /// COURSE PROGRESS
@@ -152,7 +152,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                         }
 
                         return Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
                           decoration: BoxDecoration(
                             color: Colors.grey.withOpacity(0.1),
                             border: Border.all(color: Colors.white12),
@@ -183,8 +183,9 @@ class _CourseDetailsState extends State<CourseDetails> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 5),
+                              SizedBox(height: getScreenHeight(context) * 0.00625),
                               progressBar(
+                                context: context,
                                 progress: progress,
                                 height: getScreenHeight(context) * 0.015,
                               ),
@@ -194,7 +195,7 @@ class _CourseDetailsState extends State<CourseDetails> {
                       },
                     ),
 
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.01500),
 
                     /// LESSONS
                     Lessons(

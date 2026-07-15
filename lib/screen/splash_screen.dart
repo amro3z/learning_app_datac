@@ -60,8 +60,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget schoolSign() {
     return Container(
-      width: 110,
-      height: 110,
+      width: getScreenWidth(context) * 0.28205,
+      height: getScreenHeight(context) * 0.13750,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF4FACFE), Color(0xFF8F5BFF)],
@@ -75,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ],
       ),
-      child: const Icon(Icons.school, color: Colors.white, size: 52),
+      child: Icon(Icons.school, color: Colors.white, size: 52),
     );
   }
 
@@ -90,13 +90,13 @@ class _SplashScreenState extends State<SplashScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               schoolSign(),
-              const SizedBox(height: 30),
+              SizedBox(height: getScreenHeight(context) * 0.03750),
               defaultText(context: context, text: 'LearnHub', size: 32),
-              const SizedBox(height: 10),
+              SizedBox(height: getScreenHeight(context) * 0.01250),
               defaultText(
                 context: context,
                 text: "Upgrade Your Skills",
-                size: 15,
+                size: getScreenWidth(context) * 0.03846,
                 color: Colors.white.withOpacity(0.6),
               ),
             ],

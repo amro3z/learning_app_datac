@@ -19,12 +19,12 @@ void customDialog({
       final isArabic =
           langState is LanguageCubitLoaded && langState.languageCode == 'ar';
       return Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+        insetPadding: EdgeInsets.symmetric(horizontal: getScreenWidth(context) * 0.10256, vertical: getScreenHeight(context) * 0.03000),
         backgroundColor: Color(0xFF191919),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
           width: getScreenWidth(context) * 0.8,
-          padding: const EdgeInsets.all(18.0),
+          padding: EdgeInsets.all(getScreenWidth(context) * 0.04615),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Colors.black, Color(0xFF191919)],
@@ -39,7 +39,7 @@ void customDialog({
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(Icons.close, color: Colors.white),
                   onPressed: () {
                     Navigator.of(context).pop();
                     if (onClose != null) onClose();

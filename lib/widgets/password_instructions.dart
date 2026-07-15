@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:training/helper/base.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
@@ -30,7 +32,7 @@ class PasswordInstructions extends StatelessWidget {
         final special = data["special"] ?? false;
 
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(getScreenWidth(context) * 0.04103),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.3),
             borderRadius: BorderRadius.circular(16),
@@ -45,14 +47,14 @@ class PasswordInstructions extends StatelessWidget {
                     : 'Password must contain:',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: getScreenWidth(context) * 0.03590,
                   fontFamily: isArabic
                       ? 'CustomArabicFont'
                       : 'CustomEnglishFont',
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: getScreenHeight(context) * 0.01500),
               _buildRequirementRow(
                 isArabic ? 'على الأقل 8 أحرف' : 'At least 8 characters',
                 length,
@@ -86,21 +88,21 @@ class PasswordInstructions extends StatelessWidget {
 
   Widget _buildRequirementRow(String text, bool isMet, bool isArabic) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Icon(
             isMet ? Icons.check_circle : Icons.cancel,
             color: isMet ? Colors.green : Colors.red,
-            size: 20,
+            size: getScreenWidth(context) * 0.05128,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: getScreenWidth(context) * 0.02564),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
                 color: isMet ? Colors.green : Colors.red,
-                fontSize: 13,
+                fontSize: getScreenWidth(context) * 0.03333,
                 fontFamily: isArabic ? 'CustomArabicFont' : 'CustomEnglishFont',
               ),
               textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,

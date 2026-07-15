@@ -49,7 +49,7 @@ class DeleteAccountCard extends StatelessWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.grey.withOpacity(0.1),

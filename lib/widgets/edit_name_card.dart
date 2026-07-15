@@ -36,7 +36,7 @@ class _EditNameCardState extends State<EditNameCard> {
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
       decoration: BoxDecoration(
         color: Colors.grey.withOpacity(0.1),
         border: Border.all(color: Colors.white12),
@@ -70,7 +70,7 @@ class _EditNameCardState extends State<EditNameCard> {
           ),
 
           if (expanded) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: getScreenHeight(context) * 0.01500),
 
             Form(
               key: _formKey,
@@ -85,7 +85,7 @@ class _EditNameCardState extends State<EditNameCard> {
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     keyboardType: CustomTextFieldType.name,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: getScreenHeight(context) * 0.01500),
 
                   CustomFormTextField(
                     labelText: isArabic ? "اسم العائلة" : "Family Name",
@@ -97,7 +97,7 @@ class _EditNameCardState extends State<EditNameCard> {
                     keyboardType: CustomTextFieldType.name,
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: getScreenHeight(context) * 0.02000),
 
                   CustomGlowButton(
                     title: isArabic ? "حفظ" : "Save",

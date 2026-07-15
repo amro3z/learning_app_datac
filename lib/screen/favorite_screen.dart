@@ -44,7 +44,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.only(
+            padding: EdgeInsets.only(
               left: 12,
               right: 12,
               top: 24,
@@ -78,7 +78,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                         color: Colors.grey,
                       );
                     }
-                    return const SizedBox.shrink();
+                    return SizedBox.shrink();
                   },
                 ),
 

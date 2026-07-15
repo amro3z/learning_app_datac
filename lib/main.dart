@@ -35,10 +35,10 @@ void main() async {
   runApp(const SizedBox());
 
 
-  FlutterError.onError = (FlutterErrorDetails details) {
-    final errorText = details.exceptionAsString();
-    runApp(ErrorScreen(error: errorText));
-  };
+  // FlutterError.onError = (FlutterErrorDetails details) {
+  //   final errorText = details.exceptionAsString();
+  //   runApp(ErrorScreen(error: errorText));
+  // };
 
 
   PlatformDispatcher.instance.onError = (error, stack) {
@@ -155,9 +155,19 @@ class MyApp extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             builder: (context, child) {
-              return Directionality(
-                textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
-                child: child!,
+              final mediaQuery = MediaQuery.of(context);
+              final textScaler = mediaQuery.textScaler.clamp(
+                minScaleFactor: 0.90,
+                maxScaleFactor: 1.10,
+              );
+
+              return MediaQuery(
+                data: mediaQuery.copyWith(textScaler: textScaler),
+                child: Directionality(
+                  textDirection:
+                      isArabic ? TextDirection.rtl : TextDirection.ltr,
+                  child: child ?? const SizedBox.shrink(),
+                ),
               );
             },
             themeMode: ThemeMode.dark,

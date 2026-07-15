@@ -47,38 +47,38 @@ class PopularCard extends StatelessWidget {
           children: [
             _NetworkOrPlaceholderImage(
               imageUrl: imageUrl,
-              height: 100,
+              height: getScreenHeight(context) * 0.12500,
               width: double.infinity,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(8),
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: getScreenHeight(context) * 0.01000),
             Padding(
-              padding: const EdgeInsets.all(6),
+              padding: EdgeInsets.all(getScreenWidth(context) * 0.01538),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   defaultText(
                     context: context,
                     text: title,
-                    size: 16,
+                    size: getScreenWidth(context) * 0.04103,
                     color: Colors.white,
                     bold: true,
                     isCenter: false,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: getScreenHeight(context) * 0.00500),
                   defaultText(
                     context: context,
                     text: author,
-                    size: 14,
+                    size: getScreenWidth(context) * 0.03590,
                     bold: false,
                     color: Colors.white70,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: getScreenHeight(context) * 0.00500),
                   defaultText(
                     text: "⭐ $rating",
-                    size: 14,
+                    size: getScreenWidth(context) * 0.03590,
                     bold: false,
                     context: context,
                   ),
@@ -116,7 +116,7 @@ class _NetworkOrPlaceholderImage extends StatelessWidget {
         height: height,
         width: width,
         color: Colors.white10,
-        child: const Center(
+        child: Center(
           child: Icon(
             Icons.image_not_supported_outlined,
             color: Colors.white54,
@@ -146,7 +146,7 @@ class _NetworkOrPlaceholderImage extends StatelessWidget {
             height: height,
             width: width,
             color: Colors.white10,
-            child: const Center(
+            child: Center(
               child: SizedBox(
                 width: 18,
                 height: 18,

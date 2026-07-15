@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:training/helper/base.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
@@ -94,7 +95,7 @@ List<TextInputFormatter> _getInputFormatters(CustomTextFieldType type) {
       textDirection: isArabic ? TextDirection.rtl : TextDirection.ltr,
       style: TextStyle(
         color: Colors.white,
-        fontSize: 16,
+        fontSize: getScreenWidth(context) * 0.04103,
         fontFamily: isArabic ? 'CustomArabicFont' : 'CustomEnglishFont',
       ),
       decoration: InputDecoration(

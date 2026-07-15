@@ -30,7 +30,7 @@ class CategoryChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+        padding: EdgeInsets.symmetric(vertical: getScreenHeight(context) * 0.01250, horizontal: getScreenWidth(context) * 0.05128),
         decoration: BoxDecoration(
           color: isSelected ? category.color : const Color(0xFF1E1E1E),
           borderRadius: BorderRadius.circular(30),

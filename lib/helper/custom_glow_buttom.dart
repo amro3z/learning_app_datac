@@ -39,7 +39,7 @@ final VoidCallback? onPressed;
           shadowColor: Colors.transparent,
           foregroundColor: Colors.white,
           shape: const StadiumBorder(),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(vertical: 12),
         ),
         onPressed: onPressed,
         child: defaultText(

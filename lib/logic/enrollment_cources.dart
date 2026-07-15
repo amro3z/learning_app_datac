@@ -21,16 +21,16 @@ class EnrollmentCourse extends StatelessWidget {
     return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
       builder: (context, state) {
         if (state is EnrollmentsLoading || state is EnrollmentsInitial) {
-          return const SizedBox.shrink();
+          return SizedBox.shrink();
         }
 
         if (state is EnrollmentsError) {
-          return const SizedBox.shrink();
+          return SizedBox.shrink();
         }
 
         if (state is EnrollmentsLoaded) {
           if (state.enrollments.isEmpty) {
-            return const SizedBox.shrink();
+            return SizedBox.shrink();
           }
 
           final favoritesState = context.watch<FavoritesCubit>().state;
@@ -92,7 +92,7 @@ class EnrollmentCourse extends StatelessWidget {
           );
         }
 
-        return const SizedBox.shrink();
+        return SizedBox.shrink();
       },
     );
   }

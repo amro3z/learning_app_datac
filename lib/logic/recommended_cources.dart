@@ -22,7 +22,7 @@ class RecommendedCourses extends StatelessWidget {
         return BlocBuilder<RecommendedCubit, RecommendedState>(
           builder: (context, state) {
             if (state is RecommendedLoading || state is RecommendedInitial) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
 
             if (state is RecommendedError) {
@@ -71,7 +71,7 @@ class RecommendedCourses extends StatelessWidget {
                   final bool isEnrolled = enrolledCourseIds.contains(course.id);
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
+                    padding: EdgeInsets.only(bottom: getScreenHeight(context) * 0.02000),
                     child: RecommendedCard(
                       descriptionAr: course.descriptionAr,
                       descriptionEn: course.descriptionEn,
@@ -88,7 +88,7 @@ class RecommendedCourses extends StatelessWidget {
               );
             }
 
-            return const SizedBox.shrink();
+            return SizedBox.shrink();
           },
         );
       },

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:training/helper/base.dart';
 import 'package:flutter/services.dart';
 import 'package:no_screenshot/no_screenshot.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -80,7 +81,7 @@ class _PdfScreenState extends State<PdfScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text("Lesson PDF")),
+      appBar: AppBar(title: Text("Lesson PDF")),
       body: Stack(
         children: [
           SfPdfViewer.network(widget.url),
@@ -93,7 +94,7 @@ class _PdfScreenState extends State<PdfScreen> with WidgetsBindingObserver {
                   child: Text(
                     "PROTECTED",
                     style: TextStyle(
-                      fontSize: 40,
+                      fontSize: getScreenWidth(context) * 0.10256,
                       color: Colors.white.withOpacity(0.10),
                       fontWeight: FontWeight.bold,
                     ),
@@ -104,7 +105,7 @@ class _PdfScreenState extends State<PdfScreen> with WidgetsBindingObserver {
           ),
 
           if (_isAppHidden)
-            const Positioned.fill(child: ColoredBox(color: Colors.black)),
+            Positioned.fill(child: ColoredBox(color: Colors.black)),
         ],
       ),
     );

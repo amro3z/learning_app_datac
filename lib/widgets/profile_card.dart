@@ -60,7 +60,7 @@ class ProfileCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
       decoration: BoxDecoration(
         color: Colors.grey.withOpacity(0.1),
         border: Border.all(color: Colors.white12),
@@ -114,7 +114,7 @@ class ProfileCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: getScreenWidth(context) * 0.04103),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +125,7 @@ class ProfileCard extends StatelessWidget {
                       size: getScreenWidth(context) * 0.045,
                       isCenter: false,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: getScreenHeight(context) * 0.00500),
                     defaultText(
                       context: context,
                       text: state.email,
@@ -138,9 +138,9 @@ class ProfileCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: getScreenHeight(context) * 0.02500),
           const Divider(color: Colors.white12),
-          const SizedBox(height: 20),
+          SizedBox(height: getScreenHeight(context) * 0.02500),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -183,7 +183,7 @@ class ProfileCard extends StatelessWidget {
           size: getScreenWidth(context) * 0.045,
           color: color,
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: getScreenHeight(context) * 0.00500),
         defaultText(
           context: context,
           text: label,

@@ -21,7 +21,7 @@ class NotEnrolledCoursesSection extends StatelessWidget {
     final enrollState = context.watch<EnrollmentsCubit>().state;
 
     if (coursesState is! CoursesLoaded || enrollState is! EnrollmentsLoaded) {
-      return const SizedBox();
+      return SizedBox();
     }
 
     final allCourses = coursesState.courses;
@@ -32,7 +32,7 @@ class NotEnrolledCoursesSection extends StatelessWidget {
         .toList();
 
     if (notEnrolledCourses.isEmpty) {
-      return const SizedBox();
+      return SizedBox();
     }
 
     return Column(

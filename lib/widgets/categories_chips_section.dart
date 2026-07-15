@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:training/helper/base.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
@@ -15,7 +16,7 @@ class CategoriesChipsSection extends StatelessWidget {
     return BlocBuilder<CategoriesCubit, CategoriesState>(
       builder: (context, state) {
         if (state is! CategoriesLoaded) {
-          return const SizedBox.shrink();
+          return SizedBox.shrink();
         }
 
         return Wrap(

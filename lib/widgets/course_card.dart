@@ -220,13 +220,13 @@ class _CourseCardState extends State<CourseCard>
 
   Widget _defaultImage() {
     return Container(
-      height: 140,
+      height: getScreenHeight(context) * 0.17500,
       width: double.infinity,
       color: Colors.grey.shade900,
-      child: const Icon(
+      child: Icon(
         Icons.image_not_supported,
         color: Colors.grey,
-        size: 40,
+        size: getScreenWidth(context) * 0.10256,
       ),
     );
   }
@@ -299,7 +299,7 @@ class _CourseCardState extends State<CourseCard>
                   child: NetworkService.isConnected
                       ? Image.network(
                           widget.imagePath,
-                          height: 140,
+                          height: getScreenHeight(context) * 0.17500,
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => _defaultImage(),
@@ -332,7 +332,7 @@ class _CourseCardState extends State<CourseCard>
                                   ? Icons.favorite
                                   : Icons.favorite_border,
                               color: isFavorite ? Colors.red : Colors.white,
-                              size: 20,
+                              size: getScreenWidth(context) * 0.05128,
                             ),
                           ),
                         );
@@ -342,7 +342,7 @@ class _CourseCardState extends State<CourseCard>
               ],
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -353,7 +353,7 @@ class _CourseCardState extends State<CourseCard>
                     bold: true,
                     isCenter: false,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: getScreenHeight(context) * 0.00500),
                   defaultText(
                     context: context,
                     text: widget.author,
@@ -361,9 +361,9 @@ class _CourseCardState extends State<CourseCard>
                     color: Colors.white70,
                     isCenter: false,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: getScreenHeight(context) * 0.01000),
                   ratingWidget(value: widget.rating, context: context),
-                  const SizedBox(height: 10),
+                  SizedBox(height: getScreenHeight(context) * 0.01250),
                   if (widget.isEnrolled == false)
                     FadeTransition(
                       opacity: _fade,

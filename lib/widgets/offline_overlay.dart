@@ -48,7 +48,7 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
               curve: Curves.easeOut,
               child: Container(
                 width: getScreenWidth(context) * 0.8,
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(getScreenWidth(context) * 0.05128),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: const LinearGradient(
@@ -63,7 +63,7 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
                       color: Colors.redAccent,
                       size: getScreenWidth(context) * 0.12,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: getScreenHeight(context) * 0.01500),
                     defaultText(
                       context: context,
                       text: 'No Internet Connection',
@@ -71,7 +71,7 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
                       color: Colors.white,
                       bold: true,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: getScreenHeight(context) * 0.01000),
                     defaultText(
                       context: context,
                       text: 'Please check your connection',
@@ -79,7 +79,7 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
                       color: Colors.grey,
                       bold: false,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: getScreenHeight(context) * 0.02000),
 
                     GestureDetector(
                       behavior: HitTestBehavior.translucent,
@@ -90,7 +90,7 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
                           title: 'Retry',
                           onPressed:
                               widget.onRetry, 
-                          width: 120,
+                          width: getScreenWidth(context) * 0.30769,
                           textSize: 16,
                         ),
                       ),

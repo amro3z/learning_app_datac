@@ -9,8 +9,8 @@ Widget instructorCard({required String instructor , required BuildContext contex
         alignment: Alignment.center,
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: getScreenWidth(context) * 0.07692,
+            height: getScreenHeight(context) * 0.03750,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
@@ -23,8 +23,8 @@ Widget instructorCard({required String instructor , required BuildContext contex
             ),
           ),
           Container(
-            width: 35,
-            height: 35,
+            width: getScreenWidth(context) * 0.08974,
+            height: getScreenHeight(context) * 0.04375,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: Colors.blueAccent, width: 2),
@@ -37,18 +37,18 @@ Widget instructorCard({required String instructor , required BuildContext contex
           ),
         ],
       ),
-      const SizedBox(width: 8),
+      SizedBox(width: getScreenWidth(context) * 0.02051),
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           defaultText(
             context: context,
             text: "Instructor",
-            size: 12,
+            size: getScreenWidth(context) * 0.03077,
             isCenter: false,
             color: Colors.grey,
           ),
-          defaultText(text: instructor, size: 14, isCenter: false, context: context),
+          defaultText(text: instructor, size: getScreenWidth(context) * 0.03590, isCenter: false, context: context),
         ],
       ),
     ],

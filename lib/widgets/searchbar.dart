@@ -45,7 +45,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
         return BlocBuilder<CategoriesCubit, CategoriesState>(
           builder: (context, state) {
             if (state is! CategoriesLoaded) {
-              return const SizedBox.shrink();
+              return SizedBox.shrink();
             }
 
             return CustomFormTextField(
@@ -56,7 +56,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
               keyboardType: CustomTextFieldType.text,
               controller: searchController,
               suffixWidget: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.filter_list_sharp,
                   color: Colors.white70,
                 ),
@@ -91,7 +91,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
             );
 
             return Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(getScreenWidth(context) * 0.05128),
               decoration: const BoxDecoration(
                 color: Color(0xFF0F0F0F),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -103,11 +103,11 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                     defaultText(
                       context: context,
                       text: languageCode == 'ar' ? "الفلاتر" : "Filters",
-                      size: 20,
+                      size: getScreenWidth(context) * 0.05128,
                       bold: true,
                       isCenter: false,
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: getScreenHeight(context) * 0.02500),
 
                     /// SORT
                     _sectionTitle(languageCode == 'ar' ? 'الترتيب' : 'Sort by'),
@@ -126,7 +126,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                       },
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: getScreenHeight(context) * 0.02500),
 
                     /// CATEGORY
                     _sectionTitle(
@@ -156,7 +156,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                       },
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: getScreenHeight(context) * 0.02500),
 
                     /// DIFFICULTY
                     _sectionTitle(
@@ -177,14 +177,14 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                       },
                     ),
 
-                    const SizedBox(height: 30),
+                    SizedBox(height: getScreenHeight(context) * 0.03750),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         CustomGlowButton(
                           title: languageCode == 'ar' ? "إعادة ضبط" : "Reset",
-                          width: 120,
+                          width: getScreenWidth(context) * 0.30769,
                           onPressed: () {
                             setSheetState(() {
                               sortBy = null;
@@ -202,7 +202,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                         ),
                         CustomGlowButton(
                           title: languageCode == 'ar' ? "تطبيق" : "Apply",
-                          width: 120,
+                          width: getScreenWidth(context) * 0.30769,
                           onPressed: () {
                             Navigator.pop(context);
                           },
@@ -235,11 +235,11 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
   Widget _sectionTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10),
       child: defaultText(
         context: context,
         text: text,
-        size: 16,
+        size: getScreenWidth(context) * 0.04103,
         bold: true,
         isCenter: false,
       ),
@@ -263,7 +263,7 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
           label: defaultText(
             context: context,
             text: displayMap[item]![languageCode]!,
-            size: 14,
+            size: getScreenWidth(context) * 0.03590,
             color: isSelected ? Colors.white : Colors.white70,
           ),
           selected: isSelected,

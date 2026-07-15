@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:training/screen/course_details.dart';
-import 'package:training/screen/ins_home.dart';
+import 'package:training/screen/instructor_dashboard_screen.dart';
 import 'package:training/screen/student_home.dart';
 import 'package:training/screen/lesson_screen.dart';
 import 'package:training/screen/login.dart';

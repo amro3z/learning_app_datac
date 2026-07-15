@@ -31,7 +31,7 @@ class ProfileCourseCard extends StatelessWidget {
 
     return GestureDetector(
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
         decoration: BoxDecoration(
           color: Colors.grey.withOpacity(0.1),
           border: Border.all(color: Colors.white12),
@@ -46,28 +46,28 @@ class ProfileCourseCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   child: Image.network(
                     imageUrl,
-                    height: 60,
-                    width: 60,
+                    height: getScreenHeight(context) * 0.07500,
+                    width: getScreenWidth(context) * 0.15385,
                     fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: getScreenWidth(context) * 0.03077),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     defaultText(
                                               context: context,
                       text: title,
-                      size: 14,
+                      size: getScreenWidth(context) * 0.03590,
                       color: Colors.white,
                       bold: true,
                       isCenter: false,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: getScreenHeight(context) * 0.00500),
                     defaultText(
                                               context: context,
                       text: progress,
-                      size: 12,
+                      size: getScreenWidth(context) * 0.03077,
                       color: Colors.grey,
                       bold: false,
                       isCenter: false,
@@ -75,15 +75,16 @@ class ProfileCourseCard extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
                   color: Colors.grey,
-                  size: 20,
+                  size: getScreenWidth(context) * 0.05128,
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: getScreenHeight(context) * 0.01500),
             progressBar(
+              context: context,
               progress: double.parse(progress.replaceAll('%', '')) / 100,
             ),
           ],
@@ -109,7 +110,7 @@ class EnrollmentProfileCourse extends StatelessWidget {
         return BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
           builder: (context, state) {
             if (state is EnrollmentsLoading || state is EnrollmentsInitial) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
 
             if (state is EnrollmentsError) {
@@ -127,7 +128,7 @@ class EnrollmentProfileCourse extends StatelessWidget {
                     languageCode == 'ar'
                         ? "لا يوجد كورسات مسجلة بعد"
                         : "No enrolled courses yet",
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: Colors.grey),
                   ),
                 );
               }
@@ -142,17 +143,17 @@ class EnrollmentProfileCourse extends StatelessWidget {
                     text: languageCode == 'ar'
                         ? "كورساتي (${userEnrollments.length})"
                         : "My Courses (${userEnrollments.length})",
-                    size: 16,
+                    size: getScreenWidth(context) * 0.04103,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: getScreenHeight(context) * 0.01500),
                   ...userEnrollments.map((e) {
                     final course = courseMap[e.courseId];
                     if (course == null) {
-                      return const SizedBox.shrink();
+                      return SizedBox.shrink();
                     }
 
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
+                      padding: EdgeInsets.only(bottom: 16),
                       child: ProfileCourseCard(
                         imageUrl: course.thumbnail,
                         titleEn: course.titleEn,
@@ -165,7 +166,7 @@ class EnrollmentProfileCourse extends StatelessWidget {
               );
             }
 
-            return const SizedBox.shrink();
+            return SizedBox.shrink();
           },
         );
       },

@@ -9,7 +9,7 @@ class ErrorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),

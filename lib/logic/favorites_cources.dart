@@ -20,7 +20,7 @@ class FavoriteCourses extends StatelessWidget {
     return BlocBuilder<FavoritesCubit, FavoritesState>(
       builder: (context, favState) {
         if (favState is FavoritesLoading || favState is FavoritesInitial) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
 
         if (favState is FavoritesError) {
@@ -65,12 +65,12 @@ class FavoriteCourses extends StatelessWidget {
         return Column(
           children: uniqueFavorites.values.map((fav) {
             final course = courseMap[fav.courseId];
-            if (course == null) return const SizedBox.shrink();
+            if (course == null) return SizedBox.shrink();
 
             final progress = progressMap[fav.courseId] ?? 0.0;
             bool isEnrolled = enrolledIds.contains(fav.courseId);
             return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: EdgeInsets.only(bottom: getScreenHeight(context) * 0.02000),
               child: CourseCard(
                 height: isEnrolled
                     ? getScreenHeight(context) * 0.275

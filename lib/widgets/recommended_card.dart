@@ -49,7 +49,7 @@ class _RecommendedCardState extends State<RecommendedCard> {
     final title = languageCode == 'ar' ? widget.titleAr : widget.titleEn;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
       decoration: BoxDecoration(
         color: Colors.grey.withOpacity(0.1),
         border: Border.all(color: Colors.white12),
@@ -61,12 +61,12 @@ class _RecommendedCardState extends State<RecommendedCard> {
             borderRadius: BorderRadius.circular(12),
             child: _NetworkOrPlaceholderImage(
               imageUrl: widget.imagePath,
-              height: 110,
-              width: 110,
+              height: getScreenHeight(context) * 0.13750,
+              width: getScreenWidth(context) * 0.28205,
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: getScreenWidth(context) * 0.03077),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +79,7 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   bold: true,
                   align: TextAlign.start,
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: getScreenHeight(context) * 0.00500),
                 defaultText(
                   context: context,
                   text: widget.author,
@@ -87,7 +87,7 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   color: Colors.white.withOpacity(0.6),
                   isCenter: false,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: getScreenHeight(context) * 0.01000),
                 defaultText(
                   text: "⭐ ${widget.rating}",
                   size: getScreenWidth(context) * 0.03,
@@ -193,9 +193,9 @@ class _RecommendedCardState extends State<RecommendedCard> {
   }
 
   Widget _loadingButton() {
-    return const SizedBox(
-      width: 100,
-      height: 32,
+    return SizedBox(
+      width: getScreenWidth(context) * 0.25641,
+      height: getScreenHeight(context) * 0.04000,
       child: Center(
         child: SizedBox(
           width: 18,
@@ -209,7 +209,7 @@ class _RecommendedCardState extends State<RecommendedCard> {
   Widget _successButton(String languageCode) {
     return Container(
       height: getScreenHeight(context) * 0.053,
-      width: 100,
+      width: getScreenWidth(context) * 0.25641,
       decoration: BoxDecoration(
         color: Colors.green,
         borderRadius: BorderRadius.circular(20),
@@ -223,7 +223,7 @@ class _RecommendedCardState extends State<RecommendedCard> {
                   fontSize: getScreenWidth(context) * 0.035,
                 ),
               )
-            : const Icon(Icons.check, color: Colors.white, size: 18),
+            : Icon(Icons.check, color: Colors.white, size: 18),
       ),
     );
   }
@@ -251,7 +251,7 @@ class _NetworkOrPlaceholderImage extends StatelessWidget {
         height: height,
         width: width,
         color: Colors.white10,
-        child: const Center(
+        child: Center(
           child: Icon(
             Icons.image_not_supported_outlined,
             color: Colors.white54,
@@ -281,7 +281,7 @@ class _NetworkOrPlaceholderImage extends StatelessWidget {
             height: height,
             width: width,
             color: Colors.white10,
-            child: const Center(
+            child: Center(
               child: SizedBox(
                 width: 18,
                 height: 18,

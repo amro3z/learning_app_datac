@@ -62,7 +62,7 @@ class _ProfilePageState extends State<ProfilePage> {
         },
         builder: (context, state) {
           if (state is UserLoading || state is UserInitial) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
 
           if (state is UserLoaded) {
@@ -72,7 +72,7 @@ class _ProfilePageState extends State<ProfilePage> {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(getScreenWidth(context) * 0.04103),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -84,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       size: getScreenWidth(context) * 0.065,
                     ),
 
-                    const SizedBox(height: 14),
+                    SizedBox(height: getScreenHeight(context) * 0.01750),
 
                     ProfileCard(
                       pickImage: (ctx) => _pickImage(ctx),
@@ -106,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     SizedBox(height: getScreenHeight(context) * 0.015),
 
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
                       decoration: BoxDecoration(
                         color: Colors.grey.withOpacity(0.1),
                         border: Border.all(color: Colors.white12),
@@ -119,7 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             text: languageCode == 'ar'
                                 ? "الإشعارات"
                                 : "Notifications",
-                            size: 16,
+                            size: getScreenWidth(context) * 0.04103,
                             isCenter: false,
                           ),
                           const Spacer(),
@@ -137,7 +137,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     SizedBox(height: getScreenHeight(context) * 0.015),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
                       decoration: BoxDecoration(
                         color: Colors.grey.withOpacity(0.1),
                         border: Border.all(color: Colors.white12),
@@ -149,8 +149,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                         child: Row(
                           children: [
-                            const Icon(Icons.language, color: Colors.lightBlue),
-                            const SizedBox(width: 12),
+                            Icon(Icons.language, color: Colors.lightBlue),
+                            SizedBox(width: getScreenWidth(context) * 0.03077),
                             Expanded(
                               child: defaultText(
                                 context: context,
@@ -196,7 +196,7 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           }
 
-          return const SizedBox();
+          return SizedBox();
         },
       ),
     );

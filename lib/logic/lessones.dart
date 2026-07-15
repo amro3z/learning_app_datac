@@ -29,7 +29,7 @@ class Lessons extends StatelessWidget {
         return BlocBuilder<LessonsCubit, LessonsState>(
           builder: (context, state) {
             if (state is LessonsLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return Center(child: CircularProgressIndicator());
             }
 
             if (state is LessonsError) {
@@ -37,7 +37,7 @@ class Lessons extends StatelessWidget {
             }
 
             if (state is! LessonsLoaded) {
-              return const SizedBox.shrink();
+              return SizedBox.shrink();
             }
 
             final courseLessons =
@@ -94,13 +94,13 @@ class Lessons extends StatelessWidget {
                   size: getScreenWidth(context) * 0.045,
                   isCenter: false,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: getScreenHeight(context) * 0.01000),
                 ...ordered.map((item) {
                   final lesson = item['lesson'] as LessonModel;
                   final status = item['status'] as CourseStatus;
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: EdgeInsets.only(bottom: 8),
                     child: LessonCard(
                       courseID: lesson.courseId,
                       lessonID: lesson.id,

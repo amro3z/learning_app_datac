@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:training/screen/course_details.dart';
-import 'package:training/screen/home.dart';
+import 'package:training/screen/ins_home.dart';
+import 'package:training/screen/student_home.dart';
 import 'package:training/screen/lesson_screen.dart';
 import 'package:training/screen/login.dart';
 import 'package:training/screen/profile_page.dart';
@@ -17,8 +18,10 @@ class AppRoute {
         return MaterialPageRoute(builder: (_) => LoginScreen());
       case '/register':
         return MaterialPageRoute(builder: (_) => RegisterScreen());
-      case '/home':
-        return MaterialPageRoute(builder: (_) => HomeScreen());
+      case '/student_home':
+        return MaterialPageRoute(builder: (_) => StudentHome());
+      case '/instructor_home':
+        return MaterialPageRoute(builder: (_) => InstructorHome());
       case '/profile':
         return MaterialPageRoute(builder: (_) => ProfilePage());
       case '/course_details':

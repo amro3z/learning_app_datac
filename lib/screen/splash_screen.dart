@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/states/user_state.dart';
 import 'package:training/helper/base.dart';
+import 'package:training/helper/massage_dialog.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,7 +39,13 @@ class _SplashScreenState extends State<SplashScreen>
       final state = context.read<UserCubit>().state;
 
       if (state is UserLoaded) {
-        Navigator.pushReplacementNamed(context, '/home');
+       final role = state.role.toLowerCase();
+
+        if (role == 'instructor') {
+          Navigator.pushReplacementNamed(context, '/instructor_home');
+        } else {
+          Navigator.pushReplacementNamed(context, '/student_home');
+        }
       } else {
         Navigator.pushReplacementNamed(context, '/login');
       }

@@ -27,14 +27,14 @@ import 'package:training/widgets/searchbar.dart';
 import 'package:training/services/network_service.dart';
 import 'package:training/widgets/offline_overlay.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class StudentHome extends StatefulWidget {
+  const StudentHome({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<StudentHome> createState() => _StudentHomeState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _StudentHomeState extends State<StudentHome> {
   int currentIndex = 0;
   bool _showOfflineOverlay = false;
 

@@ -13,15 +13,17 @@ class UserLoaded extends UserState {
   final String? avatarUrl;
   final bool isUploading;
   final String? message;
-
+  final String role;
   UserLoaded({
     required this.Fname,
     required this.Lname,
     required this.email,
+    required this.role, 
     this.avatarUrl,
     this.isUploading = false,
     this.message,
   });
+
 
   UserLoaded copyWith({
     String? Fname,
@@ -30,6 +32,7 @@ class UserLoaded extends UserState {
     String? avatarUrl,
     bool? isUploading,
     String? message,
+    String? role,
   }) {
     return UserLoaded(
       Fname: Fname ?? this.Fname,
@@ -38,6 +41,7 @@ class UserLoaded extends UserState {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isUploading: isUploading ?? this.isUploading,
       message: message,
+      role: role ?? this.role,
     );
   }
 }

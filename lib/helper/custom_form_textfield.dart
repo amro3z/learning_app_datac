@@ -42,7 +42,39 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
     super.initState();
     _obscureText = widget.obscureText;
   }
+List<TextInputFormatter> _getInputFormatters(CustomTextFieldType type) {
+    switch (type) {
+      case CustomTextFieldType.name:
+        return [
+          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\u0600-\u06FF ]')),
+          TextInputFormatter.withFunction((oldValue, newValue) {
+            String text = newValue.text;
 
+            text = text.replaceFirst(RegExp(r'^\s+'), '');
+
+            text = text.replaceAll(RegExp(r'\s{2,}'), ' ');
+
+            return TextEditingValue(
+              text: text,
+              selection: TextSelection.collapsed(offset: text.length),
+            );
+          }),
+        ];
+
+      case CustomTextFieldType.email:
+      case CustomTextFieldType.password:
+        return [FilteringTextInputFormatter.deny(RegExp(r'\s'))];
+
+      case CustomTextFieldType.number:
+        return [FilteringTextInputFormatter.digitsOnly];
+
+      case CustomTextFieldType.phone:
+        return [FilteringTextInputFormatter.digitsOnly];
+
+      case CustomTextFieldType.text:
+        return [];
+    }
+  }
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
@@ -55,8 +87,7 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
       controller: widget.controller,
       obscureText: _obscureText,
 
-      // 🔥 يمنع أي whitespace
-      inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'\s'))],
+      inputFormatters: _getInputFormatters(widget.keyboardType),
 
       validator: (v) => _validate(v, isArabic),
       autovalidateMode: widget.autovalidateMode,
@@ -91,7 +122,6 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
       ),
 
-      // 🔥 تنظيف تلقائي لو فيه مسافات
       onChanged: (value) {
         final cleaned = value.replaceAll(' ', '');
         if (cleaned != value) {

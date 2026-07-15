@@ -38,12 +38,11 @@ dependencies:
   flutter_inappwebview: ^6.1.5
   flutter_local_notifications: ^20.1.0
   flutter_localization: ^0.3.3
+  flutter_secure_storage: ^10.3.1
   http: ^1.6.0
   image_picker: ^1.2.1
   no_screenshot: ^1.1.0
   path: ^1.9.1
-  shared_preferences: ^2.5.4
-  sqflite: ^2.4.2
   syncfusion_flutter_pdfviewer: ^33.1.46
   youtube_player_flutter: ^9.1.3
 

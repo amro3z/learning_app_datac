@@ -1,13 +1,14 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
+import 'package:training/constant/strings.dart';
 import 'package:training/data/api/api_constant.dart';
 import 'package:training/screen/debug_console.dart';
 
 class ApiService {
-
-Future<Map<String, dynamic>> getCurrentUser({
+  Future<Map<String, dynamic>> getCurrentUser({
     required String accessToken,
   }) async {
     try {
@@ -29,55 +30,138 @@ Future<Map<String, dynamic>> getCurrentUser({
     }
   }
 
-
   // ================= REGISTER =================
-Future<Map<String, dynamic>> register({
+  Future<Map<String, dynamic>> register({
     required String firstName,
     required String lastName,
     required String email,
     required String password,
+    required bool isInstructor,
+    String? specialization,
+    String? grade,
   }) async {
     try {
-      final url = Uri.parse(registerUrl);
-
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
+      final addUser = await http.post(
+        Uri.parse(registerUrl),
+        headers: const {"Content-Type": "application/json"},
         body: jsonEncode({
           "email": email,
           "password": password,
           "first_name": firstName,
           "last_name": lastName,
+          "status": "active",
+          "role": isInstructor ? instructorRole : studentRole,
         }),
       );
 
-      final body = jsonDecode(response.body);
+      final Map<String, dynamic> userBody =
+          jsonDecode(addUser.body) as Map<String, dynamic>;
 
-      if (body["data"] != null) {
-        return {"success": true, "user": body["data"]};
-      }
+      if (addUser.statusCode < 200 || addUser.statusCode >= 300) {
+        if (userBody["errors"] != null) {
+          final error = userBody["errors"][0];
 
-      if (body["errors"] != null) {
-        final error = body["errors"][0];
+          if (error["extensions"]?["code"] == "RECORD_NOT_UNIQUE") {
+            return {
+              "success": false,
+              "emailExists": true,
+              "message": "Email already exists",
+            };
+          }
 
-        if (error["extensions"]?["code"] == "RECORD_NOT_UNIQUE") {
           return {
             "success": false,
-            "emailExists": true,
-            "message": "Email already exists",
+            "message": error["message"] ?? "Register failed",
           };
         }
 
         return {
           "success": false,
-          "message": error["message"] ?? "Register failed",
+          "message": "Failed to create user: ${addUser.body}",
         };
       }
 
-      return {"success": false, "message": "Register failed"};
-    } catch (e) {
-      AppLogger.log("REGISTER ERROR → $e");
-      return {"success": false, "message": "Network error"};
+      final userData = userBody["data"];
+
+      if (userData == null || userData["id"] == null) {
+        return {
+          "success": false,
+          "message": "User created but user ID was not returned",
+        };
+      }
+
+      final String userId = userData["id"].toString();
+
+      late final http.Response profileResponse;
+
+      if (isInstructor) {
+        if (specialization == null || specialization.trim().isEmpty) {
+          return {
+            "success": false,
+            "message": "Specialization is required",
+            "registrationSuccess": true,
+          };
+        }
+
+        profileResponse = await http.post(
+          Uri.parse('$baseUrl/items/instructors'),
+          headers: const {"Content-Type": "application/json"},
+          body: jsonEncode({
+            "name": firstName,
+            "last_name": lastName,
+            "email": email,
+            "user": userId,
+            "specialization": specialization,
+          }),
+        );
+      } else {
+        if (grade == null || grade.trim().isEmpty) {
+          return {
+            "success": false,
+            "message": "Grade is required",
+            "registrationSuccess": true,
+          };
+        }
+
+        profileResponse = await http.post(
+          Uri.parse('$baseUrl/items/student'),
+          headers: const {"Content-Type": "application/json"},
+          body: jsonEncode({
+            "name": firstName,
+            "last_name": lastName,
+            "email": email,
+            "user": userId,
+            "grade": grade,
+          }),
+        );
+      }
+
+      final Map<String, dynamic> profileBody =
+          jsonDecode(profileResponse.body) as Map<String, dynamic>;
+
+      if (profileResponse.statusCode < 200 ||
+          profileResponse.statusCode >= 300) {
+        final errors = profileBody["errors"];
+
+        return {
+          "success": false,
+          "registrationSuccess": true,
+          "message": errors != null
+              ? errors[0]["message"] ?? "Failed to create profile"
+              : "Failed to create profile: ${profileResponse.body}",
+        };
+      }
+
+      return {
+        "success": true,
+        "user": userData,
+        "profile": profileBody["data"],
+        "accountType": isInstructor ? "instructor" : "student",
+      };
+    } catch (e, stackTrace) {
+      log('REGISTER ERROR', error: e, stackTrace: stackTrace);
+
+      return {"success": false, "message": "Network error: $e"};
     }
   }
 
@@ -116,7 +200,7 @@ Future<Map<String, dynamic>> register({
   }
 
   // ================= UPDATE USER AVATAR =================
-Future<Map<String, dynamic>> updateUserAvatar({
+  Future<Map<String, dynamic>> updateUserAvatar({
     required String userId,
     required String fileId,
     required String accessToken,
@@ -142,5 +226,4 @@ Future<Map<String, dynamic>> updateUserAvatar({
       return {"success": false, "message": e.toString()};
     }
   }
-
 }

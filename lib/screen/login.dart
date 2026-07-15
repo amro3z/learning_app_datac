@@ -9,7 +9,9 @@ import 'package:training/helper/base.dart';
 import 'package:training/helper/custom_form_textfield.dart';
 import 'package:training/helper/custom_glow_buttom.dart';
 import 'package:training/helper/massage_dialog.dart';
+import 'package:training/screen/animated_background.dart';
 import 'package:training/services/network_service.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +23,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +45,21 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       listener: (context, state) {
         if (state is UserLoaded) {
-          Navigator.pushReplacementNamed(context, '/home');
+        final role = state.role.toLowerCase();
+
+          if (role == 'instructor') {
+            Navigator.pushReplacementNamed(context, '/instructor_home');
+          } else if (role == 'student') {
+            Navigator.pushReplacementNamed(context, '/student_home');
+          } else {
+            customDialog(
+              context: context,
+              title: isArabic ? 'خطأ' : 'Error',
+              message: isArabic
+                  ? 'نوع الحساب غير معروف'
+                  : 'Unknown account role',
+            );
+          }
         }
 
         if (state is UserError) {
@@ -67,17 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       },
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF111111), Color(0xFF151516), Color(0xFF2E2E2E)],
-          ),
-        ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Center(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: AnimatedBackground(
+          child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(

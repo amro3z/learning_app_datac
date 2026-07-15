@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-
 import 'package:training/cubits/cubit/categories_cubit.dart';
 import 'package:training/cubits/cubit/courses_cubit.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
@@ -18,7 +17,6 @@ import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/cubits/states/user_state.dart';
 import 'package:training/data/api/web_service.dart';
-import 'package:training/data/local/sqldb.dart';
 import 'package:training/data/repo/learning_repo.dart';
 import 'package:training/firebase_options.dart';
 import 'package:training/route.dart';
@@ -33,16 +31,16 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // placeholder علشان نقدر نغير runApp بعدين
+
   runApp(const SizedBox());
 
-  // 🔥 Flutter errors
+
   FlutterError.onError = (FlutterErrorDetails details) {
     final errorText = details.exceptionAsString();
     runApp(ErrorScreen(error: errorText));
   };
 
-  // 🔥 async / platform errors
+
   PlatformDispatcher.instance.onError = (error, stack) {
     runApp(ErrorScreen(error: error.toString()));
     return true;
@@ -58,7 +56,7 @@ void main() async {
     NetworkService.startListening();
 
     final webService = LearningWebservice();
-    final repo = LearningRepo(learningWebService: webService, sqldb: Sqldb());
+    final repo = LearningRepo(learningWebService: webService);
 
     final userCubit = UserCubit();
     final enrollmentsCubit = EnrollmentsCubit(
@@ -101,7 +99,6 @@ void main() async {
       ),
     );
 
-    // 🔥 notification permission بعد ما UI يشتغل
     Future.delayed(Duration.zero, () async {
       await LocalNotifications.flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
@@ -114,7 +111,7 @@ void main() async {
   }
 }
 
-// ================= APP =================
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

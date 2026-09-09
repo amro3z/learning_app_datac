@@ -43,7 +43,8 @@ class _CustomFormTextFieldState extends State<CustomFormTextField> {
     super.initState();
     _obscureText = widget.obscureText;
   }
-List<TextInputFormatter> _getInputFormatters(CustomTextFieldType type) {
+
+  List<TextInputFormatter> _getInputFormatters(CustomTextFieldType type) {
     switch (type) {
       case CustomTextFieldType.name:
         return [
@@ -70,12 +71,16 @@ List<TextInputFormatter> _getInputFormatters(CustomTextFieldType type) {
         return [FilteringTextInputFormatter.digitsOnly];
 
       case CustomTextFieldType.phone:
-        return [FilteringTextInputFormatter.digitsOnly];
+        return [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(11),
+        ];
 
       case CustomTextFieldType.text:
         return [];
     }
   }
+
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
-import 'package:training/helper/base.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/helper/base.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 
@@ -13,12 +12,13 @@ class PasswordInstructions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
+
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
     return StreamBuilder<Map<String, bool>>(
       stream: passwordStream,
-      initialData: {
+      initialData: const {
         "length": false,
         "noSpace": true,
         "upperLower": false,
@@ -26,6 +26,7 @@ class PasswordInstructions extends StatelessWidget {
       },
       builder: (context, snapshot) {
         final data = snapshot.data ?? {};
+
         final length = data["length"] ?? false;
         final noSpace = data["noSpace"] ?? true;
         final upperLower = data["upperLower"] ?? false;
@@ -54,30 +55,39 @@ class PasswordInstructions extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+
               SizedBox(height: getScreenHeight(context) * 0.01500),
+
               _buildRequirementRow(
-                isArabic ? 'على الأقل 8 أحرف' : 'At least 8 characters',
-                length,
-                isArabic,
+                context: context,
+                text: isArabic ? 'على الأقل 8 أحرف' : 'At least 8 characters',
+                isMet: length,
+                isArabic: isArabic,
               ),
+
               _buildRequirementRow(
-                isArabic ? 'بدون مسافات' : 'No spaces',
-                noSpace,
-                isArabic,
+                context: context,
+                text: isArabic ? 'بدون مسافات' : 'No spaces',
+                isMet: noSpace,
+                isArabic: isArabic,
               ),
+
               _buildRequirementRow(
-                isArabic
+                context: context,
+                text: isArabic
                     ? 'حروف كبيرة وصغيرة (A-Z و a-z)'
                     : 'Both uppercase and lowercase letters',
-                upperLower,
-                isArabic,
+                isMet: upperLower,
+                isArabic: isArabic,
               ),
+
               _buildRequirementRow(
-                isArabic
+                context: context,
+                text: isArabic
                     ? 'رمز خاص واحد على الأقل (!@#\$%^&*...)'
                     : 'At least 1 special character',
-                special,
-                isArabic,
+                isMet: special,
+                isArabic: isArabic,
               ),
             ],
           ),
@@ -86,9 +96,14 @@ class PasswordInstructions extends StatelessWidget {
     );
   }
 
-  Widget _buildRequirementRow(String text, bool isMet, bool isArabic) {
+  Widget _buildRequirementRow({
+    required BuildContext context,
+    required String text,
+    required bool isMet,
+    required bool isArabic,
+  }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Icon(
@@ -96,7 +111,9 @@ class PasswordInstructions extends StatelessWidget {
             color: isMet ? Colors.green : Colors.red,
             size: getScreenWidth(context) * 0.05128,
           ),
+
           SizedBox(width: getScreenWidth(context) * 0.02564),
+
           Expanded(
             child: Text(
               text,

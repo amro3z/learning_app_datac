@@ -157,7 +157,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     return true;
   }
 
-////////////////////////////////////////////////////////////
   Future<void> _register(bool isArabic) async {
     if (!NetworkService.isConnected) {
       customDialog(
@@ -413,6 +412,7 @@ class _RegisterScreenState extends State<RegisterScreen>
           labelText: isArabic ? 'رقم ولي الأمر' : 'Parent Phone',
           keyboardType: CustomTextFieldType.phone,
           autovalidateMode: AutovalidateMode.onUserInteraction,
+          
         ),
       ],
     );
@@ -531,11 +531,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 ),
                             child: _showPasswordInstructions
                                 ? PasswordInstructions(
-                                    key: const ValueKey(1),
                                     passwordStream:
                                         _passwordStreamController.stream,
                                   )
-                                : SizedBox(key: ValueKey(2)),
+                                : SizedBox(),
                           ),
                           SizedBox(height: getScreenHeight(context) * 0.016),
                           CustomFormTextField(

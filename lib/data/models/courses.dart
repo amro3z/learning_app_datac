@@ -17,25 +17,70 @@ class CoursesModel {
 
   CoursesModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    status = json['status'];
-    createdAt = DateTime.parse(json['date_created']);
+
+    status = json['status']?.toString() ?? '';
+
+    createdAt = DateTime.parse(json['date_created'].toString());
+
     dateUpdated = json['date_updated'] != null
-        ? DateTime.parse(json['date_updated'])
+        ? DateTime.parse(json['date_updated'].toString())
         : null;
 
-    titleAr = json['title']['ar'];
-    titleEn = json['title']['en'];
-    descriptionAr = json['description']['ar'];
-    descriptionEn = json['description']['en'];
+    final title = json['title'];
 
-    final thumb = json['thumbnail'].toString();
-    thumbnail = thumb.startsWith('http') ? thumb : '$fileUrl$thumb';
+    if (title is Map) {
+      titleAr = title['ar']?.toString() ?? '';
+      titleEn = title['en']?.toString() ?? '';
+    } else {
+      titleAr = '';
+      titleEn = '';
+    }
 
-    rating = (json['rating'] ?? 0).toDouble();
-    categoryID = json['category'];
-    instructorName =
-        '${json['instructor']?['name'] ?? ''} ${json['instructor']?['last_name'] ?? ''}'
-            .trim();
-    level = json['level'];
+    final description = json['description'];
+
+    if (description is Map) {
+      descriptionAr = description['ar']?.toString() ?? '';
+
+      descriptionEn = description['en']?.toString() ?? '';
+    } else {
+      descriptionAr = '';
+      descriptionEn = '';
+    }
+
+    final thumb = json['thumbnail']?.toString() ?? '';
+
+    thumbnail = thumb.isEmpty
+        ? ''
+        : thumb.startsWith('http')
+        ? thumb
+        : '$fileUrl$thumb';
+
+    rating = (json['rating'] is num)
+        ? (json['rating'] as num).toDouble()
+        : double.tryParse(json['rating']?.toString() ?? '0') ?? 0;
+
+    final category = json['category'];
+
+    if (category is int) {
+      categoryID = category;
+    } else if (category is Map) {
+      categoryID = int.tryParse(category['id']?.toString() ?? '0') ?? 0;
+    } else {
+      categoryID = int.tryParse(category?.toString() ?? '0') ?? 0;
+    }
+
+    final instructor = json['instructor'];
+
+    if (instructor is Map) {
+      final firstName = instructor['name']?.toString() ?? '';
+
+      final lastName = instructor['last_name']?.toString() ?? '';
+
+      instructorName = '$firstName $lastName'.trim();
+    } else {
+      instructorName = '';
+    }
+
+    level = json['level']?.toString() ?? '';
   }
 }

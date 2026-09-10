@@ -7,6 +7,7 @@ import 'package:training/services/tokens/auths_service.dart';
 
 class ApiClient {
   final AuthService _auth = AuthService();
+
   AuthService get auth => _auth;
 
   static const Duration _timeout = Duration(seconds: 15);
@@ -14,21 +15,13 @@ class ApiClient {
   Future<http.Response> get(String url) async {
     try {
       final res = await http
-          .get(
-            Uri.parse(url),
-            headers: {"Authorization": "Bearer ${_auth.token}"},
-          )
+          .get(Uri.parse(url), headers: _headers())
           .timeout(_timeout);
 
       if (_isExpired(res)) {
-        final retry = await _handleRefresh(() async {
-          return await http.get(
-            Uri.parse(url),
-            headers: {"Authorization": "Bearer ${_auth.token}"},
-          );
+        return await _handleRefresh(() async {
+          return await http.get(Uri.parse(url), headers: _headers());
         });
-
-        return retry;
       }
 
       return res;
@@ -47,32 +40,24 @@ class ApiClient {
     Object? body,
   }) async {
     try {
+      final encodedBody = _encodeBody(body);
+
       final res = await http
           .post(
             Uri.parse(url),
-            headers: {
-              "Authorization": "Bearer ${_auth.token}",
-              "Content-Type": "application/json",
-              ...?headers,
-            },
-            body: body,
+            headers: _headers(extraHeaders: headers),
+            body: encodedBody,
           )
           .timeout(_timeout);
 
       if (_isExpired(res)) {
-        final retry = await _handleRefresh(() async {
+        return await _handleRefresh(() async {
           return await http.post(
             Uri.parse(url),
-            headers: {
-              "Authorization": "Bearer ${_auth.token}",
-              "Content-Type": "application/json",
-              ...?headers,
-            },
-            body: body,
+            headers: _headers(extraHeaders: headers),
+            body: encodedBody,
           );
         });
-
-        return retry;
       }
 
       return res;
@@ -85,32 +70,30 @@ class ApiClient {
     }
   }
 
-  Future<http.Response> patch(String url, {required Object body}) async {
+  Future<http.Response> patch(
+    String url, {
+    required Object body,
+    Map<String, String>? headers,
+  }) async {
     try {
+      final encodedBody = _encodeBody(body);
+
       final res = await http
           .patch(
             Uri.parse(url),
-            headers: {
-              "Authorization": "Bearer ${_auth.token}",
-              "Content-Type": "application/json",
-            },
-            body: body,
+            headers: _headers(extraHeaders: headers),
+            body: encodedBody,
           )
           .timeout(_timeout);
 
       if (_isExpired(res)) {
-        final retry = await _handleRefresh(() async {
+        return await _handleRefresh(() async {
           return await http.patch(
             Uri.parse(url),
-            headers: {
-              "Authorization": "Bearer ${_auth.token}",
-              "Content-Type": "application/json",
-            },
-            body: body,
+            headers: _headers(extraHeaders: headers),
+            body: encodedBody,
           );
         });
-
-        return retry;
       }
 
       return res;
@@ -122,38 +105,31 @@ class ApiClient {
       throw const SocketException('NO_INTERNET');
     }
   }
+
   Future<http.Response> delete(
     String url, {
     Map<String, String>? headers,
     Object? body,
   }) async {
     try {
+      final encodedBody = _encodeBody(body);
+
       final res = await http
           .delete(
             Uri.parse(url),
-            headers: {
-              "Authorization": "Bearer ${_auth.token}",
-              "Content-Type": "application/json",
-              ...?headers,
-            },
-            body: body,
+            headers: _headers(extraHeaders: headers),
+            body: encodedBody,
           )
           .timeout(_timeout);
 
       if (_isExpired(res)) {
-        final retry = await _handleRefresh(() async {
+        return await _handleRefresh(() async {
           return await http.delete(
             Uri.parse(url),
-            headers: {
-              "Authorization": "Bearer ${_auth.token}",
-              "Content-Type": "application/json",
-              ...?headers,
-            },
-            body: body,
+            headers: _headers(extraHeaders: headers),
+            body: encodedBody,
           );
         });
-
-        return retry;
       }
 
       return res;
@@ -164,6 +140,29 @@ class ApiClient {
     } on TimeoutException {
       throw const SocketException('NO_INTERNET');
     }
+  }
+
+  Map<String, String> _headers({Map<String, String>? extraHeaders}) {
+    return {
+      if (_auth.token != null && _auth.token!.isNotEmpty)
+        'Authorization': 'Bearer ${_auth.token}',
+
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+
+      ...?extraHeaders,
+    };
+  }
+
+  String? _encodeBody(Object? body) {
+    if (body == null) {
+      return null;
+    }
+    if (body is String) {
+      return body;
+    }
+
+    return jsonEncode(body);
   }
 
   Future<http.Response> _handleRefresh(
@@ -171,23 +170,27 @@ class ApiClient {
   ) async {
     final ok = await _auth.refreshTokenIfNeeded();
 
-    print("🔁 REFRESH RESULT: $ok");
+    print('🔁 REFRESH RESULT: $ok');
 
     if (!ok) {
-      print("❌ SESSION EXPIRED - LOGOUT");
+      print('❌ SESSION EXPIRED - LOGOUT');
 
-      _auth.logout();
+      await _auth.logout();
 
-      throw Exception("Session expired");
+      throw Exception('Session expired');
     }
+
     return await retryRequest().timeout(_timeout);
   }
 
   bool _isExpired(http.Response res) {
-    if (res.statusCode == 401) return true;
+    if (res.statusCode == 401) {
+      return true;
+    }
 
     try {
       final body = jsonDecode(res.body);
+
       return body['errors']?[0]?['extensions']?['code'] == 'TOKEN_EXPIRED';
     } catch (_) {
       return false;

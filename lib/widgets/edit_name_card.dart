@@ -108,27 +108,36 @@ class _EditNameCardState extends State<EditNameCard> {
                       final first = firstNameController.text.trim();
                       final last = lastNameController.text.trim();
 
-                      await context.read<UserCubit>().updateName(
-                        firstName: first,
-                        lastName: last,
-                      );
+                     final success = await context
+                          .read<UserCubit>()
+                          .updateName(firstName: first, lastName: last);
 
                       if (!mounted) return;
 
-                      firstNameController.clear();
-                      lastNameController.clear();
+                      if (success) {
+                        firstNameController.clear();
+                        lastNameController.clear();
 
-                      setState(() {
-                        expanded = false;
-                      });
+                        setState(() {
+                          expanded = false;
+                        });
 
-                      customDialog(
-                        context: context,
-                        title: isArabic ? "نجاح" : "Success",
-                        message: isArabic
-                            ? "تم تحديث الاسم بنجاح"
-                            : "Your name has been updated successfully",
-                      );
+                        customDialog(
+                          context: context,
+                          title: isArabic ? "نجاح" : "Success",
+                          message: isArabic
+                              ? "تم تحديث الاسم بنجاح"
+                              : "Your name has been updated successfully",
+                        );
+                      } else {
+                        customDialog(
+                          context: context,
+                          title: isArabic ? "خطأ" : "Error",
+                          message: isArabic
+                              ? "فشل تحديث الاسم"
+                              : "Failed to update your name",
+                        );
+                      }
                     },
                   ),
                 ],

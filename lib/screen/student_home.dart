@@ -127,12 +127,7 @@ class _StudentHomeState extends State<StudentHome> {
       },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.only(
-          left: 12,
-          right: 12,
-          top: 24,
-          bottom: 90,
-        ),
+        padding: EdgeInsets.only(left: 12, right: 12, top: 24, bottom: 90),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -178,7 +173,9 @@ class _StudentHomeState extends State<StudentHome> {
 
                 if (state is CoursesError) {
                   return Padding(
-                    padding: EdgeInsets.only(top: getScreenHeight(context) * 0.05000),
+                    padding: EdgeInsets.only(
+                      top: getScreenHeight(context) * 0.05000,
+                    ),
                     child: Center(
                       child: defaultText(
                         context: context,

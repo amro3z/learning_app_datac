@@ -294,14 +294,20 @@ class UserCubit extends Cubit<UserState> {
     );
   }
 
-  Future<void> updateName({
+ Future<bool> updateName({
     required String firstName,
     required String lastName,
   }) async {
-    if (!NetworkService.isConnected) return;
-    if (_userId == null || state is! UserLoaded) return;
+    if (!NetworkService.isConnected) {
+      return false;
+    }
+
+    if (_userId == null || state is! UserLoaded) {
+      return false;
+    }
 
     final current = state as UserLoaded;
+
     emit(current.copyWith(isUploading: true));
 
     try {
@@ -317,14 +323,20 @@ class UserCubit extends Cubit<UserState> {
             message: 'Failed to update name',
           ),
         );
-        return;
+
+        return false;
       }
 
       await refreshUser();
-    } catch (_) {
+
+      return true;
+    } catch (e) {
+
       emit(
         current.copyWith(isUploading: false, message: 'Failed to update name'),
       );
+
+      return false;
     }
   }
 

@@ -282,7 +282,7 @@ class _CourseCardState extends State<CourseCard>
         height:
             widget.height ??
             (widget.isEnrolled
-                ? getScreenHeight(context) * 0.29
+                ? getScreenHeight(context) * 0.28
                 : getScreenHeight(context) * 0.36),
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
@@ -362,7 +362,7 @@ class _CourseCardState extends State<CourseCard>
                     color: Colors.white70,
                     isCenter: false,
                   ),
-                  SizedBox(height: getScreenHeight(context) * 0.01000),
+
                   ratingWidget(value: widget.rating, context: context),
                   SizedBox(height: getScreenHeight(context) * 0.01250),
                   if (widget.isEnrolled == false)

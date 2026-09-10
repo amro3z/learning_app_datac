@@ -228,14 +228,11 @@ class _StudentHomeState extends State<StudentHome> {
       children: courses.map((course) {
         final bool isEnrolled = enrolledIds.contains(course.id);
 
-        final double cardHeight = isEnrolled
-            ? getScreenHeight(context) * 0.28
-            : getScreenHeight(context) * 0.33;
+        
 
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 8),
           child: CourseCard(
-            height: cardHeight,
             imagePath: course.thumbnail,
             title: isArabic ? course.titleAr : course.titleEn,
             author: course.instructorName,

@@ -6,7 +6,6 @@ import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/logic/favorites_cources.dart';
-import 'package:training/widgets/course_card.dart';
 
 class FavoriteScreen extends StatefulWidget {
   const FavoriteScreen({super.key});
@@ -19,7 +18,9 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   void initState() {
     super.initState();
+
     final userId = context.read<UserCubit>().userId;
+
     if (userId != null) {
       context.read<FavoritesCubit>().getFavoritesList(userId: userId);
     }
@@ -27,6 +28,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
   Future<void> _onRefresh() async {
     final userId = context.read<UserCubit>().userId;
+
     if (userId != null) {
       await context.read<FavoritesCubit>().getFavoritesList(userId: userId);
     }
@@ -35,6 +37,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
+
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
@@ -44,7 +47,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-            padding: EdgeInsets.only(
+            padding: const EdgeInsets.only(
               left: 12,
               right: 12,
               top: 24,
@@ -53,9 +56,8 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: kTextTabBarHeight),
+                const SizedBox(height: kTextTabBarHeight),
 
-                /// TITLE
                 defaultText(
                   context: context,
                   text: isArabic ? "المفضلة" : "My Favorites",
@@ -65,26 +67,59 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
 
                 SizedBox(height: getScreenHeight(context) * 0.015),
 
-                /// COUNT
                 BlocBuilder<FavoritesCubit, FavoritesState>(
                   builder: (context, state) {
-                    if (state is FavoritesLoaded) {
-                      return defaultText(
-                        context: context,
-                        text: isArabic
-                            ? "${state.favoritesList.length} دورة محفوظة"
-                            : "${state.favoritesList.length} courses saved",
-                        size: getScreenWidth(context) * 0.035,
-                        color: Colors.grey,
+                    if (state is FavoritesLoading ||
+                        state is FavoritesInitial) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (state is FavoritesError) {
+                      return Center(
+                        child: Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       );
                     }
-                    return SizedBox.shrink();
+
+                    final loaded = state as FavoritesLoaded;
+
+                    final availableCourseIds = loaded.courses
+                        .map((course) => course.id)
+                        .toSet();
+
+                    final uniqueCourseIds = loaded.favoritesList
+                        .map((fav) => fav.courseId)
+                        .where(
+                          (courseId) => availableCourseIds.contains(courseId),
+                        )
+                        .toSet()
+                        .toList();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // COUNT
+                        defaultText(
+                          context: context,
+                          text: isArabic
+                              ? "${uniqueCourseIds.length} دورة محفوظة"
+                              : "${uniqueCourseIds.length} courses saved",
+                          size: getScreenWidth(context) * 0.035,
+                          color: Colors.grey,
+                        ),
+
+                        SizedBox(height: getScreenHeight(context) * 0.022),
+
+                        FavoriteCourses(
+                          courses: loaded.courses,
+                          uniqueCourseIds: uniqueCourseIds,
+                        ),
+                      ],
+                    );
                   },
                 ),
-
-                SizedBox(height: getScreenHeight(context) * 0.022),
-
-                const FavoriteCourses(),
               ],
             ),
           ),

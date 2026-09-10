@@ -149,8 +149,9 @@ class _CourseCardState extends State<CourseCard>
     if (userId == null) return;
 
     _runningEnrollRequests.add(widget.courseId);
-    _pendingEnrollments[widget.courseId] =
-        DateTime.now().add(const Duration(minutes: 5));
+    _pendingEnrollments[widget.courseId] = DateTime.now().add(
+      const Duration(minutes: 5),
+    );
 
     if (mounted) setState(() => _isLoading = true);
 
@@ -186,7 +187,9 @@ class _CourseCardState extends State<CourseCard>
           navigator: true,
           title: notification["subject"]?.isNotEmpty == true
               ? notification["subject"]!
-              : (isArabic ? "تم إرسال طلب الاشتراك" : "Enrollment request sent"),
+              : (isArabic
+                    ? "تم إرسال طلب الاشتراك"
+                    : "Enrollment request sent"),
           body: notification["message"] ?? "",
           arguments: {
             'imageURL': widget.imagePath,
@@ -198,10 +201,7 @@ class _CourseCardState extends State<CourseCard>
         );
       }
 
-      await enrollCubit.getAllEnrollments(
-        userId: userId,
-        forceRefresh: true,
-      );
+      await enrollCubit.getAllEnrollments(userId: userId, forceRefresh: true);
 
       if (!mounted) return;
 
@@ -279,10 +279,11 @@ class _CourseCardState extends State<CourseCard>
     return GestureDetector(
       onTap: widget.isEnrolled == true ? () => _openDetails(isArabic) : null,
       child: Container(
-        height: widget.height ??
+        height:
+            widget.height ??
             (widget.isEnrolled
-                ? getScreenHeight(context) * 0.275
-                : getScreenHeight(context) * 0.34),
+                ? getScreenHeight(context) * 0.29
+                : getScreenHeight(context) * 0.36),
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(16),

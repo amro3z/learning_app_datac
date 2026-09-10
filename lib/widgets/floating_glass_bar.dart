@@ -3,8 +3,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:training/cubits/cubit/language_cubit.dart';
+import 'package:training/cubits/cubit/user_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
+import 'package:training/cubits/states/user_state.dart';
 import 'package:training/helper/base.dart';
 
 class FloatingGlassBar extends StatefulWidget {
@@ -43,10 +46,18 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
 
   @override
   Widget build(BuildContext context) {
+    // Language
     final langState = context.watch<LanguageCubit>().state;
 
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
+    // User Role
+    final userState = context.watch<UserCubit>().state;
+
+    final role = userState is UserLoaded ? userState.role.toLowerCase() : '';
+
+    final isStudent = role == 'student';
 
     final screenWidth = getScreenWidth(context);
     final screenHeight = getScreenHeight(context);
@@ -54,6 +65,7 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
     final isCompact = screenWidth < 360;
 
     final horizontalMargin = screenWidth * (isCompact ? 0.025 : 0.035);
+
     final safeBottom = MediaQuery.paddingOf(context).bottom;
 
     final barHeight = responsiveHeight(
@@ -63,7 +75,29 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
       max: 76,
     );
 
-    final items = <_NavItemData>[
+    final studentItems = <_NavItemData>[
+      _NavItemData(
+        selectedIcon: Icons.menu_book_rounded,
+        unselectedIcon: Icons.menu_book_outlined,
+        label: isArabic ? 'الدورات' : 'Courses',
+      ),
+      _NavItemData(
+        selectedIcon: Icons.favorite_rounded,
+        unselectedIcon: Icons.favorite_border_rounded,
+        label: isArabic ? 'المفضلة' : 'Favorites',
+      ),
+      _NavItemData(
+        selectedIcon: Icons.person_rounded,
+        unselectedIcon: Icons.person_outline_rounded,
+        label: isArabic ? 'الملف الشخصي' : 'Profile',
+      ),
+    ];
+
+    // ================================
+    // INSTRUCTOR / OTHER ITEMS
+    // ================================
+
+    final instructorItems = <_NavItemData>[
       _NavItemData(
         selectedIcon: Icons.dashboard_rounded,
         unselectedIcon: Icons.dashboard_outlined,
@@ -86,6 +120,9 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
       ),
     ];
 
+    // Choose items based on role
+    final items = isStudent ? studentItems : instructorItems;
+
     return Positioned(
       left: horizontalMargin,
       right: horizontalMargin,
@@ -98,10 +135,12 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
             fit: StackFit.expand,
             children: [
               _AnimatedBlurBackground(controller: _backgroundController),
+
               BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
                 child: const SizedBox.expand(),
               ),
+
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(screenWidth * 0.055),
@@ -112,6 +151,7 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
                   ),
                 ),
               ),
+
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.012,
@@ -124,6 +164,7 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
                       isArabic: isArabic,
                       screenWidth: screenWidth,
                     ),
+
                     Row(
                       children: List.generate(
                         items.length,
@@ -196,6 +237,7 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
     final selected = widget.currentIndex == index;
 
     final screenWidth = getScreenWidth(context);
+
     final screenHeight = getScreenHeight(context);
 
     final iconSize = responsiveWidth(
@@ -215,7 +257,9 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(screenWidth * 0.035),
-        onTap: () => widget.onItemSelected(index),
+        onTap: () {
+          widget.onItemSelected(index);
+        },
         child: SizedBox.expand(
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -232,7 +276,9 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
                       ? Colors.white
                       : Colors.white.withOpacity(0.48),
                 ),
+
                 SizedBox(height: screenHeight * 0.003),
+
                 Flexible(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
@@ -278,18 +324,22 @@ class _AnimatedBlurBackground extends StatelessWidget {
         final angle = controller.value * 2 * math.pi;
 
         final firstX = math.sin(angle) * 35;
+
         final firstY = math.cos(angle) * 15;
 
         final secondX = math.cos(angle) * 40;
+
         final secondY = math.sin(angle) * 18;
 
         final thirdX = math.sin(angle + math.pi) * 30;
+
         final thirdY = math.cos(angle + math.pi) * 15;
 
         return Stack(
           fit: StackFit.expand,
           children: [
             Container(color: const Color(0xFF111117)),
+
             Positioned(
               left: -35 + firstX,
               top: -45 + firstY,
@@ -298,6 +348,7 @@ class _AnimatedBlurBackground extends StatelessWidget {
                 color: const Color(0xFF6336E8),
               ),
             ),
+
             Positioned(
               right: -45 + secondX,
               bottom: -55 + secondY,
@@ -306,6 +357,7 @@ class _AnimatedBlurBackground extends StatelessWidget {
                 color: const Color(0xFF2F61D7),
               ),
             ),
+
             Positioned(
               left: getScreenWidth(context) * 0.25 + thirdX,
               bottom: -60 + thirdY,

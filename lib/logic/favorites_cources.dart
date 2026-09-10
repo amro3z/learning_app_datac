@@ -1,96 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/cubits/cubit/enrollments_cubit.dart';
-import 'package:training/cubits/cubit/favorites_cubit.dart';
 import 'package:training/cubits/cubit/language_cubit.dart';
 import 'package:training/cubits/states/language_cubit_state.dart';
 import 'package:training/helper/base.dart';
 import 'package:training/widgets/course_card.dart';
 
 class FavoriteCourses extends StatelessWidget {
-  const FavoriteCourses({super.key});
+  final List<dynamic> courses;
+  final List<int> uniqueCourseIds;
+
+  const FavoriteCourses({
+    super.key,
+    required this.courses,
+    required this.uniqueCourseIds,
+  });
 
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;
+
     final languageCode = langState is LanguageCubitLoaded
         ? langState.languageCode
         : 'en';
 
-    return BlocBuilder<FavoritesCubit, FavoritesState>(
-      builder: (context, favState) {
-        if (favState is FavoritesLoading || favState is FavoritesInitial) {
-          return Center(child: CircularProgressIndicator());
+    if (uniqueCourseIds.isEmpty) {
+      return Center(
+        child: Text(
+          languageCode == 'ar' ? 'لا يوجد مفضلات بعد' : 'No favorites yet',
+          style: TextStyle(
+            color: Colors.white70,
+            fontFamily: languageCode == 'ar'
+                ? 'CustomArabicFont'
+                : 'CustomEnglishFont',
+          ),
+        ),
+      );
+    }
+
+    // Map علشان نوصل للكورس بالـ id بسرعة
+    final courseMap = {for (var course in courses) course.id: course};
+
+    final enrollmentsState = context.watch<EnrollmentsCubit>().state;
+
+    final progressMap = enrollmentsState is EnrollmentsLoaded
+        ? {
+            for (var enrollment in enrollmentsState.enrollments)
+              enrollment.courseId: enrollment.progressPercent / 100,
+          }
+        : {};
+
+    final enrolledIds = enrollmentsState is EnrollmentsLoaded
+        ? enrollmentsState.enrollments
+              .map((enrollment) => enrollment.courseId)
+              .toSet()
+        : <int>{};
+
+    return Column(
+      children: uniqueCourseIds.map((courseId) {
+        final course = courseMap[courseId];
+
+        if (course == null) {
+          return const SizedBox.shrink();
         }
 
-        if (favState is FavoritesError) {
-          return Center(child: Text(favState.message));
-        }
+        final progress = progressMap[courseId] ?? 0.0;
 
-        final loaded = favState as FavoritesLoaded;
+        final isEnrolled = enrolledIds.contains(courseId);
 
-        if (loaded.favoritesList.isEmpty) {
-          return Center(
-            child: Text(
-              languageCode == 'ar' ? 'لا يوجد مفضلات بعد' : 'No favorites yet',
-              style: TextStyle(
-                color: Colors.white70,
-                fontFamily: languageCode == 'ar'
-                    ? 'CustomArabicFont'
-                    : 'CustomEnglishFont',
-              ),
-            ),
-          );
-        }
+        return Padding(
+          padding: EdgeInsets.only(bottom: getScreenHeight(context) * 0.02000),
+          child: CourseCard(
+            height: isEnrolled
+                ? getScreenHeight(context) * 0.29
+                : getScreenHeight(context) * 0.35,
 
-        final courseMap = {for (var c in loaded.courses) c.id: c};
+            imagePath: course.thumbnail,
 
-        final uniqueFavorites = {
-          for (var fav in loaded.favoritesList) fav.courseId: fav,
-        };
+            title: languageCode == 'ar' ? course.titleAr : course.titleEn,
 
-        final enrollmentsState = context.watch<EnrollmentsCubit>().state;
+            author: course.instructorName,
 
-        final progressMap = enrollmentsState is EnrollmentsLoaded
-            ? {
-                for (var e in enrollmentsState.enrollments)
-                  e.courseId: e.progressPercent / 100,
-              }
-            : {};
+            courseId: course.id,
 
-        final enrolledIds = enrollmentsState is EnrollmentsLoaded
-            ? enrollmentsState.enrollments.map((e) => e.courseId).toSet()
-            : <int>{};
+            rating: course.rating,
 
-        return Column(
-          children: uniqueFavorites.values.map((fav) {
-            final course = courseMap[fav.courseId];
-            if (course == null) return SizedBox.shrink();
+            description: languageCode == 'ar'
+                ? course.descriptionAr
+                : course.descriptionEn,
 
-            final progress = progressMap[fav.courseId] ?? 0.0;
-            bool isEnrolled = enrolledIds.contains(fav.courseId);
-            return Padding(
-              padding: EdgeInsets.only(bottom: getScreenHeight(context) * 0.02000),
-              child: CourseCard(
-                height: isEnrolled
-                    ? getScreenHeight(context) * 0.275
-                    : getScreenHeight(context) * 0.34,
-                imagePath: course.thumbnail,
-                title: languageCode == 'ar' ? course.titleAr : course.titleEn,
-                author: course.instructorName,
-                courseId: course.id,
-                rating: course.rating,
-                description: languageCode == 'ar'
-                    ? course.descriptionAr
-                    : course.descriptionEn,
-                progress: progress,
-                isFavorite: true,
-                isEnrolled: isEnrolled,
-              ),
-            );
-          }).toList(),
+            progress: progress,
+
+            isFavorite: true,
+
+            isEnrolled: isEnrolled,
+          ),
         );
-      },
+      }).toList(),
     );
   }
 }

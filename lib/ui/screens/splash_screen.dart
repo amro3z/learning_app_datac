@@ -1,0 +1,108 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/ui/state/cubit/user_cubit.dart';
+import 'package:training/ui/state/states/user_state.dart';
+import 'package:training/ui/core/base.dart';
+import 'package:training/ui/core/massage_dialog.dart';
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _scale = Tween<double>(
+      begin: 0.9,
+      end: 1.05,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _controller.repeat(reverse: true);
+
+    Future.delayed(const Duration(seconds: 5), () {
+      if (!mounted) return;
+
+      final state = context.read<UserCubit>().state;
+
+      if (state is UserLoaded) {
+       final role = state.role.toLowerCase();
+
+        if (role == 'instructor') {
+          Navigator.pushReplacementNamed(context, '/instructor_home');
+        } else {
+          Navigator.pushReplacementNamed(context, '/student_home');
+        }
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget schoolSign() {
+    return Container(
+      width: getScreenWidth(context) * 0.28205,
+      height: getScreenHeight(context) * 0.13750,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4FACFE), Color(0xFF8F5BFF)],
+        ),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blueAccent.withOpacity(0.6),
+            blurRadius: 35,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
+      child: Icon(Icons.school, color: Colors.white, size: 52),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0F14),
+      body: Center(
+        child: ScaleTransition(
+          scale: _scale,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              schoolSign(),
+              SizedBox(height: getScreenHeight(context) * 0.03750),
+              defaultText(context: context, text: 'LearnHub', size: 32),
+              SizedBox(height: getScreenHeight(context) * 0.01250),
+              defaultText(
+                context: context,
+                text: "Upgrade Your Skills",
+                size: getScreenWidth(context) * 0.03846,
+                color: Colors.white.withOpacity(0.6),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

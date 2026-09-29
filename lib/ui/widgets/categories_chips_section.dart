@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+import 'package:training/ui/core/base.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:training/ui/state/cubit/categories_cubit.dart';
+import 'package:training/ui/state/cubit/courses_cubit.dart';
+import 'package:training/ui/state/cubit/language_cubit.dart';
+import 'package:training/ui/state/states/categories_state.dart';
+import 'package:training/ui/state/states/language_cubit_state.dart';
+import 'package:training/ui/widgets/category_chip.dart';
+
+class CategoriesChipsSection extends StatelessWidget {
+  const CategoriesChipsSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CategoriesCubit, CategoriesState>(
+      builder: (context, state) {
+        if (state is! CategoriesLoaded) {
+          return SizedBox.shrink();
+        }
+
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: state.categories.map((cat) {
+            final isSelected = state.selectedCategoryId == cat.id;
+
+            return CategoryChip(
+              category: cat,
+              isSelected: isSelected,
+              onTap: () {
+                final categoriesCubit = context.read<CategoriesCubit>();
+                final coursesCubit = context.read<CoursesCubit>();
+
+                final langState = context.read<LanguageCubit>().state;
+
+                final languageCode = langState is LanguageCubitLoaded
+                    ? langState.languageCode
+                    : 'en';
+
+                if (isSelected) {
+                  categoriesCubit.selectCategory(null);
+                  coursesCubit.resetFilters();
+                } else {
+                  categoriesCubit.selectCategory(cat.id);
+
+                  coursesCubit.filterCourses(
+                    categoryId: cat.id,
+                    languageCode: languageCode,
+                  );
+                }
+              },
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+}

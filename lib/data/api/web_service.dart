@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:training/data/api/api_constant.dart';
-import 'package:training/services/tokens/api_client.dart';
+import 'package:training/utils/services/tokens/api_client.dart';
 
 class LearningWebservice {
   final ApiClient _api = ApiClient();
@@ -43,21 +43,63 @@ class LearningWebservice {
 
   Future<Map<String, dynamic>> getEnrollmentList({
     required String userId,
+    bool forceRefresh = false,
   }) async {
-    final res = await _api.get('$apiUrl/enrollments?filter[user][_eq]=$userId');
+    // A cache-buster is important here because enrollment status is changed from
+    // Directus (pending -> approved/rejected) outside the Flutter application.
+    // Without it, a proxy/browser cache can keep returning the old response.
+    final cacheBuster = '&_=${DateTime.now().millisecondsSinceEpoch}';
+    final res = await _api.get(
+      '$apiUrl/enrollments?filter[user][_eq]=$userId'
+      '&fields=id,user,course,status,date_enrolled,completed_lessons.lessons_id'
+      '$cacheBuster',
+      noCache: true,
+    );
 
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception('Failed to load enrollments (${res.statusCode}): ${res.body}');
+    }
     return jsonDecode(res.body);
   }
 
-Future<Map<String, dynamic>> enrollCourse({
+
+  Future<Map<String, dynamic>?> getEnrollmentForCourse({
+    required int courseId,
+    required String userId,
+  }) async {
+    final cacheBuster = '&_=${DateTime.now().millisecondsSinceEpoch}';
+    final res = await _api.get(
+      '$apiUrl/enrollments?filter[user][_eq]=$userId'
+      '&filter[course][_eq]=$courseId'
+      '&fields=id,user,course,status,date_enrolled,completed_lessons.lessons_id'
+      '&sort=-id&limit=1$cacheBuster',
+      noCache: true,
+    );
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw Exception('Failed to check enrollment (${res.statusCode}): ${res.body}');
+    }
+    final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+    final data = (decoded['data'] as List?) ?? const [];
+    if (data.isEmpty) return null;
+    return Map<String, dynamic>.from(data.first as Map);
+  }
+
+  Future<Map<String, dynamic>> enrollCourse({
     required int courseId,
     required String userId,
   }) async {
     final response = await _api.post(
       '$apiUrl/enrollments',
-      body: jsonEncode({"course": courseId, "user": userId}),
+      body: jsonEncode({
+        "course": courseId,
+        "user": userId,
+        "status": "pending",
+      }),
     );
 
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception('Failed to request enrollment (${response.statusCode}): ${response.body}');
+    }
     return jsonDecode(response.body);
   }
 
@@ -75,7 +117,11 @@ Future<Map<String, dynamic>> enrollCourse({
   }) async {
     await _api.post(
       '$apiUrl/favorites',
-      body: jsonEncode({"course": courseId, "user": userId}),
+      body: jsonEncode({
+        "course": courseId,
+        "user": userId,
+        "status": "pending",
+      }),
     );
   }
 
@@ -99,17 +145,14 @@ Future<Map<String, dynamic>> enrollCourse({
 
   // ================= Enrollment =================
 
- Future<void> updateEnrollmentProgress({
+ Future<void> addCompletedLesson({
     required int enrollmentId,
-    required double progressPercent,
+    required List<int> completedLessonIds,
   }) async {
-    final res = await _api.patch(
+    await _api.patch(
       '${apiUrl}enrollments/$enrollmentId',
-      body: jsonEncode({"progress_percent": progressPercent}),
+      body: jsonEncode({"completed_lessons": completedLessonIds}),
     );
-
-    print("📡 ENROLLMENT STATUS: ${res.statusCode}");
-    print("📡 ENROLLMENT BODY: ${res.body}");
   }
 
   // ================= Lesson Progress  =================

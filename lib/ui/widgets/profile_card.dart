@@ -1,0 +1,200 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:training/ui/state/cubit/enrollments_cubit.dart';
+import 'package:training/ui/state/cubit/lessons_cubit.dart';
+import 'package:training/ui/state/cubit/user_cubit.dart';
+import 'package:training/ui/state/cubit/language_cubit.dart';
+import 'package:training/ui/state/states/language_cubit_state.dart';
+import 'package:training/ui/state/states/user_state.dart';
+import 'package:training/ui/core/base.dart';
+
+class ProfileCard extends StatelessWidget {
+  const ProfileCard({super.key, required this.state, required this.pickImage});
+
+  final UserLoaded state;
+  final Future<void> Function(BuildContext) pickImage;
+
+  @override
+  Widget build(BuildContext context) {
+    final userId = context.read<UserCubit>().userId;
+
+    final langState = context.watch<LanguageCubit>().state;
+    final isArabic =
+        langState is LanguageCubitLoaded && langState.languageCode == 'ar';
+
+    int enrolledCount = 0;
+    int completedCoursesCount = 0;
+    double completedHours = 0;
+
+    final enrollmentsState = context.watch<EnrollmentsCubit>().state;
+
+    if (enrollmentsState is EnrollmentsLoaded && userId != null) {
+      final userEnrollments = enrollmentsState.enrollments
+          .where((e) => e.userId == userId)
+          .toList();
+
+      enrolledCount = userEnrollments.length;
+
+      final lessonsState = context.watch<LessonsCubit>().state;
+      if (lessonsState is LessonsLoaded) {
+        completedCoursesCount = userEnrollments.where((e) {
+          final total = lessonsState.lessons.where((l) => l.courseId == e.courseId).length;
+          return total > 0 && e.completedLessonIds.length >= total;
+        }).length;
+      }
+    }
+
+    final lessonsState = context.watch<LessonsCubit>().state;
+
+    if (lessonsState is LessonsLoaded && userId != null) {
+      final completedLessons = lessonsState.progress
+          .where((p) => p.userId == userId && p.status == "completed")
+          .toList();
+
+      for (final lessonProgress in completedLessons) {
+        final lesson = lessonsState.lessons
+            .where((l) => l.id == lessonProgress.lesson)
+            .firstOrNull;
+
+        if (lesson != null) {
+          completedHours += lesson.duration / 60;
+        }
+      }
+    }
+
+    return Container(
+      padding: EdgeInsets.all(getScreenWidth(context) * 0.03077),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        border: Border.all(color: Colors.white12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: state.isUploading ? null : () => pickImage(context),
+                child: SizedBox(
+                  width: getScreenWidth(context) * 0.2,
+                  height: getScreenWidth(context) * 0.2,
+                  child: ClipOval(
+                    child: state.avatarUrl == null
+                        ? Container(
+                            color: Colors.white10,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.person,
+                              size: getScreenWidth(context) * 0.1,
+                              color: Colors.white70,
+                            ),
+                          )
+                        : Image.network(
+                            state.avatarUrl!,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return Container(
+                                color: Colors.white10,
+                                alignment: Alignment.center,
+                                child: const CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stack) {
+                              return Container(
+                                color: Colors.white10,
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.person,
+                                  size: getScreenWidth(context) * 0.1,
+                                  color: Colors.white70,
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ),
+              ),
+              SizedBox(width: getScreenWidth(context) * 0.04103),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    defaultText(
+                      context: context,
+                      text: '${state.Fname} ${state.Lname}'.trim(),
+                      size: getScreenWidth(context) * 0.045,
+                      isCenter: false,
+                    ),
+                    SizedBox(height: getScreenHeight(context) * 0.00500),
+                    defaultText(
+                      context: context,
+                      text: state.email,
+                      size: getScreenWidth(context) * 0.035,
+                      color: Colors.grey,
+                      isCenter: false,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: getScreenHeight(context) * 0.02500),
+          const Divider(color: Colors.white12),
+          SizedBox(height: getScreenHeight(context) * 0.02500),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _statItem(
+                context,
+                enrolledCount.toString(),
+                isArabic ? "المسجل" : "Enrolled",
+                Colors.blue,
+              ),
+              _statItem(
+                context,
+                completedCoursesCount.toString(),
+                isArabic ? "المكتمل" : "Completed",
+                Colors.purple,
+              ),
+              _statItem(
+                context,
+                completedHours.toStringAsFixed(1),
+                isArabic ? "ساعات" : "Hours",
+                Colors.green,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statItem(
+    BuildContext context,
+    String value,
+    String label,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        defaultText(
+          context: context,
+          text: value,
+          size: getScreenWidth(context) * 0.045,
+          color: color,
+        ),
+        SizedBox(height: getScreenHeight(context) * 0.00500),
+        defaultText(
+          context: context,
+          text: label,
+          size: getScreenWidth(context) * 0.035,
+          color: Colors.grey,
+        ),
+      ],
+    );
+  }
+}

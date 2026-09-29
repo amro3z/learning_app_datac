@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:training/screen/course_details.dart';
-import 'package:training/screen/instructor_dashboard_screen.dart';
-import 'package:training/screen/student_home.dart';
-import 'package:training/screen/lesson_screen.dart';
-import 'package:training/screen/login.dart';
-import 'package:training/screen/profile_page.dart';
-import 'package:training/screen/register_screen.dart';
-import 'package:training/screen/splash_screen.dart';
+import 'package:training/ui/screens/course_details.dart';
+import 'package:training/ui/screens/instructor_dashboard_screen.dart';
+import 'package:training/ui/screens/student_home.dart';
+import 'package:training/ui/screens/lesson_screen.dart';
+import 'package:training/ui/screens/login.dart';
+import 'package:training/ui/screens/profile_page.dart';
+import 'package:training/ui/screens/register_screen.dart';
+import 'package:training/ui/screens/splash_screen.dart';
 
 class AppRoute {
   AppRoute();

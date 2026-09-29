@@ -4,7 +4,7 @@ import 'dart:developer';
 
 import 'package:training/data/api/api_constant.dart';
 import 'package:training/data/api/web_service.dart';
-import 'package:training/data/models/Recommend.dart';
+import 'package:training/data/models/recommend.dart';
 import 'package:training/data/models/categories.dart';
 import 'package:training/data/models/courses.dart';
 import 'package:training/data/models/enrollments.dart';
@@ -13,7 +13,7 @@ import 'package:training/data/models/instructor.dart';
 import 'package:training/data/models/lesson_progress.dart';
 import 'package:training/data/models/lessons.dart';
 import 'package:training/data/models/popular.dart';
-import 'package:training/services/tokens/api_client.dart';
+import 'package:training/utils/services/tokens/api_client.dart';
 
 class LearningRepo {
   final LearningWebservice learningWebService;
@@ -80,6 +80,7 @@ class LearningRepo {
   }) async {
     final response = await learningWebService.getEnrollmentList(
       userId: userId,
+      forceRefresh: forceRefresh,
     );
     final List data = response['data'] ?? [];
 
@@ -128,15 +129,15 @@ class LearningRepo {
         .toList();
   }
 
-  // ================= UPDATE ENROLLMENT =================
+  // ================= ENROLLMENT COMPLETION =================
 
-  Future<void> updateEnrollmentProgress({
+  Future<void> addCompletedLesson({
     required int enrollmentId,
-    required double progressPercent,
+    required List<int> completedLessonIds,
   }) async {
-    await learningWebService.updateEnrollmentProgress(
+    await learningWebService.addCompletedLesson(
       enrollmentId: enrollmentId,
-      progressPercent: progressPercent,
+      completedLessonIds: completedLessonIds,
     );
   }
 

@@ -90,14 +90,6 @@ class _StudentHomeState extends State<StudentHome> {
         for (final enrollment in refreshedEnrollmentsState.enrollments)
           enrollment.courseId: enrollment.status,
       };
-      debugPrint('========== REFRESH COURSE STATES ==========');
-      for (final course in refreshedCoursesState.courses) {
-        final enrollmentStatus = statusByCourse[course.id] ?? 'not_enrolled';
-        debugPrint(
-          'Course: ${course.titleEn} | ID: ${course.id} | Enrollment: $enrollmentStatus',
-        );
-      }
-      debugPrint('===========================================');
     }
 
     if (before.isNotEmpty && mounted) {

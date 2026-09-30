@@ -230,13 +230,23 @@ class EnrollmentsCubit extends Cubit<EnrollmentsState> {
     if (matches.isEmpty) return;
 
     final enrollment = matches.first;
-    if (enrollment.completedLessonIds.contains(lessonId)) return;
+    if (enrollment.completedLessonIds.contains(lessonId)) {
+      print('[COMPLETED_LESSON] SKIP | enrollment=${enrollment.id} | course=$courseId | lesson=$lessonId | reason=already_completed');
+      return;
+    }
 
     final ids = {...enrollment.completedLessonIds, lessonId}.toList();
-    await learningRepo.addCompletedLesson(
-      enrollmentId: enrollment.id,
-      completedLessonIds: ids,
-    );
+    print('[COMPLETED_LESSON] START | enrollment=${enrollment.id} | user=$userId | course=$courseId | lesson=$lessonId | before=${enrollment.completedLessonIds} | sending=$ids');
+    try {
+      await learningRepo.addCompletedLesson(
+        enrollmentId: enrollment.id,
+        lessonId: lessonId,
+      );
+      print('[COMPLETED_LESSON] SUCCESS | enrollment=${enrollment.id} | course=$courseId | lesson=$lessonId | saved=$ids');
+    } catch (e) {
+      print('[COMPLETED_LESSON] FAILED | enrollment=${enrollment.id} | course=$courseId | lesson=$lessonId | error=$e');
+      rethrow;
+    }
 
     final updated = current.enrollments
         .map((e) => e.id == enrollment.id ? e.copyWith(completedLessonIds: ids) : e)

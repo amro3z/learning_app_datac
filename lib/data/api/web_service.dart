@@ -38,7 +38,7 @@ class LearningWebservice {
   }) async {
 
     final uri = Uri.parse('$apiUrl/enrollments').replace(queryParameters: {
-      'fields': 'id,user,course,status,date_enrolled',
+      'fields': 'id,user,course,status,date_enrolled,completed_lessons.lessons_id',
       'filter[user][_eq]': userId,
       'sort': '-id',
       'limit': '-1',
@@ -147,15 +147,45 @@ class LearningWebservice {
 
  Future<void> addCompletedLesson({
     required int enrollmentId,
-    required List<int> completedLessonIds,
+    required int lessonId,
   }) async {
-    final response = await _api.patch(
-      '${apiUrl}enrollments/$enrollmentId',
-      body: jsonEncode({"completed_lessons": completedLessonIds}),
+    final checkUri = Uri.parse('${apiUrl}enrollments_lessons').replace(
+      queryParameters: {
+        'fields': 'id,enrollments_id,lessons_id',
+        'filter[enrollments_id][_eq]': enrollmentId.toString(),
+        'filter[lessons_id][_eq]': lessonId.toString(),
+        'limit': '1',
+        '_ts': DateTime.now().microsecondsSinceEpoch.toString(),
+      },
     );
+
+    final checkResponse = await _api.get(checkUri.toString(), noCache: true);
+    print('[COMPLETED_LESSON_API] CHECK | enrollment=$enrollmentId | lesson=$lessonId | status=${checkResponse.statusCode} | body=${checkResponse.body}');
+
+    if (checkResponse.statusCode >= 200 && checkResponse.statusCode < 300) {
+      final decoded = jsonDecode(checkResponse.body);
+      final data = decoded is Map ? decoded['data'] : null;
+      if (data is List && data.isNotEmpty) {
+        print('[COMPLETED_LESSON_API] SKIP | enrollment=$enrollmentId | lesson=$lessonId | reason=junction_exists');
+        return;
+      }
+    }
+
+    final body = jsonEncode({
+      'enrollments_id': enrollmentId,
+      'lessons_id': lessonId,
+    });
+    print('[COMPLETED_LESSON_API] POST | enrollment=$enrollmentId | lesson=$lessonId | body=$body');
+
+    final response = await _api.post(
+      '${apiUrl}enrollments_lessons',
+      body: body,
+    );
+    print('[COMPLETED_LESSON_API] RESPONSE | enrollment=$enrollmentId | lesson=$lessonId | status=${response.statusCode} | body=${response.body}');
+
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(
-        'Failed to update completed lessons (${response.statusCode}): ${response.body}',
+        'Failed to create completed lesson relation (${response.statusCode}): ${response.body}',
       );
     }
   }

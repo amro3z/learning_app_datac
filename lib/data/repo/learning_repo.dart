@@ -115,11 +115,11 @@ class LearningRepo {
 
   Future<void> addCompletedLesson({
     required int enrollmentId,
-    required List<int> completedLessonIds,
+    required int lessonId,
   }) async {
     await learningWebService.addCompletedLesson(
       enrollmentId: enrollmentId,
-      completedLessonIds: completedLessonIds,
+      lessonId: lessonId,
     );
   }
 

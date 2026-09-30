@@ -48,7 +48,6 @@ class LessonCard extends StatelessWidget {
   final String courseTitle;
   final String? pdf;
 
-
   @override
   Widget build(BuildContext context) {
     final langState = context.watch<LanguageCubit>().state;

@@ -290,7 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth / 2;
-          // حساب محاذاة الخلفية المتحركة بناءً على اللغة والـ Role الحالي
+          
           final Alignment alignment = _selectedRole == AccountRole.student
               ? (isArabic ? Alignment.centerRight : Alignment.centerLeft)
               : (isArabic ? Alignment.centerLeft : Alignment.centerRight);
@@ -299,7 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             children: [
               AnimatedAlign(
                 duration: const Duration(milliseconds: 350),
-                curve: Curves.elasticOut, // أنيميشن مطاطي سلس ومميز عند الحركة
+                curve: Curves.elasticOut, 
                 alignment: alignment,
                 child: Container(
                   width: width - 4,

@@ -66,7 +66,6 @@ class AppDropdownField extends StatelessWidget {
   }
 }
 
-
 const List<DropdownOption> gradeOptions = [
   DropdownOption(
     value: 'FPGrade',

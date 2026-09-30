@@ -50,22 +50,31 @@ class _StudentHomeState extends State<StudentHome> {
 
   Future<void> _loadHomeData({bool forceRefresh = false}) async {
     if (!mounted) return;
-    final userId = context.read<UserCubit>().userId;
-    if (userId == null) return;
     if (forceRefresh && !NetworkService.isConnected) return;
 
-    final beforeState = context.read<EnrollmentsCubit>().state;
+    if (forceRefresh) {
+      await context.read<UserCubit>().refreshUser();
+      if (!mounted) return;
+    }
+
+    final userId = context.read<UserCubit>().userId;
+    if (userId == null || userId.isEmpty) return;
+
+    final enrollmentCubit = context.read<EnrollmentsCubit>();
+    final beforeState = enrollmentCubit.state;
     final before = beforeState is EnrollmentsLoaded
         ? {for (final e in beforeState.enrollments) e.courseId: e.status}
         : <int, String>{};
 
+    await enrollmentCubit.getAllEnrollments(
+      userId: userId,
+      forceRefresh: true,
+      silent: false,
+    );
+    if (!mounted) return;
+
     await Future.wait([
       context.read<CoursesCubit>().getAllCourses(forceRefresh: forceRefresh),
-      context.read<EnrollmentsCubit>().getAllEnrollments(
-        userId: userId,
-        forceRefresh: forceRefresh,
-        silent: beforeState is EnrollmentsLoaded,
-      ),
       context.read<LessonsCubit>().getLessons(forceRefresh: forceRefresh),
       context.read<FavoritesCubit>().getFavoritesList(userId: userId, forceRefresh: forceRefresh),
       context.read<RecommendedCubit>().getRecommendedList(forceRefresh: forceRefresh),
@@ -73,8 +82,26 @@ class _StudentHomeState extends State<StudentHome> {
       context.read<CategoriesCubit>().getAllCategories(forceRefresh: forceRefresh),
     ]);
 
+    final refreshedCoursesState = context.read<CoursesCubit>().state;
+    final refreshedEnrollmentsState = enrollmentCubit.state;
+    if (refreshedCoursesState is CoursesLoaded &&
+        refreshedEnrollmentsState is EnrollmentsLoaded) {
+      final statusByCourse = <int, String>{
+        for (final enrollment in refreshedEnrollmentsState.enrollments)
+          enrollment.courseId: enrollment.status,
+      };
+      debugPrint('========== REFRESH COURSE STATES ==========');
+      for (final course in refreshedCoursesState.courses) {
+        final enrollmentStatus = statusByCourse[course.id] ?? 'not_enrolled';
+        debugPrint(
+          'Course: ${course.titleEn} | ID: ${course.id} | Enrollment: $enrollmentStatus',
+        );
+      }
+      debugPrint('===========================================');
+    }
+
     if (before.isNotEmpty && mounted) {
-      final afterState = context.read<EnrollmentsCubit>().state;
+      final afterState = enrollmentCubit.state;
       if (afterState is EnrollmentsLoaded) {
         for (final enrollment in afterState.enrollments) {
           final old = before[enrollment.courseId];
@@ -250,8 +277,6 @@ class _StudentHomeState extends State<StudentHome> {
         final status = enrollmentStatuses[course.id];
         final bool isEnrolled = status == 'approved';
 
-        
-
         return Padding(
           padding: EdgeInsets.symmetric(vertical: 8),
           child: CourseCard(
@@ -275,7 +300,6 @@ class _StudentHomeState extends State<StudentHome> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const EnrollmentCourse(),
-        SizedBox(height: getScreenHeight(context) * 0.025),
         const NotEnrolledCoursesSection(),
         defaultText(
           context: context,

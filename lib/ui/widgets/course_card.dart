@@ -138,6 +138,14 @@ class _CourseCardState extends State<CourseCard>
     final userId = userCubit.userId;
     if (userId == null) return;
 
+    final enrollmentState = enrollCubit.state;
+    if (enrollmentState is! EnrollmentsLoaded) return;
+    if (enrollmentState.enrollments.any(
+      (e) => e.userId == userId && e.courseId == widget.courseId,
+    )) {
+      return;
+    }
+
     _runningEnrollRequests.add(widget.courseId);
     if (mounted) setState(() => _isLoading = true);
 
@@ -221,7 +229,6 @@ class _CourseCardState extends State<CourseCard>
     return isArabic ? "اطلب الانضمام" : "Request access";
   }
 
-
   Color? get _statusColor {
     switch (widget.enrollmentStatus) {
       case 'pending': return AppColors.warning;
@@ -248,8 +255,7 @@ class _CourseCardState extends State<CourseCard>
     return GestureDetector(
       onTap: widget.isEnrolled == true ? () => _openDetails(isArabic) : null,
       child: Container(
-        // Request cards change height when a status chip appears. Keeping
-        // their height intrinsic prevents the 14px overflow after requesting.
+
         height: widget.height ??
             (widget.isEnrolled ? getScreenHeight(context) * 0.28 : null),
         decoration: BoxDecoration(

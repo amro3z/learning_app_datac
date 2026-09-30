@@ -30,7 +30,6 @@ class ApiService {
     }
   }
 
-  // ================= REGISTER =================
   Future<Map<String, dynamic>> register({
     required String firstName,
     required String lastName,
@@ -165,7 +164,6 @@ class ApiService {
     }
   }
 
-  // ================= UPLOAD IMAGE =================
   Future<Map<String, dynamic>> uploadProfileImage({
     required File image,
     required String accessToken,
@@ -199,7 +197,6 @@ class ApiService {
     }
   }
 
-  // ================= UPDATE USER AVATAR =================
   Future<Map<String, dynamic>> updateUserAvatar({
     required String userId,
     required String fileId,

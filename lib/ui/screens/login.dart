@@ -12,7 +12,6 @@ import 'package:training/ui/core/massage_dialog.dart';
 import 'package:training/ui/screens/animated_background.dart';
 import 'package:training/utils/services/network_service.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 

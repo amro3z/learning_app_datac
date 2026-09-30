@@ -1,4 +1,4 @@
-// lib/data/repo/learning_repo.dart
+
 import 'dart:convert';
 import 'dart:developer';
 
@@ -21,8 +21,6 @@ class LearningRepo {
 
   LearningRepo({required this.learningWebService});
 
-  // ================= COURSES =================
-
   Future<List<CoursesModel>> getCoursesList({
     bool forceRefresh = false,
   }) async {
@@ -33,8 +31,6 @@ class LearningRepo {
         .map((course) => CoursesModel.fromJson(course))
         .toList();
   }
-
-  // ================= CATEGORIES =================
 
   Future<List<CategoriesModel>> getCategoryList({
     bool forceRefresh = false,
@@ -47,16 +43,12 @@ class LearningRepo {
         .toList();
   }
 
-  // ================= LESSONS =================
-
   Future<List<LessonModel>> getLessonList() async {
     final response = await learningWebService.getLessonList();
     final List data = response['data'] ?? [];
 
     return data.map((lesson) => LessonModel.fromJson(lesson)).toList();
   }
-
-  // ================= INSTRUCTORS =================
 
   Future<List<InstructorModel>> getInstructorList({
     bool forceRefresh = false,
@@ -71,8 +63,6 @@ class LearningRepo {
     log('Fetched ${instructors.length} instructors from API');
     return instructors;
   }
-
-  // ================= ENROLLMENTS =================
 
   Future<List<EnrollmentModel>> getEnrollmentList({
     required String userId,
@@ -89,8 +79,6 @@ class LearningRepo {
         .toList();
   }
 
-  // ================= FAVORITES =================
-
   Future<List<FavoritesModel>> getFavoriteList({
     required String userId,
     bool forceRefresh = false,
@@ -105,8 +93,6 @@ class LearningRepo {
         .toList();
   }
 
-  // ================= POPULAR =================
-
   Future<List<PopularModel>> getPopularList({
     bool forceRefresh = false,
   }) async {
@@ -115,8 +101,6 @@ class LearningRepo {
 
     return data.map((popular) => PopularModel.fromJson(popular)).toList();
   }
-
-  // ================= RECOMMENDED =================
 
   Future<List<RecommendModel>> getRecommendedList({
     bool forceRefresh = false,
@@ -129,8 +113,6 @@ class LearningRepo {
         .toList();
   }
 
-  // ================= ENROLLMENT COMPLETION =================
-
   Future<void> addCompletedLesson({
     required int enrollmentId,
     required List<int> completedLessonIds,
@@ -140,8 +122,6 @@ class LearningRepo {
       completedLessonIds: completedLessonIds,
     );
   }
-
-  // ================= LESSON PROGRESS =================
 
   Future<void> updateLessonProgress({
     required int lessonProgressId,
@@ -226,8 +206,6 @@ class LearningRepo {
 
     return Map<String, dynamic>.from(data.first as Map);
   }
-
-  // ================= NOTIFICATIONS =================
 
   Future<Map<String, String>> getNotificationList({
     required String userId,

@@ -92,8 +92,6 @@ class PopularCard extends StatelessWidget {
   }
 }
 
-
-
 class _NetworkOrPlaceholderImage extends StatelessWidget {
   const _NetworkOrPlaceholderImage({
     required this.imageUrl,

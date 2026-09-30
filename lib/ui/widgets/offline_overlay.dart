@@ -20,7 +20,6 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
     if (_locked) return;
     _locked = true;
 
-    // bounce صغير
     setState(() => _scale = 0.96);
     await Future.delayed(const Duration(milliseconds: 90));
     if (!mounted) return;
@@ -29,7 +28,6 @@ class _OfflineOverlayState extends State<OfflineOverlay> {
 
     widget.onRetry();
 
-    // منع سبام سريع
     await Future.delayed(const Duration(milliseconds: 400));
     _locked = false;
   }

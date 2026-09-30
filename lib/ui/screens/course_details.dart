@@ -128,9 +128,6 @@ class _CourseDetailsState extends State<CourseDetails> {
 
                     SizedBox(height: getScreenHeight(context) * 0.01500),
 
-                    /// =========================
-                    /// COURSE PROGRESS
-                    /// =========================
                     BlocBuilder<EnrollmentsCubit, EnrollmentsState>(
                       builder: (context, state) {
                         double progress = 0;
@@ -195,7 +192,6 @@ class _CourseDetailsState extends State<CourseDetails> {
 
                     SizedBox(height: getScreenHeight(context) * 0.01500),
 
-                    /// LESSONS
                     Lessons(
                       courseId: widget.courseId,
                       courseTitle: widget.title,

@@ -17,7 +17,7 @@ class CategoriesCubit extends Cubit<CategoriesState> {
     emit(CategoriesLoading());
 
     try {
-      // 🔹 1) رجع local فورًا
+      
       final local = await learningRepo.getCategoryList(
         forceRefresh: forceRefresh,
       );
@@ -31,7 +31,6 @@ class CategoriesCubit extends Cubit<CategoriesState> {
         ),
       );
 
-      // 🔹 2) background refresh
       if (!forceRefresh) {
         Future.microtask(() async {
           final fresh = await learningRepo.getCategoryList(forceRefresh: true);

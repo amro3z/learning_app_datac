@@ -39,7 +39,6 @@ class FavoriteCourses extends StatelessWidget {
       );
     }
 
-    // Map علشان نوصل للكورس بالـ id بسرعة
     final courseMap = {for (var course in courses) course.id: course};
 
     final enrollmentsState = context.watch<EnrollmentsCubit>().state;

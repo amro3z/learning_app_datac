@@ -46,13 +46,12 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
 
   @override
   Widget build(BuildContext context) {
-    // Language
+    
     final langState = context.watch<LanguageCubit>().state;
 
     final isArabic =
         langState is LanguageCubitLoaded && langState.languageCode == 'ar';
 
-    // User Role
     final userState = context.watch<UserCubit>().state;
 
     final role = userState is UserLoaded ? userState.role.toLowerCase() : '';
@@ -93,10 +92,6 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
       ),
     ];
 
-    // ================================
-    // INSTRUCTOR / OTHER ITEMS
-    // ================================
-
     final instructorItems = <_NavItemData>[
       _NavItemData(
         selectedIcon: Icons.dashboard_rounded,
@@ -120,7 +115,6 @@ class _FloatingGlassBarState extends State<FloatingGlassBar>
       ),
     ];
 
-    // Choose items based on role
     final items = isStudent ? studentItems : instructorItems;
 
     return Positioned(

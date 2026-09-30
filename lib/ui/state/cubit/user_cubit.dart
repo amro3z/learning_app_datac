@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:training/utils/constants/strings.dart';
@@ -16,9 +15,6 @@ class UserCubit extends Cubit<UserState> {
   UserCubit() : super(UserInitial());
 
   final ApiClient _api = ApiClient();
-
-  static const FlutterSecureStorage _storage = FlutterSecureStorage();
-  static const String _kUserCacheKey = 'cached_user';
 
   String? _userId;
   String? get userId => _userId;
@@ -91,14 +87,7 @@ class UserCubit extends Cubit<UserState> {
     }
 
     if (!NetworkService.isConnected) {
-      final cached = await _readCachedUser();
-
-      if (cached != null) {
-        _userId = cached['id']?.toString();
-        emit(_mapUser(cached, message: 'Offline mode'));
-      } else {
-        emit(UserInitial());
-      }
+      emit(UserInitial());
       return;
     }
 
@@ -125,7 +114,6 @@ class UserCubit extends Cubit<UserState> {
     );
 
     _userId = user['id']?.toString();
-    await _cacheUser(user);
     emit(_mapUser(user, message: message));
   }
 
@@ -133,35 +121,17 @@ class UserCubit extends Cubit<UserState> {
     try {
       await _fetchCurrentUser();
     } catch (_) {
-      final cached = await _readCachedUser();
-
-      if (cached != null) {
-        _userId = cached['id']?.toString();
-        emit(_mapUser(cached, message: 'Offline mode'));
-      } else {
-        emit(UserInitial());
-      }
+      emit(UserInitial());
     }
   }
 
   Future<void> refreshUser({String? message}) async {
-    if (!NetworkService.isConnected) {
-      final cached = await _readCachedUser();
-      if (cached != null) {
-        _userId = cached['id']?.toString();
-        emit(_mapUser(cached, message: 'Offline mode'));
-      }
-      return;
-    }
+    if (!NetworkService.isConnected) return;
 
     try {
       await _fetchCurrentUser(message: message);
     } catch (_) {
-      final cached = await _readCachedUser();
-      if (cached != null) {
-        _userId = cached['id']?.toString();
-        emit(_mapUser(cached, message: 'Offline mode'));
-      }
+      
     }
   }
 
@@ -237,32 +207,8 @@ class UserCubit extends Cubit<UserState> {
 
   Future<void> logout() async {
     await _api.auth.logout();
-    await _clearCachedUser();
     _userId = null;
     emit(UserInitial());
-  }
-
-  Future<void> _cacheUser(Map<String, dynamic> user) async {
-    await _storage.write(key: _kUserCacheKey, value: jsonEncode(user));
-  }
-
-  Future<Map<String, dynamic>?> _readCachedUser() async {
-    final raw = await _storage.read(key: _kUserCacheKey);
-    if (raw == null || raw.isEmpty) return null;
-
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) return decoded;
-      if (decoded is Map) return Map<String, dynamic>.from(decoded);
-    } catch (_) {
-      await _clearCachedUser();
-    }
-
-    return null;
-  }
-
-  Future<void> _clearCachedUser() async {
-    await _storage.delete(key: _kUserCacheKey);
   }
 
   UserLoaded _mapUser(Map<String, dynamic> user, {String? message}) {
@@ -349,8 +295,7 @@ class UserCubit extends Cubit<UserState> {
 
       if (response.statusCode == 204 || response.statusCode == 200) {
         await _api.auth.logout();
-        await _clearCachedUser();
-        _userId = null;
+            _userId = null;
         emit(UserInitial());
         return true;
       }

@@ -24,7 +24,6 @@ class UserLoaded extends UserState {
     this.message,
   });
 
-
   UserLoaded copyWith({
     String? Fname,
     String? Lname,

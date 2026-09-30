@@ -30,8 +30,12 @@ class EnrollmentCourse extends StatelessWidget {
         }
 
         if (state is EnrollmentsLoaded) {
-          if (state.enrollments.isEmpty) {
-            return SizedBox.shrink();
+          final approvedEnrollments = state.enrollments
+              .where((e) => e.isApproved)
+              .toList();
+
+          if (approvedEnrollments.isEmpty) {
+            return const SizedBox.shrink();
           }
 
           final favoritesState = context.watch<FavoritesCubit>().state;
@@ -43,7 +47,7 @@ class EnrollmentCourse extends StatelessWidget {
           final courseMap = {for (var c in state.courses) c.id: c};
 
           final uniqueEnrollments = {
-            for (var e in state.enrollments.where((e) => e.isApproved)) e.courseId: e,
+            for (final e in approvedEnrollments) e.courseId: e,
           };
           final lessonsState = context.watch<LessonsCubit>().state;
 

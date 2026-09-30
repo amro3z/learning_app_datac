@@ -13,7 +13,7 @@ part '../states/lessons_state.dart';
 class LessonsCubit extends Cubit<LessonsState> {
   LessonsCubit({required this.repo, required this.enrollmentsCubit})
     : super(LessonsInitial());
-  final Map<String, int> _progressCache = {}; // 👈 مهم
+  final Map<String, int> _progressCache = {}; 
 
   bool _isSaving = false;
   final LearningRepo repo;
@@ -24,16 +24,22 @@ class LessonsCubit extends Cubit<LessonsState> {
 
     try {
       final lessons = await repo.getLessonList();
-      // final lessons = await repo.getLessonList(forceRefresh: forceRefresh);
 
       final progress = await repo.getLessonProgressList();
 
       emit(LessonsLoaded(lessons: lessons, progress: progress));
 
+      for (final p in progress.where((p) => p.status.toLowerCase() == 'completed')) {
+        await enrollmentsCubit.markLessonCompleted(
+          courseId: p.courseId,
+          lessonId: p.lesson,
+          userId: p.userId,
+        );
+      }
+
       if (!forceRefresh) {
         Future.microtask(() async {
           final freshLessons = await repo.getLessonList();
-          // final freshLessons = await repo.getLessonList(forceRefresh: true);
 
           final freshProgress = await repo.getLessonProgressList();
 
@@ -60,40 +66,48 @@ Future<void> updateLessonProgress({
       if (currentState is! LessonsLoaded) return;
 
       final lesson = currentState.lessons.firstWhere((l) => l.id == lessonId);
-
       final lessonDurationInSeconds = lesson.duration * 60;
 
-      final isCompleted = watchedSeconds >= (lessonDurationInSeconds - 60);
+      final completionThreshold = (lessonDurationInSeconds * 0.75).ceil();
+      final isCompleted = watchedSeconds >= completionThreshold;
+      final status = isCompleted ? 'completed' : 'present';
 
-      final status = isCompleted ? "completed" : "present";
+      final key = '$userId-$courseId-$lessonId';
 
-      final key = "$userId-$courseId-$lessonId";
+      LessonProgressModel? existing;
+      for (final p in currentState.progress) {
+        if (p.userId == userId && p.courseId == courseId && p.lesson == lessonId) {
+          existing = p;
+          break;
+        }
+      }
 
-      final cachedId = _progressCache[key];
+      final existingId = _progressCache[key] ?? existing?.id;
+      
+      final secondsToSave = existing == null
+          ? watchedSeconds
+          : (watchedSeconds > existing.watchedSeconds
+              ? watchedSeconds
+              : existing.watchedSeconds);
 
-      if (cachedId == null) {
-        // 🟢 CREATE
+      if (existingId == null || existingId == 0) {
         final res = await repo.createLessonProgress(
           lessonId: lessonId,
           courseId: courseId,
           userId: userId,
-          watchedSeconds: watchedSeconds,
+          watchedSeconds: secondsToSave,
           status: status,
         );
-
-        final newId = res['data']['id'];
-        _progressCache[key] = newId;
+        final newId = (res['data'] as Map?)?['id'];
+        if (newId is int) _progressCache[key] = newId;
       } else {
-        // 🔵 UPDATE
+        _progressCache[key] = existingId;
         await repo.updateLessonProgress(
-          lessonProgressId: cachedId,
-          watchedSeconds: watchedSeconds,
+          lessonProgressId: existingId,
+          watchedSeconds: secondsToSave,
           status: status,
         );
       }
-
-      // 🔥 مهم جدًا: نجيب أحدث داتا
-      await getLessons(forceRefresh: true);
 
       if (isCompleted) {
         await enrollmentsCubit.markLessonCompleted(
@@ -102,8 +116,10 @@ Future<void> updateLessonProgress({
           userId: userId,
         );
       }
-    } catch (e) {
-      print("❌ ERROR: $e");
+
+      await getLessons(forceRefresh: true);
+    } catch (e, st) {
+      log('Failed to save lesson progress: $e', stackTrace: st);
     } finally {
       _isSaving = false;
     }

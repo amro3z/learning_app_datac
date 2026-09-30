@@ -1,10 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/ui/state/cubit/language_cubit.dart';
 import 'package:training/ui/state/cubit/lessons_cubit.dart';
 import 'package:training/ui/state/cubit/user_cubit.dart';
+import 'package:training/ui/state/cubit/enrollments_cubit.dart';
 import 'package:training/ui/state/states/language_cubit_state.dart';
 import 'package:training/data/models/lessons.dart';
 import 'package:training/ui/core/base.dart';
@@ -44,18 +43,21 @@ class Lessons extends StatelessWidget {
                 state.lessons.where((l) => l.courseId == courseId).toList()
                   ..sort((a, b) => a.id.compareTo(b.id));
 
-            final Map<int, int> watchedSecondsMap = {
-              for (var p in state.progress)
-                if (p.courseId == courseId && p.userId == userId)
-                  p.lesson: p.watchedSeconds,
-            };
+            final enrollmentState = context.watch<EnrollmentsCubit>().state;
+            final completedLessonIds = <int>{};
+            if (enrollmentState is EnrollmentsLoaded) {
+              for (final enrollment in enrollmentState.enrollments) {
+                if (enrollment.courseId == courseId &&
+                    enrollment.userId == userId &&
+                    enrollment.isApproved) {
+                  completedLessonIds.addAll(enrollment.completedLessonIds);
+                }
+              }
+            }
 
             final List<Map<String, dynamic>> ordered = [];
-
             for (final lesson in courseLessons) {
-              final watchedSeconds = watchedSecondsMap[lesson.id] ?? 0;
-              final lessonDurationInSeconds = lesson.duration * 60;
-              final isCompleted = watchedSeconds >= (lessonDurationInSeconds - 60);
+              final isCompleted = completedLessonIds.contains(lesson.id);
               ordered.add({
                 'lesson': lesson,
                 'status': isCompleted ? CourseStatus.completed : CourseStatus.present,

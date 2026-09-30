@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/ui/state/cubit/user_cubit.dart';
 import 'package:training/ui/state/states/user_state.dart';
 import 'package:training/ui/core/base.dart';
-import 'package:training/ui/core/massage_dialog.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

@@ -1,4 +1,4 @@
-import 'dart:ui'; // مهم علشان PlatformDispatcher
+import 'dart:ui'; 
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -27,19 +27,10 @@ import 'package:training/utils/services/tokens/auths_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-// ================= MAIN =================
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-
   runApp(const SizedBox());
-
-
-  // FlutterError.onError = (FlutterErrorDetails details) {
-  //   final errorText = details.exceptionAsString();
-  //   runApp(ErrorScreen(error: errorText));
-  // };
-
 
   PlatformDispatcher.instance.onError = (error, stack) {
     runApp(ErrorScreen(error: error.toString()));
@@ -110,7 +101,6 @@ void main() async {
     runApp(ErrorScreen(error: e.toString()));
   }
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

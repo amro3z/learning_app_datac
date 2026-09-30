@@ -55,7 +55,6 @@ Future<void> getFavoritesList({
     await getFavoritesList(userId: userId);
   }
 
-
 Future<void> deleteFavorite({
     required int favoriteID,
     required String userId,

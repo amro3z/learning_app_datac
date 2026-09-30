@@ -100,7 +100,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // COUNT
+                        
                         defaultText(
                           context: context,
                           text: isArabic

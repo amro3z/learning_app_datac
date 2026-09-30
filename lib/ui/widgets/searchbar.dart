@@ -109,7 +109,6 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
                     ),
                     SizedBox(height: getScreenHeight(context) * 0.02500),
 
-                    /// SORT
                     _sectionTitle(languageCode == 'ar' ? 'الترتيب' : 'Sort by'),
 
                     _singleSelectChips(
@@ -128,7 +127,6 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
                     SizedBox(height: getScreenHeight(context) * 0.02500),
 
-                    /// CATEGORY
                     _sectionTitle(
                       languageCode == 'ar' ? 'التصنيف' : 'Category',
                     ),
@@ -158,7 +156,6 @@ class _CoursesSearchBarState extends State<CoursesSearchBar> {
 
                     SizedBox(height: getScreenHeight(context) * 0.02500),
 
-                    /// DIFFICULTY
                     _sectionTitle(
                       languageCode == 'ar' ? 'المستوى' : 'Difficulty',
                     ),

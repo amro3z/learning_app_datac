@@ -25,11 +25,29 @@ class NotEnrolledCoursesSection extends StatelessWidget {
     }
 
     final allCourses = coursesState.courses;
-    final enrollments = enrollState is EnrollmentsLoaded
-        ? enrollState.enrollments
-        : const <dynamic>[];
-    // Collapse any legacy duplicate rows to one status per course. Approved wins,
-    // then pending, then rejected. New duplicates are prevented by the Cubit.
+
+    if (enrollState is EnrollmentsLoading || enrollState is EnrollmentsInitial) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    if (enrollState is EnrollmentsError) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Text(
+          isArabic
+              ? 'تعذر تحميل حالة الاشتراك. اسحب للتحديث.'
+              : 'Could not load enrollment status. Pull to refresh.',
+          style: const TextStyle(color: Colors.white70),
+        ),
+      );
+    }
+
+    final enrollments = (enrollState as EnrollmentsLoaded).enrollments;
+
     final statusByCourse = <int, String>{};
     int rank(String s) => s == 'approved' ? 3 : (s == 'pending' ? 2 : 1);
     for (final e in enrollments) {

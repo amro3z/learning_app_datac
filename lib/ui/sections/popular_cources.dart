@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:training/ui/core/base.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:training/ui/state/cubit/language_cubit.dart';
 import 'package:training/ui/state/cubit/popular_cubit.dart';

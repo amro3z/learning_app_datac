@@ -5,52 +5,113 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:no_screenshot/no_screenshot.dart';
+import 'package:video_player/video_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:training/ui/state/cubit/user_cubit.dart';
-import 'package:training/ui/state/cubit/lessons_cubit.dart';
-import 'package:training/data/models/lesson_progress.dart';
 
-class YoutubePlayerWidget extends StatefulWidget {
-  final String youtubeUrl;
+import 'package:training/data/models/lesson_progress.dart';
+import 'package:training/ui/state/cubit/lessons_cubit.dart';
+import 'package:training/ui/state/cubit/user_cubit.dart';
+import 'package:training/utils/services/video_player/fullscreen_network_video_page.dart';
+import 'package:training/utils/services/video_player/fullscreen_youtube_page.dart';
+import 'package:training/utils/services/video_player/network_video_controls.dart';
+
+class UniversalVideoPlayerWidget extends StatefulWidget {
+  final String videoUrl;
   final int lessonId;
   final int courseId;
   final int lessonDurationInSeconds;
 
-  const YoutubePlayerWidget({
+  const UniversalVideoPlayerWidget({
     super.key,
-    required this.youtubeUrl,
+    required this.videoUrl,
     required this.lessonId,
     required this.courseId,
     required this.lessonDurationInSeconds,
   });
 
   @override
-  State<YoutubePlayerWidget> createState() => _YoutubePlayerWidgetState();
+  State<UniversalVideoPlayerWidget> createState() =>
+      _UniversalVideoPlayerWidgetState();
 }
 
-class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget>
+class _UniversalVideoPlayerWidgetState extends State<UniversalVideoPlayerWidget>
     with WidgetsBindingObserver {
   static const MethodChannel _secureChannel = MethodChannel('secure_screen');
+
   final NoScreenshot _noScreenshot = NoScreenshot.instance;
 
-  late YoutubePlayerController _controller;
+  YoutubePlayerController? _youtubeController;
+  VideoPlayerController? _networkController;
+
   Timer? _progressTimer;
 
+  String? _youtubeId;
+  String? _error;
+
+  bool _loading = true;
   bool _positionRestored = false;
   bool _isAppHidden = false;
-  late final String _videoId;
+
+  bool get _isYoutube => _youtubeId != null && _youtubeId!.isNotEmpty;
 
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addObserver(this);
+
     _enableSecureMode();
+    _initializePlayer();
 
-    _videoId = YoutubePlayer.convertUrlToId(widget.youtubeUrl) ?? '';
+    _progressTimer = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _saveProgress(),
+    );
+  }
 
-    _controller = YoutubePlayerController(
-      initialVideoId: _videoId,
+ Future<void> _initializePlayer() async {
+    final url = widget.videoUrl.trim();
+
+    log('========================================');
+    log('[VIDEO_PLAYER] Received URL: $url');
+    log('[VIDEO_PLAYER] Lesson ID: ${widget.lessonId}');
+    log('[VIDEO_PLAYER] Course ID: ${widget.courseId}');
+    log('========================================');
+
+    if (url.isEmpty) {
+      log('[VIDEO_PLAYER] ERROR: URL is empty');
+
+      _setError('Invalid video URL');
+      return;
+    }
+
+    try {
+      _youtubeId = YoutubePlayer.convertUrlToId(url);
+
+      if (_isYoutube) {
+        log('[VIDEO_PLAYER] Type: YOUTUBE');
+        log('[VIDEO_PLAYER] Original URL: $url');
+        log('[VIDEO_PLAYER] YouTube ID: $_youtubeId');
+        log('[VIDEO_PLAYER] Starting YouTube player...');
+
+        _initializeYoutubePlayer();
+        return;
+      }
+
+      log('[VIDEO_PLAYER] Type: NETWORK / DIRECT VIDEO');
+      log('[VIDEO_PLAYER] URL to play: $url');
+
+      await _initializeNetworkPlayer(url);
+    } catch (e, stackTrace) {
+      log('[VIDEO_PLAYER] Initialization failed: $e', stackTrace: stackTrace);
+
+      _setError('This video link cannot be played');
+    }
+  }
+
+  void _initializeYoutubePlayer() {
+    _youtubeController = YoutubePlayerController(
+      initialVideoId: _youtubeId!,
       flags: const YoutubePlayerFlags(
         autoPlay: false,
         mute: false,
@@ -59,32 +120,116 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget>
       ),
     );
 
-    context.read<LessonsCubit>().getLessons();
+    if (!mounted) return;
 
-    _progressTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _saveProgress();
+    setState(() {
+      _loading = false;
+      _error = null;
     });
+  }
+
+  Future<void> _initializeNetworkPlayer(String url) async {
+    final uri = Uri.tryParse(url);
+
+    if (uri == null ||
+        !uri.hasScheme ||
+        (uri.scheme != 'http' && uri.scheme != 'https')) {
+      _setError('Invalid video URL');
+      return;
+    }
+
+    final path = uri.path.toLowerCase();
+
+    VideoFormat? formatHint;
+
+    if (path.endsWith('.m3u8')) {
+      formatHint = VideoFormat.hls;
+    }
+
+    final controller = VideoPlayerController.networkUrl(
+      uri,
+      formatHint: formatHint,
+      httpHeaders: const {'User-Agent': 'Mozilla/5.0', 'Accept': '*/*'},
+    );
+
+    _networkController = controller;
+
+    try {
+      await controller.initialize();
+
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+
+      controller.addListener(_onNetworkPlayerChanged);
+
+      setState(() {
+        _loading = false;
+        _error = null;
+      });
+
+      log(
+        '[VIDEO_PLAYER] READY '
+        'duration=${controller.value.duration.inSeconds}s '
+        'size=${controller.value.size}',
+      );
+
+      _restorePosition();
+    } catch (e, stackTrace) {
+      log('[VIDEO_PLAYER] Failed to open URL: $e', stackTrace: stackTrace);
+
+      if (identical(_networkController, controller)) {
+        _networkController = null;
+      }
+
+      await controller.dispose();
+
+      _setError('This video link cannot be played directly');
+    }
+  }
+
+  void _setError(String message) {
+    if (!mounted) return;
+
+    setState(() {
+      _loading = false;
+      _error = message;
+    });
+  }
+
+  void _onNetworkPlayerChanged() {
+    if (!mounted) return;
+
+    final controller = _networkController;
+
+    if (controller == null) return;
+
+    if (controller.value.hasError) {
+      log(
+        '[VIDEO_PLAYER] Playback error: '
+        '${controller.value.errorDescription}',
+      );
+    }
+
+    setState(() {});
   }
 
   Future<void> _enableSecureMode() async {
     try {
       await _secureChannel.invokeMethod('enable');
-      final result = await _noScreenshot.screenshotOff();
-      log('Video secure mode enabled');
-      log('screenshotOff: $result');
+      await _noScreenshot.screenshotOff();
     } catch (e) {
-      log('Enable video secure mode error: $e');
+      log('[VIDEO_PLAYER] Enable secure mode error: $e');
     }
   }
 
   Future<void> _disableSecureMode() async {
     try {
       await _secureChannel.invokeMethod('disable');
-      final result = await _noScreenshot.screenshotOn();
-      log('Video secure mode disabled');
-      log('screenshotOn: $result');
+      await _noScreenshot.screenshotOn();
     } catch (e) {
-      log('Disable video secure mode error: $e');
+      log('[VIDEO_PLAYER] Disable secure mode error: $e');
     }
   }
 
@@ -92,86 +237,296 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!mounted) return;
 
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      setState(() => _isAppHidden = true);
+    switch (state) {
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        _pausePlayer();
+
+        if (!_isAppHidden) {
+          setState(() {
+            _isAppHidden = true;
+          });
+        }
+
+        break;
+
+      case AppLifecycleState.resumed:
+        if (_isAppHidden) {
+          setState(() {
+            _isAppHidden = false;
+          });
+        }
+
+        _enableSecureMode();
+        break;
+    }
+  }
+
+  Future<void> _pausePlayer() async {
+    if (_isYoutube) {
+      _youtubeController?.pause();
+      return;
     }
 
-    if (state == AppLifecycleState.resumed) {
-      setState(() => _isAppHidden = false);
-      _enableSecureMode();
+    final controller = _networkController;
+
+    if (controller != null &&
+        controller.value.isInitialized &&
+        controller.value.isPlaying) {
+      await controller.pause();
     }
   }
 
   void _restorePosition() {
-    if (_positionRestored) return;
+    if (_positionRestored || !mounted) return;
 
     final lessonsState = context.read<LessonsCubit>().state;
     final userId = context.read<UserCubit>().userId;
 
     if (lessonsState is! LessonsLoaded || userId == null) {
-      Future.delayed(const Duration(milliseconds: 500), _restorePosition);
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted && !_positionRestored) {
+          _restorePosition();
+        }
+      });
+
       return;
     }
 
     final progress = lessonsState.progress.firstWhere(
-      (p) =>
-          p.lesson == widget.lessonId &&
-          p.courseId == widget.courseId &&
-          p.userId == userId,
+      (progress) =>
+          progress.lesson == widget.lessonId &&
+          progress.courseId == widget.courseId &&
+          progress.userId == userId,
       orElse: () => LessonProgressModel.empty(),
     );
 
-    if (progress.watchedSeconds > 0) {
-      _controller.seekTo(Duration(seconds: progress.watchedSeconds));
+    final watchedSeconds = progress.watchedSeconds;
+
+    if (watchedSeconds > 0) {
+      final position = Duration(seconds: watchedSeconds);
+
+      if (_isYoutube) {
+        _youtubeController?.seekTo(position);
+      } else {
+        final controller = _networkController;
+
+        if (controller != null && controller.value.isInitialized) {
+          final duration = controller.value.duration;
+
+          if (duration == Duration.zero || position < duration) {
+            controller.seekTo(position);
+          }
+        }
+      }
     }
 
     _positionRestored = true;
   }
 
   void _saveProgress() {
-    if (!_controller.value.isReady) return;
+    if (!mounted) return;
 
-    final position = _controller.value.position.inSeconds;
-    if (position <= 0) return;
+    int watchedSeconds;
+
+    if (_isYoutube) {
+      final controller = _youtubeController;
+
+      if (controller == null || !controller.value.isReady) {
+        return;
+      }
+
+      watchedSeconds = controller.value.position.inSeconds;
+    } else {
+      final controller = _networkController;
+
+      if (controller == null || !controller.value.isInitialized) {
+        return;
+      }
+
+      watchedSeconds = controller.value.position.inSeconds;
+    }
+
+    if (watchedSeconds <= 0) return;
 
     final userId = context.read<UserCubit>().userId;
+
     if (userId == null) return;
 
-    context.read<LessonsCubit>().updateLessonProgress(
+    log(
+      '[VIDEO_PROGRESS] '
+      'lesson=${widget.lessonId} '
+      'seconds=$watchedSeconds',
+    );
+
+    final cubit = context.read<LessonsCubit>();
+
+    if (cubit.isClosed) return;
+
+    cubit.updateLessonProgress(
       lessonId: widget.lessonId,
       courseId: widget.courseId,
       userId: userId,
-      watchedSeconds: position,
+      watchedSeconds: watchedSeconds,
     );
   }
 
-  Future<void> _openFullScreen() async {
-    final currentSecond = _controller.value.position.inSeconds;
-    final wasPlaying = _controller.value.isPlaying;
+  Future<void> _toggleNetworkPlayback() async {
+    final controller = _networkController;
 
-    _controller.pause();
+    if (controller == null || !controller.value.isInitialized) {
+      return;
+    }
+
+    if (controller.value.isPlaying) {
+      await controller.pause();
+    } else {
+      await controller.play();
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _openFullScreen() async {
+    if (!mounted) return;
+
+    if (_isYoutube) {
+      await _openYoutubeFullScreen();
+    } else {
+      await _openNetworkFullScreen();
+    }
+
+    if (mounted) {
+      await _enableSecureMode();
+    }
+  }
+
+  Future<void> _openYoutubeFullScreen() async {
+    final controller = _youtubeController;
+
+    if (controller == null) return;
+
+    final currentSecond = controller.value.position.inSeconds;
+    final wasPlaying = controller.value.isPlaying;
+
+    controller.pause();
 
     final returnedSecond = await Navigator.push<int>(
       context,
       MaterialPageRoute(
         builder: (_) => FullScreenYoutubePage(
-          videoId: _videoId,
+          videoId: _youtubeId!,
           startAt: currentSecond,
           autoPlay: wasPlaying,
         ),
       ),
     );
 
+    if (!mounted) return;
+
     if (returnedSecond != null) {
-      _controller.seekTo(Duration(seconds: returnedSecond));
+      controller.seekTo(Duration(seconds: returnedSecond));
     }
 
     if (wasPlaying) {
-      _controller.play();
+      controller.play();
+    }
+  }
+
+  Future<void> _openNetworkFullScreen() async {
+    final controller = _networkController;
+
+    if (controller == null || !controller.value.isInitialized) {
+      return;
     }
 
-    _enableSecureMode();
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FullScreenNetworkVideoPage(controller: controller),
+      ),
+    );
+  }
+
+  Widget _buildYoutube() {
+    final controller = _youtubeController;
+
+    if (controller == null) {
+      return const SizedBox.shrink();
+    }
+
+    return YoutubePlayer(
+      controller: controller,
+      showVideoProgressIndicator: true,
+      progressIndicatorColor: Colors.blueAccent,
+      progressColors: const ProgressBarColors(
+        playedColor: Colors.blue,
+        handleColor: Colors.blueAccent,
+      ),
+      onReady: _restorePosition,
+      bottomActions: [
+        const CurrentPosition(),
+        const ProgressBar(isExpanded: true),
+        const RemainingDuration(),
+        IconButton(
+          onPressed: _openFullScreen,
+          icon: const Icon(Icons.fullscreen, color: Colors.white),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNetwork() {
+    final controller = _networkController;
+
+    if (controller == null || !controller.value.isInitialized) {
+      return const SizedBox.shrink();
+    }
+
+    return NetworkVideoControls(
+      controller: controller,
+      onToggle: _toggleNetworkPlayback,
+      onFullscreen: _openFullScreen,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const ColoredBox(
+        color: Colors.black,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return ColoredBox(
+        color: Colors.black,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _isYoutube ? _buildYoutube() : _buildNetwork(),
+
+        if (_isAppHidden) const ColoredBox(color: Colors.black),
+      ],
+    );
   }
 
   @override
@@ -179,205 +534,18 @@ class _YoutubePlayerWidgetState extends State<YoutubePlayerWidget>
     WidgetsBinding.instance.removeObserver(this);
 
     _progressTimer?.cancel();
-    _controller.dispose();
+
+    _networkController?.removeListener(_onNetworkPlayerChanged);
+
+    _youtubeController?.dispose();
+    _networkController?.dispose();
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     _disableSecureMode();
 
     super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_videoId.isEmpty) {
-      return const Center(child: Text("Invalid video URL"));
-    }
-
-    return Stack(
-      children: [
-        YoutubePlayer(
-          controller: _controller,
-          showVideoProgressIndicator: true,
-          progressColors: const ProgressBarColors(
-            playedColor: Colors.blue,
-            handleColor: Colors.blueAccent,
-          ),
-          progressIndicatorColor: Colors.blueAccent,
-          onReady: _restorePosition,
-          bottomActions: [
-            const CurrentPosition(),
-            const ProgressBar(isExpanded: true),
-            const RemainingDuration(),
-            IconButton(
-              icon: const Icon(Icons.fullscreen, color: Colors.white),
-              onPressed: _openFullScreen,
-            ),
-          ],
-        ),
-
-        if (_isAppHidden)
-          const Positioned.fill(child: ColoredBox(color: Colors.black)),
-      ],
-    );
-  }
-}
-
-class FullScreenYoutubePage extends StatefulWidget {
-  final String videoId;
-  final int startAt;
-  final bool autoPlay;
-
-  const FullScreenYoutubePage({
-    super.key,
-    required this.videoId,
-    required this.startAt,
-    required this.autoPlay,
-  });
-
-  @override
-  State<FullScreenYoutubePage> createState() => _FullScreenYoutubePageState();
-}
-
-class _FullScreenYoutubePageState extends State<FullScreenYoutubePage>
-    with WidgetsBindingObserver {
-  static const MethodChannel _secureChannel = MethodChannel('secure_screen');
-  final NoScreenshot _noScreenshot = NoScreenshot.instance;
-
-  late YoutubePlayerController _fullController;
-  bool _isAppHidden = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addObserver(this);
-    _enableSecureMode();
-
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-
-    _fullController = YoutubePlayerController(
-      initialVideoId: widget.videoId,
-      flags: YoutubePlayerFlags(
-        autoPlay: widget.autoPlay,
-        mute: false,
-        startAt: widget.startAt,
-        controlsVisibleAtStart: true,
-        disableDragSeek: false,
-      ),
-    );
-  }
-
-  Future<void> _enableSecureMode() async {
-    try {
-      await _secureChannel.invokeMethod('enable');
-      final result = await _noScreenshot.screenshotOff();
-      log('Fullscreen video secure mode enabled');
-      log('screenshotOff: $result');
-    } catch (e) {
-      log('Enable fullscreen secure mode error: $e');
-    }
-  }
-
-  Future<void> _disableSecureMode() async {
-    try {
-      await _secureChannel.invokeMethod('disable');
-      final result = await _noScreenshot.screenshotOn();
-      log('Fullscreen video secure mode disabled');
-      log('screenshotOn: $result');
-    } catch (e) {
-      log('Disable fullscreen secure mode error: $e');
-    }
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!mounted) return;
-
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      setState(() => _isAppHidden = true);
-    }
-
-    if (state == AppLifecycleState.resumed) {
-      setState(() => _isAppHidden = false);
-      _enableSecureMode();
-    }
-  }
-
-  Future<void> _closeFullScreen() async {
-    final currentSecond = _fullController.value.position.inSeconds;
-
-    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-    if (mounted) {
-      Navigator.pop(context, currentSecond);
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-
-    _fullController.dispose();
-
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          _closeFullScreen();
-        }
-      },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: YoutubePlayer(
-                  controller: _fullController,
-                  showVideoProgressIndicator: true,
-                  progressColors: const ProgressBarColors(
-                    playedColor: Colors.blue,
-                    handleColor: Colors.blueAccent,
-                  ),
-                  progressIndicatorColor: Colors.blueAccent,
-                  bottomActions: [
-                    const CurrentPosition(),
-                    const ProgressBar(isExpanded: true),
-                    const RemainingDuration(),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.fullscreen_exit,
-                        color: Colors.white,
-                      ),
-                      onPressed: _closeFullScreen,
-                    ),
-                  ],
-                ),
-              ),
-
-              if (_isAppHidden)
-                const Positioned.fill(child: ColoredBox(color: Colors.black)),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

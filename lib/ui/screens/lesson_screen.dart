@@ -63,11 +63,11 @@ class _LessonScreenState extends State<LessonScreen> {
             children: [
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: YoutubePlayerWidget(
+                child: UniversalVideoPlayerWidget(
                   courseId: widget.courseID,
                   lessonId: widget.lessonID,
                   lessonDurationInSeconds: widget.lessonDurationInSeconds,
-                  youtubeUrl: widget.videoURl,
+                  videoUrl: widget.videoURl,
                 ),
               ),
 
